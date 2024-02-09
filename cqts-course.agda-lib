@@ -1,0 +1,7 @@
+name: cqts-course-0.2
+include:
+  .
+depend:
+flags: 
+  --cubical
+  --no-load-primitives
