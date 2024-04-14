@@ -1,29 +1,25 @@
-# Homework 1-1: Types and Functions
-
 ```
-module homework.1--Type-Theory.1-1--Types-and-Functions where
-
-open import homework.Library.Prelude hiding (idfun; _∘_)
-open import homework.Library.1-1-Prelude
-
+module 1--Type-Theory.1-1--Types-and-Functions where
 ```
 
-Topics covered:
+# Lecture 1-1: Types and Functions
 
-* Types and Elements
-* (Dependent) Function Types and Function Composition
-* (Dependent) Pair Types
+<!--
+```
+open import Library.Prelude
+```
+-->
 
 A type theory is a formal system for keeping track of what type of
 thing every mathematical object is. This idea is familiar from
 computer science; since everything in a computer is stored as a chunk
-of bits (values which may either be 0 or 1), it is important to record
-what any given chunk of bits is supposed to mean. Is this chunk of
-bits meant to be a number? Or a piece of text? Maybe it's meant to be
-a program. Since all of these things are ultimately stored as a bunch
-of bits, if we don't keep track of how we were supposed to use them we
-run the risk of accidentally considering some text as a very large
-number and adding it to another number.
+of bits, it is important to record what any given chunk of bits is
+supposed to mean. Is this chunk of bits meant to be a number or a
+piece of text? Or a program that can be run? Since all of these things
+are ultimately stored as a bunch of bits, if we don't keep track of
+how we were supposed to use them we run the risk of accidentally
+considering some text as a very large number and adding it to another
+number.
 
 When we say that some piece of data is "meant" to be a number, what we
 mean is that we intend to use it like a number -- maybe add or
@@ -46,8 +42,8 @@ are actual Agda code that can be loaded by pressing `C-c C-l`.
 
 The basic statement of any type theory is "this `a` is an `A`" or
 "this thing `a` has that type `A`". We write this symbolically using a
-colon `a : A`. In the expression `a : A`, `A` is the "type" and `a` is
-the "element".
+colon `a : A`. In the expression `a : A`, the `A` is the "type" and
+the `a` is the "element".
 
 The vast majority of an Agda file consists of definitions, which have
 two parts. First, a declaration that gives an unused identifier
@@ -58,8 +54,9 @@ equations that define the actual meaning of the identifier.
 three : ℕ      --- This line declares that `three` is a natural number.
 three = 3      --- This line defines `three` to be the actual number 3
 ```
-In this case, there is only one equation, but we will soon see
-examples with more than one.
+
+In this case there is only one equation defining the element, but we
+will soon see examples with more than one.
 
 ## Functions
 
@@ -75,7 +72,7 @@ A function `f : A → B` may be thought of in two ways:
 2. An element `f(x) : B` whose definition involves a variable element
   `x : A`.
 
-Here is our first Agda function: a function of type `ℕ → ℕ` that
+Here is our first Agda function: a function of type `ℕ → ℕ`{.Agda} that
 doubles the natural number that you give it.
 
 ```
@@ -84,8 +81,8 @@ double x = 2 · x
 ```
 
 Functions are defined by placing a fresh variable name to the left of
-the `=` sign, which can then be used on the right. So here, idℕ
-accepts `x` as input, and produces `2 · x` as output.
+the `=` sign, which can then be used on the right. So here,
+`double`{.Agda} accepts `x` as input and produces `2 · x` as output.
 
 We can apply a function `f : A → B` to an argument `a : A` by writing
 `f a : B` --- note the lack of parentheses around `a`!
@@ -96,7 +93,7 @@ hopefullySix = double three
 ```
 
 We can get Agda to actually compute this definition, by hitting `C-c
-C-n` (for "normalise") and typing `hopefullySix`.
+C-n` (for "normalise") and typing `hopefullySix`{.Agda}.
 
 We can write functions of multiple arguments by listing them to the
 left of the `=` sign.
@@ -129,7 +126,7 @@ attempted definition. (Hint: it's `a`). To ask Agda to accept it, type
 satisfied that your definition fits, it will replace the hole with
 what you have written.
 
-So far our inputs and outputs have all been `ℕ`, but there is no
+So far our inputs and outputs have all been `ℕ`{.Agda}, but there is no
 particular reason for this. We can even write functions that take
 other functions as input. Here's a very simple example: accept a
 function and an argument as input, and give back the result of
@@ -143,18 +140,20 @@ applyℕ f a = f a
 In fact, we have secretly written a couple of functions that give
 another function as output already. Agda reads the type of `constℕ`
 above as
+
 ```
 constℕ' : ℕ → (ℕ → ℕ)
 constℕ' a b = a
 ```
 
-How do we make sense of this? The functions `constℕ` and `constℕ'` are
-literally identical to Agda, but the way we have written them suggests
-two different ways we can think of functions of multiple arguments:
+How do we make sense of this? The functions `constℕ`{.Agda} and
+`constℕ'`{.Agda} are literally identical to Agda, but the way we have
+written them suggests two different ways we can think of functions of
+multiple arguments:
 
-* The function `constℕ` is a function of two variables `a` and `b`,
+* The function `constℕ`{.Agda} is a function of two variables `a` and `b`,
   yielding first.
-* The function `constℕ'` is a function of a single variable `a`,
+* The function `constℕ'`{.Agda} is a function of a single variable `a`,
   returning the function `ℕ → ℕ` which takes `b : ℕ`, ignores it, and
   yields `a`.
 
@@ -178,7 +177,7 @@ The syntax `λ (x : A) → t` defines the function `A → B` which sends
 λ-calculus, an early formal system for defining functions intended as
 a model of general computability.
 
-To write the `λ` symbol in Emacs or VSCode, type "\Gl" or "\lambda".
+To write the `λ` symbol in Emacs or VSCode, type `\Gl` or `\lambda`.
 If you ever forget how to write a symbol, there are ways to look it
 up. In Emacs, place your cursor over the symbol and type `M-x
 describe-char`. A window will pop up with details about the symbol:
@@ -187,7 +186,7 @@ the command `C-x C-=`. A textbox will appear that you can paste the
 character into. Test it out on the symbol here: `⊗`.
 
 The functions we have written so far are all specialised to work with
-elements of the type `ℕ`. For example, we can write the "identity"
+elements of the type `ℕ`{.Agda}. For example, we can write the "identity"
 (i.e. do-nothing) function
 
 ```
@@ -205,17 +204,17 @@ idfunE : (A : Type) → (A → A)
 idfunE A x = x
 ```
 
-Let's understand why the type of `idE` is more complicated than just
-`idE : A → A`. The extra bit "`(A : Type) →`" is there because the
+Let's understand why the type of `idfunE`{.Agda} is more complicated than just
+`idfunE : A → A`. The extra bit "`(A : Type) →`" is there because the
 type `A → A` itself involves a variable: the type `A`. This `A` is
 then an additional argument to the function, so it also appears on the
 left of the `=` in the definition on the next line.
 
-If we think in terms of currying, `id` a function of a variable `A`,
-which is a type. When applied, `id A` gives back the identity function
-`A → A` for that type.
+If we think in terms of currying, `idfunE`{.Agda} is a function of a
+variable `A`, which is a type. When applied, `idfunE A` gives
+back the identity function `A → A` for that type.
 
-`const` and `apply` can be similarly generalised:
+`constℕ`{.Agda} and `applyℕ`{.Agda} can be similarly generalised:
 ```
 constE : (A : Type) → (B : Type) → A → B → A
 constE A B a b = a
@@ -224,49 +223,54 @@ applyE : (A : Type) → (B : Type) → (A → B) → A → B
 applyE A B f a = f a
 ```
 
-There is one more trick before we reach the definition of `id`,
-`const` and `apply` that we will actually use. It is necessary for
-these functions to have arguments that determine the types that are
-used in the output, but in some sense they are redundant. For example,
-the `x` argument to `id` is of type `A`, so if we know `Inductive-x`, we know
-what `A` had to be.
+## Implicit Arguments
 
-Agda lets us make these arguments implicit, so they are reconstructed
+There is one more trick before we reach the true definition of `id`,
+`const` and `apply` that we will actually use. It is necessary for
+these functions to have arguments that determine the types that should
+be used in the output, but in some sense they are redundant. For
+example, the `x` argument to `id` is of type `A`, so if we know `x`,
+we know what `A` had to be.
+
+Agda lets us make these arguments *implicit*, so they are reconstructed
 from the other arguments. This is done by surrounding them with curly
 braces rather than parentheses:
-```
-idI : {A : Type} → A → A
-idI x = x
 
-const : {A : Type} → {B : Type} → A → B → A
-const a b = a
-
-apply : {A : Type} → {B : Type} → (A → B) → A → B
-apply f a = f a
 ```
+idfunI : {A : Type} → A → A
+idfunI x = x
+
+constI : {A : Type} → {B : Type} → A → B → A
+constI a b = a
+
+applyI : {A : Type} → {B : Type} → (A → B) → A → B
+applyI f a = f a
+```
+
 This saves a huge amount of typing in the long run. Agda will complain
-if it cannot reconstruct an implicit argument given the other
-arguments you have provided.
+if it cannot reconstruct an implicit argument from the other arguments
+you provide when applying a function.
 
 We can compose functions by applying the second to the result of the
 first. Try implementing it:
+
 ```
-compose : {A : Type} {B : Type} {C : Type}
+composeI : {A : Type} {B : Type} {C : Type}
     → (B → C)
     → (A → B)
     → (A → C)
 -- Exercise:
-compose g f = {!!}
+composeI g f = {!!}
 ```
 
 Try implementing the following functions.
 
 ```
-flip : {A B C : Type}
+flipI : {A B C : Type}
      → (A → B → C)
      → (B → A → C)
 -- Exercise:
-flip = {!!}
+flipI = {!!}
 
 -- Should use the provided function on the argument twice.
 apply-twice : {A : Type}
@@ -277,17 +281,16 @@ apply-twice : {A : Type}
 apply-twice = {!!}
 ```
 
-* Pen and paper exercise: Check that `f ∘ id` and `id ∘ f` act the
- same as `f` on any argument. In Part 2 of this course, we'll be able
- to express that fact in theory and have Agda verify that it is
- correct!
+Pen and paper exercise: Check that `f ∘ id` and `id ∘ f` act the same
+as `f` on any argument. In Part 2 of this course, we'll be able to
+express that fact in theory and have Agda verify that it is correct!
 
 ## Pair types
 
 The other basic type forming operation we have is the type of pairs.
 The pair of the elements `a : A` and `b : B` is written `(a , b)`,
 which is an element of the type `A × B`. The space before the comma is
-necessary, or Agda thinks you are referring to a variable called `a,`.
+necessary, or Agda thinks you are referring to a variable called "`a,`".
 
 ```
 pair× : {A : Type} → {B : Type} → A → B → (A × B)
@@ -295,7 +298,7 @@ pair× a b = (a , b)
 ```
 
 To use a pair, we can "project out" the first and second components
-using the in-built functions `fst` and `snd`.
+using the in-built functions `fst`{.Agda} and `snd`{.Agda}.
 
 ```
 my-fst× : {A : Type} → {B : Type} → (A × B) → A
@@ -321,6 +324,27 @@ my-trd×× : {A B C : Type} → ((A × B) × C) → C
 my-trd×× t = snd t
 ```
 
+When the argument to the function is a nested pair type, it can be
+annoying chaining together `fst`{.Agda}s and `snd`{.Agda}s to get at
+the components. Agda allows us to use "pattern matching" on an
+argument to decompose it into its components all at once. This also
+lets us give the components more meaningful names, rather than having
+to remember exactly which combination of `fst`{.Agda} and `snd`{.Agda} is needed
+to reach the thing we want.
+
+```
+×-assoc-toI : {A B C : Type} → (A × (B × C)) → ((A × B) × C)
+×-assoc-toI (a , (b , c)) = (a , b) , c
+
+×-assoc-froI : {A B C : Type} → ((A × B) × C) → (A × (B × C))
+-- Exercise:
+×-assoc-froI = {!!}
+
+×-commI : {A B C : Type} → (A × B) → (B × A)
+-- Exercise:
+×-commI = {!!}
+```
+
 With pair types we can make precise the currying and uncurrying idea
 from earlier, going from a function with a single pair argument to a
 function that returns a function, and vice versa.
@@ -337,20 +361,20 @@ uncurry× : {A B C : Type}
 uncurry× f p = f (fst p) (snd p)
 ```
 Remember that `((A × B) → C) → (A → (B → C))` is the same as `((A × B)
-→ C) → A → B → C`, and so in the definition of `curry×`, we can accept
+→ C) → A → B → C`, and so in the definition of `curry×`{.Agda}, we can accept
 three arguments `f : ((A × B) → C)`, `x : A` and `y : B`, and produce
 a `C` on the right-hand side.
 
 There is nothing special about functions of two arguments here, try
 writing similar functions for a function of three arguments. Agda can
-help us a lot here. For `curry3`, we know that the right-hand side is
-going to be `f` applied to some argument. Place `f` in the hole, and
-type `C-c C-r` to "refine" the hole: Agda will accept `f` and create a
-new hole for the argument. Agda also knows that the argument to `f`
-will have to be a pair, and so hitting `C-c C-r` again will split the
-argument into the pair of two new holes. Similarly, for `uncurry3`,
-writing `f` and refining will give three new holes, one for each
-argument that `f` expects.
+help us a lot here. For `curry3`{.Agda}, we know that the right-hand
+side is going to be `f` applied to some argument. Place `f` in the
+hole, and type `C-c C-r` to "refine" the hole: Agda will accept `f`
+and create a new hole for the argument. Agda also knows that the
+argument to `f` will have to be a pair, and so hitting `C-c C-r` again
+will split the argument into the pair of two new holes. Similarly, for
+`uncurry3`{.Agda}, writing `f` and refining will give three new holes, one
+for each argument that `f` expects.
 
 ```
 curry3 : {A B C D : Type}
@@ -366,7 +390,8 @@ uncurry3 : {A B C D : Type}
 uncurry3 f t = {!!}
 ```
 
-## Dependent types and dependent functions
+
+## Dependent Types and Dependent Functions
 
 We can think of a function `f : A → B` as an element `f x : B` that
 depends on an element `x : A` for its definition. What sets Agda (and
@@ -374,22 +399,24 @@ other "dependently typed" languages) apart from ordinary functional
 programming is that we can have types that depend on elements for
 their definition.
 
-As a slightly mathematical example, suppose $n : ℕ$ is a number and
-consider the set ${m : ℕ ∣ ∃ i. m = n · i}$ of numbers which are
-multiples of than $n$. Before too long we will be able to define this
-as an Agda type `MultiplesOf n`. Notice that the elements that
-`MultiplesOf n` has will *depend* on the value of `n` that we choose:
-different choices will yield genuinely different sets of numbers, and
-generally speaking an element of `MultiplesOf n₁` will not also be an
-element of `MultiplesOf n₂` for some other `n₂`. In other words, we are
-describing a function from natural numbers to types, i.e. a function
-`ℕ → Type`.
+As a slightly mathematical example, suppose $n ∈ ℕ$ is a number and
+consider the set $\{m : ℕ ∣ ∃ i. m = n · i\}$ of numbers which are
+multiples of than $n$. We can define this as an Agda type
+`MultiplesOf`{.Agda}. (Don't worry about the actual definition for
+now.)
+
 ```
-ourFamily : ℕ → Type
-ourFamily = λ n → MultiplesOf n
+MultiplesOf : ℕ → Type
+MultiplesOf n = Σ[ m ∈ ℕ ] Σ[ i ∈ ℕ ] m ≡ i · n
 ```
-A function with shape `A → Type` is often called a "type family over
-`A`".
+
+Notice that the elements that the type `MultiplesOf n`{.Agda} has will *depend*
+on the value of `n` that we choose: different choices will yield
+genuinely different sets of numbers, and generally speaking an element
+of `MultiplesOf n₁` will not also be an element of `MultiplesOf n₂`
+for some other `n₂`. In other words, we are describing a function from
+natural numbers to types, i.e. a function `ℕ → Type`. A function of
+this shape (`A → Type`) is often called a "type family over `A`".
 
 Dependent types let us make our functions more powerful. For ordinary
 functions `A → B`, the output type of the function is always an
@@ -398,14 +425,17 @@ family `B : A → Type`, Agda allows us to form the type of *dependent*
 functions `(x : A) → B x` which send an element `x : A` to an element
 `f x : B x`.
 
-As a first example, we can refine our `double` function a little.
-Sure, the result is always an element of `ℕ`, but it is also always a
-multiple of the input:
+As a first example, we can refine our `double`{.Agda} function a
+little. Sure, the result is always an element of `ℕ`{.Agda}, but it is
+also always a multiple of the input:
+
 ```
 doubleDep : (n : ℕ) → MultiplesOf n
-doubleDep n = double n , 2 , refl
+doubleDep n = double n , 2 , (λ i → 2 · n)
 ```
-(Don't worry about the actual definition for now.)
+
+(Again, don't worry about the actual definition for now.)
+
 ```
 tenAsMultiple : MultiplesOf 5
 tenAsMultiple = doubleDep 5
@@ -413,6 +443,7 @@ tenAsMultiple = doubleDep 5
 
 Non-dependent functions are a special case of dependent functions,
 where the type family that we use is constantly the same type.
+
 ```
 ConstantlyℕFamily : ℕ → Type
 ConstantlyℕFamily n = ℕ -- `n` is ignored
@@ -422,20 +453,23 @@ doubleNonDep = double
 ```
 
 Most of the functions in this file have actully been dependent
-function types already! In `idE : (A : Type) → A → A`, the type `A → A`
+function types already! In `idfunE : (A : Type) → A → A`, the type `A → A`
 depends on `A : Type`, so this is a dependent function using the
 type family
+
 ```
 idfun-family : Type → Type
 idfun-family A = A → A
 ```
-That is, when we provide `idE` with some type `A`, the resulting
+
+That is, when we provide `idfunE`{.Agda} with some type `A`, the resulting
 function we get back is the identity function for that specific type
-`A`. Notice that `idfun-family` is a type family over `Type`: nothing
-stops us from having `Type` on both sides of the function.
+`A`. Notice that `idfun-family`{.Agda} is a type family over `Type`{.Agda}: nothing
+stops us from having `Type`{.Agda} on both sides of the function.
 
 Here is function composition, where the two functions involved are
 allowed to be dependent.
+
 ```
 depCompose :
       {A : Type}
@@ -448,13 +482,14 @@ depCompose :
 depCompose g f = λ x → g (f x)
 ```
 
-The type of `depCompose` is a little gnarly, but you should see
-that the actual definition of the function is exactly the same as before.
-You should try working through what the type of the intermediate pieces is:
-* `x` has type `A`
-* `f x` has type `B x`
-* `g (f x)` has type `C x (f x)
-mvrnote: more details here
+The type of `depCompose`{.Agda} is a little gnarly, but you should see
+that the actual definition of the function is exactly the same as
+before. You should work through the type of each of the intermediate
+pieces in `λ x → g (f x)`:
+
+* `x` has type `A`, so
+* `f x` has type `B x`, so
+* `g (f x)` has type `C x (f x)`
 
 ## Dependent Pairs
 
@@ -486,14 +521,14 @@ my-sndΣ : {A : Type} → {B : A → Type}
 my-sndΣ p = snd p
 ```
 
-The type of `snd` is a little complicated! When we form `snd p`, the
+The type of `snd`{.Agda} is a little complicated! When we form `snd p`, the
 type of the result depends on the thing that is in the first
 component. That is, the type of `snd p` is the value of the input type
 family `B : A → Type` when evaluated at `fst p`. To express that in
-the type of `my-sndΣ`, we have to use a dependent function so that `B
+the type of `my-sndΣ`{.Agda}, we have to use a dependent function so that `B
 (fst p)` can refer to the pair `p`.
 
-`curry` and `uncurry` can be generalised to work with dependent pairs
+`curry×`{.Agda} and `uncurry×`{.Agda} can be generalised to work with dependent pairs
 and functions.
 
 ```
@@ -523,16 +558,17 @@ functions `C → A` and `C → B`.
 
 We will have a lot to say about universal properties in this course.
 
+
 ## Universe Levels
 
-We might ask what the type of `Type` itself is. One option is to just
+We might ask what the type of `Type`{.Agda} itself is. One option is to just
 say `Type : Type`, this is what Haskell does. This works fine for
 practical programming but leads to logical contradictions thanks to
 some "Russell-style" paradoxes. (Search up "Girard's paradox" if you
 are curious!)
 
 For this reason, Agda allows us to specify "universe levels", usually
-written `ℓ`, that stratify types into a heirarchy. `Type` on its own
+written `ℓ`, that stratify types into a heirarchy. `Type`{.Agda} on its own
 is secretly `Type₀` the type of all types at level zero. But `Type₀`
 itself does not live at level zero, but one step up: `Type₀ : Type₁`.
 Similarly, `Type₁ : Type₂`, and so on. In general, the universe `Type
@@ -540,32 +576,60 @@ Similarly, `Type₁ : Type₂`, and so on. In general, the universe `Type
 is a built in function that increments a level by one.
 
 When we prove general facts about functions, we might want to apply
-them in situations where the type `Type` is involved, or maybe with
+them in situations where the type `Type`{.Agda} is involved, or maybe with
 things in higher universe levels still. This is accomplished by having
 them accept types of any universe level. So as an example, for the
 final time, here is a definition of the identity function on any type,
 living in any universe.
+
 ```
 idfun : {ℓ : Level} (A : Type ℓ) → A → A
 idfun A x = x
 ```
-`Level` is the magic, built-in collection of universe levels and can't
-be mixed together with actual types. For each `ℓ : Level`, there is a
-corresponding universe of that level `Type ℓ`.
 
-All the type constructors we have seen, such as `_×_`, are functions
-that take types to types and are written to work with type at any
-universe level. If you type `C-c C-d` and enter `_×_`, you should see
-that it has type
+`Level`{.Agda} is the magic, built-in collection of universe levels and can't
+be mixed together with actual types. For each `ℓ : Level`, there is a
+corresponding universe of that level called `Type ℓ`.
+
+Similarly, we can upgrade some of the functions we have defined into
+their final, most general versions.
+
+```
+const : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → A → B → A
+const a b = a
+
+apply : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((x : A) → B x) → (x : A) → B x
+apply f a = f a
+
+flip : {ℓ₁ ℓ₂ ℓ₃ : Level}
+       {A : Type ℓ₁}
+       {B : Type ℓ₂}
+       {C : A → B → Type ℓ₃}
+     → ((x : A) (y : B) → C x y)
+     → ((y : B) (x : A) → C x y)
+flip f y x = f x y
+```
+
+All the built-in type constructors we have seen, like `×`{.Agda}, are
+functions that take types as arguments and produce types as output,
+and are written to work with types at any universe level. If you type
+`C-c C-d` and enter `_×_`, you should see that it has type
+
 ```
 _ : {ℓ ℓ' : Level} → Type ℓ → Type ℓ' → Type (ℓ-max ℓ ℓ')
 _ = _×_
 ```
-In this case, `_×_` accepts types in any universe, and gives back a
-type in the largest of those two universes.
+
+In this case, `×`{.Agda} accepts types in any universe and gives back
+a type in the largest of those two universes. Above we make a
+"definition" with name `_`; this signals to Agda to check the type of
+what we provide, but then throw away the result. We will use this to
+demonstrate the type of some expression without having to invent a new
+name for it.
 
 Here is our very final definition of function composition, where all
 the types involved might live in different universes.
+
 ```
 _∘_ : {ℓ ℓ' ℓ'' : Level}
       {A : Type ℓ}
@@ -577,9 +641,17 @@ _∘_ : {ℓ ℓ' ℓ'' : Level}
     → (a : A) → C a (f a)
 g ∘ f = λ x → g (f x)
 ```
+
 Agda considers definitions with underscores specially, and lets us
-refer to such a definition in to ways: either the normal way, that is,
-`_∘_ g f`, or with the arguments replacing the underscores: `g ∘ f`.
-We will use infix operators like this whenever it is closer to normal
-mathematical practice, like this composition operator or arithmetical
-operators `+`, `·`, etc.
+refer to such a definition in two ways: either the normal way, that
+is, `_∘_ g f`, or with the arguments replacing the underscores: `g ∘
+f`. We will use infix operators like this whenever it is closer to
+normal mathematical practice, like this composition operator or
+arithmetical operators `+`{.Agda}, `·`{.Agda}, etc.
+
+This final line specifies that the `_∘_`{.Agda} operator associates to
+the right, so that `h ∘ g ∘ f` means `h ∘ (g ∘ f)`.
+
+```
+infixr 9 _∘_
+```

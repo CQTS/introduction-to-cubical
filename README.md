@@ -14,7 +14,7 @@ Below we provide some different options for installing Agda, depending
 on what system you are on.
 
 Watch out for the available version if you are installing Agda via a
-package manager. We are using Agda version 2.6.3, the homework
+package manager. We are using Agda version 2.6.4.1, the homework
 exercise files may not work with earlier versions.
 
 #### Via Homebrew on Mac

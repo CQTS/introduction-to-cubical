@@ -1,6 +1,11 @@
-module homework.Library.Prelude where
+```
+module Library.Prelude where
+```
 
-open import homework.Library.Primitive public
+# Prelude
+
+```
+open import Library.Primitive public
   renaming (primINeg to ~_;
             primIMax to _∨_;
             primIMin to _∧_;
@@ -31,7 +36,11 @@ fill A {φ = φ} u u0 i =
        (λ j → \ { (φ = i1) → u (i ∧ j) 1=1
                 ; (i = i0) → outS u0 })
        (outS {φ = φ} u0)
+```
 
+## Sigma Types
+
+```
 record Σ {a b} (A : Type a) (B : A → Type b) : Type (ℓ-max a b) where
   constructor _,_
   field
@@ -54,26 +63,25 @@ syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
 
 _×_ : ∀ {ℓ ℓ'} (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
 A × B = Σ A (λ _ → B)
+```
 
-Path : ∀ {ℓ} (A : Type ℓ) → A → A → Type ℓ
-Path A = PathP (λ i → A)
+## Functions
 
-infix 4 _≡_
+```
+data ℕ : Type where
+  zero : ℕ
+  suc  : ℕ → ℕ
 
-_≡_ : ∀ {ℓ} {A : Type ℓ} → A → A → Type ℓ
-_≡_ {A = A} = Path A
+{-# BUILTIN NATURAL ℕ #-}
 
-{-# BUILTIN PATH _≡_ #-}
+_+_ : ℕ → ℕ → ℕ
+zero    + m = m
+(suc n) + m = suc (n + m)
 
-idfun : {ℓ : Level} (A : Type ℓ) → A → A
-idfun A x = x
+_·_ : ℕ → ℕ → ℕ
+zero · m = zero
+(suc n) · m = m + (n · m)
 
-_∘_ : {ℓ ℓ' ℓ'' : Level}
-      {A : Type ℓ}
-      {B : A → Type ℓ'}
-      {C : (x : A) → B x → Type ℓ''}
-
-      (g : {a : A} → (b : B a) → C a b)
-    → (f : (a : A) → B a)
-    → (a : A) → C a (f a)
-g ∘ f = λ x → g (f x)
+infixl 6 _+_
+infixl 7 _·_
+```
