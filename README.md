@@ -2,11 +2,14 @@
 
 ## Getting Started
 
-Fork this repository to your own account, by pressing the "Fork"
-button in the upper right.
+Clone this repository locally and then open the file
+`lectures/1--Type-Theory/1-1--Types-and-Functions.lagda.md` in your
+editor to get started.
 
 To edit Agda files, you will need to install Agda and an editor that
-supports `agda-mode`: VSCode, Emacs or Atom.
+supports `agda-mode`: currently that is either VSCode or Emacs.
+
+mvrnote: TODO: link to online version once available.
 
 ### Installing Agda
 
@@ -110,8 +113,8 @@ literate Agda files are recognised correctly.
 ## Using `agda-mode`
 
 Test your installation by navigating to the first homework file
-(`1--Type-Theory/1-1--Types-and-Functions.lagda.md`), and loading it
-into Agda as follows:
+(`lectures/1--Type-Theory/1-1--Types-and-Functions.lagda.md`), and
+loading it into Agda as follows:
 
 Regardless of whether you are using Emacs or VSCode, most Agda
 keybindings involve holding down Control or Meta (a.k.a. Alt) and
