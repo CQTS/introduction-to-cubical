@@ -61,10 +61,95 @@ record Iso {ℓ ℓ'} (A : Type ℓ) (B : Type ℓ') : Type (ℓ-max ℓ ℓ') w
 
 mvrnote: discuss records, or make it not a record
 
-In Lecture 1-2, we had a few "bijections" between types, at least, we
+An isomorphism between two types says, in effect, that elements of
+those types are different representations of essentially the same
+data. For example, suppose we define the following type:
+
+```
+data RedOrBlue : Type where
+  red : RedOrBlue
+  blue : RedOrBlue
+```
+
+This is a type with two elements, `red`{.Agda} and `blue`{.Agda}. We
+already have a type with two elements: `Bool`{.Agda} with the elements
+`true`{.Agda} and `false`{.Agda}. Our code really shouldn't depend
+essentially on what we named the two elements of `Bool`{.Agda}; we can
+demonstrate this explicitly by showing that `Bool`{.Agda} is
+isomorphic to `RedOrBlue`{.Agda}.
+
+```
+IsoBoolRedOrBlue : Iso Bool RedOrBlue
+IsoBoolRedOrBlue = iso to fro s r
+  where
+    to : Bool → RedOrBlue
+    to true = red
+    to false = blue
+
+    fro : RedOrBlue → Bool
+    fro red = true
+    fro blue = false
+
+    s : section to fro
+    s red = refl
+    s blue = refl
+
+    r : retract to fro
+    r true = refl
+    r false = refl
+```
+
+Now, this isn't the only way we could have shown that `Bool`{.Agda}
+was isomorphic to `RedOrBlue`{.Agda}; we could also have sent
+`true`{.Agda} to `blue`{.Agda} and `false`{.Agda} to `red`{.Agda}.
+Define this other isomorphism below:
+
+```
+OtherIsoBoolRedOrBlue : Iso Bool RedOrBlue
+OtherIsoBoolRedOrBlue = iso to fro s r
+{-
+  where
+    to : Bool → RedOrBlue
+    to x = ?
+
+    fro : RedOrBlue → Bool
+    fro x = ?
+
+    s : section to fro
+    s x = ?
+
+    r : retract to fro
+    r x = ?
+-}
+  where
+    to : Bool → RedOrBlue
+    to true = blue
+    to false = red
+
+    fro : RedOrBlue → Bool
+    fro red = false
+    fro blue = true
+
+    s : section to fro
+    s red = refl
+    s blue = refl
+
+    r : retract to fro
+    r true = refl
+    r false = refl
+```
+
+Not every function `Bool → RedOrBlue` is an isomorphism. If we sent
+both `true`{.Agda} and `false`{.Agda} to `red`{.Agda}, for example,
+then there is no way we could find an inverse. Any inverse would have
+to send `red`{.Agda} to `true`{.Agda} and to `false`{.Agda}, but these
+aren't equal!
+
+In Lecture 1-2, we had a few "bijections" between types. At least, we
 had maps going each way. Now we can show that these really are
 isomorphisms. Here's an especially easy one, where the paths in the
-section and retract can be `refl`{.Agda} for any argument.
+`section`{.Agda} and `retract`{.Agda} can be also `refl`{.Agda} for
+any argument.
 
 ```
 ×-assoc-Iso : Iso (A × (B × C)) ((A × B) × C)

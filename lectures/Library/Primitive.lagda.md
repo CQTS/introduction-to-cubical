@@ -12,11 +12,11 @@ in `Library.Prelude`. mvrnote: link when those work again
 ## Universes
 
 ```
-{-# BUILTIN PROP           IrrProp      #-}
+{-# BUILTIN PROP           IrrProp   #-}
 {-# BUILTIN TYPE           Type      #-}
 {-# BUILTIN STRICTSET      SSet      #-}
 
-{-# BUILTIN PROPOMEGA      IrrPropω     #-}
+{-# BUILTIN PROPOMEGA      IrrPropω  #-}
 {-# BUILTIN SETOMEGA       Typeω     #-}
 {-# BUILTIN STRICTSETOMEGA SSetω     #-}
 
