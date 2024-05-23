@@ -7,6 +7,7 @@ module 2--Paths-and-Identifications.2-5--Transport where
 <!--
 ```
 open import Library.Prelude
+open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
@@ -88,38 +89,75 @@ transport-refl : ∀ {ℓ} {A : Type ℓ} (x : A)
 transport-refl {A = A} x i = ?
 ```
 
-To go the other way, we need a few functions which convert
-paths-over-paths (i.e. `PathP`{.Agda}s) to paths involving
-`transport`{.Agda}.
+Just using `trans` in different combinations, we have enough to show
+that `transport p` is an isomorphism. mvrnote: there must be a simpler
+way to set this up.
 
-mvrnote: integrate this
 ```
-PathP≡Path : ∀ (B : I → Type ℓ) (b1 : B i0) (b2 : B i1) →
-             PathP B b1 b2 ≡ Path (B i1) (transport (λ i → B i) b1) b2
-PathP≡Path B b1 b2 i =
-  PathP (λ j → B (i ∨ j)) (transport-filler (λ j → B j) b1 i) b2
+transport-fillerExt : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
+                    → PathP (λ i → A → p i) (idfun A) (transport p)
+transport-fillerExt p i x = transport-filler p x i
+
+transport⁻-fillerExt : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
+                     → PathP (λ i → p i → A) (idfun A) (transport (sym p))
+transport⁻-fillerExt p i x = transp (λ j → p (i ∧ ~ j)) (~ i) x
+
+transport-fillerExt⁻ : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
+                    → PathP (λ i → p i → B) (transport p) (idfun B)
+transport-fillerExt⁻ p = symP (transport⁻-fillerExt (sym p))
+
+transport⁻-fillerExt⁻ : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
+                     → PathP (λ i → B → p i) (transport (sym p)) (idfun B)
+transport⁻-fillerExt⁻ p = symP (transport-fillerExt (sym p))
+
+transport⁻Transport : ∀ {ℓ} {A B : Type ℓ} → (p : A ≡ B) → (a : A) →
+                          transport (sym p) (transport p a) ≡ a
+transport⁻Transport p a j = transport⁻-fillerExt p (~ j) (transport-fillerExt p (~ j) a)
+
+transportTransport⁻ : ∀ {ℓ} {A B : Type ℓ} → (p : A ≡ B) → (b : B) →
+                        transport p (transport (sym p) b) ≡ b
+transportTransport⁻ p b j = transport-fillerExt⁻ p j (transport⁻-fillerExt⁻ p j b)
+
+pathToIso : ∀ {ℓ} {A B : Type ℓ} → A ≡ B → Iso A B
+pathToIso p = iso fun inv rightInv leftInv
+  where
+    fun = transport p
+    inv = transport (sym p)
+    rightInv = transportTransport⁻ p
+    leftInv = transport⁻Transport p
 ```
 
-Now, returning to converting between `PathP`{.Agda} and paths involving
-`transport`{.Agda}.  For the first conversion, `toPathP`, we need to do an
-`hcomp`{.Agda} where the base is actually itself a `PathP`{.Agda}.
-```
-module _ {B : I → Type ℓ} {b1 : B i0} {b2 : B i1} where
-  toPathP : transport (λ j → B j) b1 ≡ b2 → PathP B b1 b2
-  {-
+There is a second way that `PathP`{.Agda} and `transport`{.Agda}
+relate. Recall that an element of `PathP A a0 a1` connects two
+elements `a0 : A i0` and `a1 : A i1` of the types at either end of a
+line of types `A : I → Type`. Instead of travelling along the line
+`A`, we could first transport the endpoint `a0` over to the type `A
+i1`, and then ask for a path entirely inside `A i1`. That is, we can
+always convert a `PathP` into an ordinary `Path` involving a
+transport, and vice versa.
 
-       b1 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ >  b2
-        ^                    ^
-     b1 |                    | p                    ^
-        |                    |                    j |
-       b1 — — — > transport (λ j → B j) b1          ∙ — >
-                                                      i
-                B i
-      B i0 — — — — — — — > B i1
-  -}
-  toPathP p i = hcomp (λ j → λ { (i = i0) → b1
-                               ; (i = i1) → p j })
-                      (transport-filler (λ j → B j) b1 i)
+mvrnote: this would benefit from a nice picture
+
+For the first conversion, `toPathP`, we need to do an `hcomp`{.Agda}
+where the base is actually itself a `PathP`{.Agda}.
+
+      a1 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ > a2
+       ^                    ^
+    a1 |                    | p                    ^
+       |                    |                    j |
+      a1 — — — > transport (λ j → A j) a1          ∙ — >
+                                                     i
+                A i
+     A i0 — — — — — — — - > A i1
+
+```
+toPathP : {A : I → Type ℓ} {a1 : A i0} {a2 : A i1}
+  → Path (A i1) (transport (λ j → A j) a1) a2
+  → PathP A a1 a2
+toPathP {ℓ} {A} {a1} {a2} p i
+  = hcomp (λ j → λ { (i = i0) → a1
+                   ; (i = i1) → p j })
+          (transport-filler (λ j → A j) a1 i)
 ```
 
 To go back the other way, we will use `transp`{.Agda} again but this
@@ -128,63 +166,29 @@ transport (λ i → B i) b1` and when `i = i1` we want `fromPathP p i1` =
 b2`. So we will ask for `transp`{.Agda} to be constant when `i = i1`.
 
 ```
-  fromPathP : PathP B b1 b2 → transport (λ i → B i) b1 ≡ b2
-  fromPathP p i = transp (λ j → B (i ∨ j)) i (p i)
+fromPathP : {A : I → Type ℓ} {a1 : A i0} {a2 : A i1}
+  → PathP A a1 a2
+  → Path (A i1) (transport (λ j → A j) a1) a2
+fromPathP {ℓ} {A} p i = transp (λ j → A (i ∨ j)) i (p i)
 ```
 
-With these functions in hand, we can turn a family of propositions
-into a predicate.
-
-Recall from Lecture 2-5 the functions `toPathP`{.Agda} and
-`fromPathP`{.Agda}:
-
-These are an isomorphism. We've seen a path between the two types
-before, in `PathP≡Path`{.Agda}. This is enough to produce an
-isomorphism between the two types using `transport`{.Agda}. But
-already have two maps `toPathP`{.Agda} and `fromPathP`{.Agda} between
-these types, and we want those *specific* maps to be part of an
-isomorphism. Verifying that they are inverse takes a lot more work,
-unfortunately.
-
-mvrnote: integrate
+These two maps are inverses. Unfortunately, this is a real pain to
+show, involving some really gnarly `hcomp`s. So, we will cheat, and
+produce an isomorphism an entirely different way.
 
 ```
-transport⁻ : ∀ {ℓ} {A B : Type ℓ} → A ≡ B → B → A
-transport⁻ p = transport (λ i → p (~ i))
-
-transport-fillerExt : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                    → PathP (λ i → A → p i) (λ x → x) (transport p)
-transport-fillerExt p i x = transport-filler p x i
-
-transport⁻-fillerExt : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                     → PathP (λ i → p i → A) (λ x → x) (transport⁻ p)
-transport⁻-fillerExt p i x = transp (λ j → p (i ∧ ~ j)) (~ i) x
-
-transport-fillerExt⁻ : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                    → PathP (λ i → p i → B) (transport p) (λ x → x)
-transport-fillerExt⁻ p = symP (transport⁻-fillerExt (sym p))
-
-transport⁻-fillerExt⁻ : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                     → PathP (λ i → B → p i) (transport⁻ p) (λ x → x)
-transport⁻-fillerExt⁻ p = symP (transport-fillerExt (sym p))
-
-transport⁻Transport : ∀ {ℓ} {A B : Type ℓ} → (p : A ≡ B) → (a : A) →
-                          transport⁻ p (transport p a) ≡ a
-transport⁻Transport p a j = transport⁻-fillerExt p (~ j) (transport-fillerExt p (~ j) a)
-
-transportTransport⁻ : ∀ {ℓ} {A B : Type ℓ} → (p : A ≡ B) → (b : B) →
-                        transport p (transport⁻ p b) ≡ b
-transportTransport⁻ p b j = transport-fillerExt⁻ p j (transport⁻-fillerExt⁻ p j b)
-
-pathToIso : ∀ {ℓ} {A B : Type ℓ} → A ≡ B → Iso A B
-Iso.fun (pathToIso x) = transport x
-Iso.inv (pathToIso x) = transport⁻ x
-Iso.rightInv (pathToIso x) = transportTransport⁻ x
-Iso.leftInv (pathToIso x) = transport⁻Transport x
+PathP≡Path : ∀ (A : I → Type ℓ) (a1 : A i0) (a2 : A i1) →
+             PathP A a1 a2 ≡ Path (A i1) (transport (λ i → A i) a1) a2
+PathP≡Path A a1 a2 i =
+  PathP (λ j → A (i ∨ j)) (transport-filler (λ j → A j) a1 i) a2
 
 PathP-iso-Path : ∀ (A : I → Type ℓ) (x : A i0) (y : A i1) → Iso (PathP A x y) (transport (λ i → A i) x ≡ y)
 PathP-iso-Path A x y = pathToIso (PathP≡Path A x y)
 ```
+
+This gives an isomorphism, but the forward and backward maps are not
+the nice `toPathP`{.Agda} and `fromPathP`{.Agda} maps that we defined
+above. For our purposes, this simpler isomorphism is good enough.
 
 ## Transport Computes
 

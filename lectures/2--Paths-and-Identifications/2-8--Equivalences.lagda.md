@@ -121,6 +121,8 @@ mvrnote: The following could have direct proofs, check 1lab?
 -- invEquiv : A ≃ B → B ≃ A
 ```
 
+mvrnote: Exercise from the HoTT book: Exercise 2.13. Show that (2 ≃ 2) ≃ 2.
+
 ## Equivalence vs. Isomorphism
 
 From any equivalence, we can extract an isomorphism.
@@ -150,12 +152,12 @@ for now.
 <!--
 ```
 module _ (i : Iso A B) where
-  open Iso i renaming ( fun to f
-                      ; inv to g
-                      ; rightInv to s
-                      ; leftInv to t)
-
   private
+    f = isoFun i
+    g = isoInv i
+    s = isoRightInv i
+    t = isoLeftInv i
+
     module _ (y : B) (x0 x1 : A) (p0 : y ≡ f x0) (p1 : y ≡ f x1) where
       fill0 : I → I → A
       fill0 i = hfill (λ k → λ { (i = i1) → t x0 k
@@ -202,7 +204,7 @@ module _ (i : Iso A B) where
 
 ```
 isoToEquiv : Iso A B → A ≃ B
-fst (isoToEquiv f) = Iso.fun f
+fst (isoToEquiv f) = isoFun f
 snd (isoToEquiv f) = isoToIsEquiv f
 ```
 
@@ -228,13 +230,13 @@ mvrnote: this is `isPropIsEquiv`{.Agda}
 
 ## Equivalent types have the same properties
 
-mvrnote:
+mvrnote: direct proofs?
 ```
-isContrAcrossEquiv : A ≃ B → isContr B → isContr A
-isContrAcrossEquiv f pB = isContrAcrossIso (equivToIso f) pB
+isContrEquiv : A ≃ B → isContr B → isContr A
+isContrEquiv f pB = isContrIso (equivToIso f) pB
 
-isPropAcrossEquiv : A ≃ B → isProp B → isProp A
-isPropAcrossEquiv f pB = isPropAcrossIso (equivToIso f) pB
+isPropEquiv : A ≃ B → isProp B → isProp A
+isPropEquiv f pB = isPropIso (equivToIso f) pB
 ```
 
 ## Every type family is the fibers of its projection
@@ -363,3 +365,4 @@ becomes us the identity equivalence on `A`.
 pathToEquivRefl : {A : Type ℓ} → pathToEquiv refl ≡ idEquiv A
 pathToEquivRefl {A = A} = equivEq (λ i x → transp (λ _ → A) i x)
 ```
+

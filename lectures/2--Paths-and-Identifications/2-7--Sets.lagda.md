@@ -52,10 +52,18 @@ all of it in Lectures 2-2 and 2-5.
 
 ```
 isSetBool : isSet Bool
-isSetBool x y = isPropAcrossIso (≡Iso≡Bool x y) (isProp-≡Bool x y)
+isSetBool x y = isPropIso (≡Iso≡Bool x y) (isProp-≡Bool x y)
 
 isSetℕ : isSet ℕ
-isSetℕ x y = isPropAcrossIso (≡Iso≡ℕ x y) (isProp-≡ℕ x y)
+isSetℕ x y = isPropIso (≡Iso≡ℕ x y) (isProp-≡ℕ x y)
+
+isProp-≡⊎ : {A B : Type} → isSet A → isSet B → (a b : A ⊎ B) → isProp (a ≡⊎ b)
+-- Exercise:
+isProp-≡⊎ sA sB a b = ?
+
+isSet⊎ : {A B : Type} → isSet A → isSet B → isSet (A ⊎ B)
+-- Exercise:
+isSet⊎ pA pB = ?
 ```
 
 We can show a number of closure properties of sets, similar to those
@@ -116,6 +124,9 @@ isSetRetract :
   → isSet B → isSet A
 -- Exercise:
 isSetRetract f g h setB = ?
+
+isSetIso : Iso A B → isSet B → isSet A
+isSetIso f pB = isSetRetract (isoFun f) (isoInv f) (isoLeftInv f) pB
 ```
 
 In the rest of this section we will prove that `Σ[ a ∈ A ] B a` is a
@@ -140,16 +151,16 @@ always an isomorphisms, then `Σ-map (idfun A) g` is an isomorphism.
 Σ-cong-iso-snd {A = A} {B = B} {B' = B'} isom = iso fun inv rightInv leftInv
   where
     fun : (Σ[ a ∈ A ] B a) → (Σ[ a ∈ A ] B' a)
-    fun (x , y) = x , Iso.fun (isom x) y
+    fun (x , y) = x , isoFun (isom x) y
 
     inv : (Σ[ a ∈ A ] B' a) → (Σ[ a ∈ A ] B a)
-    inv (x , y') = x , Iso.inv (isom x) y'
+    inv (x , y') = x , isoInv (isom x) y'
 
     rightInv : section fun inv
-    rightInv (x , y) = ΣPathP→PathPΣ (refl , Iso.rightInv (isom x) y)
+    rightInv (x , y) = ΣPathP→PathPΣ (refl , isoRightInv (isom x) y)
 
     leftInv : retract fun inv
-    leftInv (x , y') = ΣPathP→PathPΣ (refl , Iso.leftInv (isom x) y')
+    leftInv (x , y') = ΣPathP→PathPΣ (refl , isoLeftInv (isom x) y')
 ```
 
 mvrnote: fix prose
@@ -174,7 +185,7 @@ is a set for any `a : A`.
 ```
 isSetΣ : {B : A → Type ℓ'} → isSet A → ((a : A) → isSet (B a))
        → isSet (Σ[ a ∈ A ] B a)
-isSetΣ {A = A} {B = B} setA setB a b = isPropAcrossIso (invIso (Σ-path-iso a b)) isProp-ΣPathTransport
+isSetΣ {A = A} {B = B} setA setB a b = isPropIso (invIso (Σ-path-iso a b)) isProp-ΣPathTransport
   where
     isProp-ΣPathTransport : isProp (Σ[ p ∈ (fst a ≡ fst b) ] transport (λ i → B (p i)) (snd a) ≡ snd b)
     isProp-ΣPathTransport = isPropΣ (setA (fst a) (fst b))

@@ -26,10 +26,11 @@ private
 ```
 
 In Lecture 1-3, we saw that we could define types representing
-equality in inductively defined types like `Bool`{.Agda} and `ℕ`{.Agda}. However, it
-would be tedious to have to define equality separately for every type
-(and worse, to check that every function preserves equality), and it
-would make proving general facts about equality difficult.
+equality in inductively defined types like `Bool`{.Agda} and
+`ℕ`{.Agda}. However, it would be tedious to have to define equality
+separately for every type (and worse, to check that every function
+preserves equality), and it would make proving general facts about
+equality difficult.
 
 To resolve this issue, Cubical Agda takes a page from homotopy theory
 --- the mathematical theory of continuous deformations of
@@ -240,11 +241,6 @@ Inductive data types (like `Bool`{.Agda}) will be covered in detail in
 Lecture 2-3. Let's begin with something easier: what is a path in a
 pair type? It's a pair of paths of the components!
 
-<!--
-mvrnote: can't link 2-2, pandoc is unhappy about [Lecture 2-2]
-[Lecture 2-2]: test.html
--->
-
 To prove these, remember that a path is secretly a function `I → A`,
 so ignoring the endpoints, the first is asking for a function
 `(I → A) × (I → B) → (I → A × B)`. It should be easy to come up with
@@ -305,15 +301,23 @@ functions `p : (i : I) → A i`; we call these paths over the path `A`.
 The name for this in Agda is `PathP`, for Path (over) P(ath).
 
 ```
-_ : (A : I → Type) (a : A i0) (b : A i1) → Type
+_ : (A : I → Type) (x : A i0) (y : A i1) → Type
 _ = PathP
 ```
 
 As with paths, where `p : x ≡ y` is a function `I → A` with `p i0 = x`
 by and `p i1 = y` by definition, if we have `p : PathP A a b`, then `p
 i0 = a` and `p i1 = b` by definition. In fact, the type `Path A x y`
-is defined to be `PathP (λ _ → A) x y` --- a `PathP` where the path of
-types happens to be constant at the type `A`.
+is defined in terms of `PathP`, where the path of types happens to be
+constant at the type `A`. This is just like how non-dependent
+functions `A → B` are exactly dependent functions `(x : A) → B` where
+`B` happens to be a constant type and not depend on `x`.
+
+```
+myPath : (A : Type) (x : A) (y : A) → Type
+-- Exercise: (easy)
+myPath A x y = ?
+```
 
 We can now clear up a lingering question from the previous section. We
 calculated what paths in pair and function types should be, but only
@@ -454,14 +458,21 @@ Here's the picture again, for you to inspect:
        a00 — — — > a10         ∙ — >
              a-0                 i
 
-mvrnote: prose for SquareP
+Elements of the `Square A` type are squares exist in a constant type
+`A`. But just as we can upgrade `Path` to `PathP` where the type `A`
+can vary over the path, we can upgrade `Square` to `SquareP` where the
+type can vary over the square.
+
 ```
 SquareP :
   (A : I → I → Type ℓ)
-  {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} (a₀₋ : PathP (λ j → A i0 j) a₀₀ a₀₁)
-  {a₁₀ : A i1 i0} {a₁₁ : A i1 i1} (a₁₋ : PathP (λ j → A i1 j) a₁₀ a₁₁)
-  (a₋₀ : PathP (λ i → A i i0) a₀₀ a₁₀) (a₋₁ : PathP (λ i → A i i1) a₀₁ a₁₁)
+  {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
+  (a₀₋ : PathP (λ j → A i0 j) a₀₀ a₀₁)
+  (a₁₋ : PathP (λ j → A i1 j) a₁₀ a₁₁)
+  (a₋₀ : PathP (λ i → A i i0) a₀₀ a₁₀)
+  (a₋₁ : PathP (λ i → A i i1) a₀₁ a₁₁)
   → Type ℓ
 SquareP A a₀₋ a₁₋ a₋₀ a₋₁ = PathP (λ i → PathP (λ j → A i j) (a₋₀ i) (a₋₁ i)) a₀₋ a₁₋
 ```
 
+mvrnote: exercises?

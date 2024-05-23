@@ -50,7 +50,7 @@ isInjective→isEmbedding
   : isSet B → (f : A → B) → isInjective f
   → isEmbedding f
 isInjective→isEmbedding bset f inj x (f*x , p) (f*x' , q) =
-  Iso.fun (Σ≡PropIso (∀isProp→isPred (λ a → bset x (f a))) (f*x , p) (f*x' , q)) (inj (sym p ∙ q))
+  isoFun (Σ≡PropIso (∀isProp→isPred (λ a → bset x (f a))) (f*x , p) (f*x' , q)) (inj (sym p ∙ q))
 
 isEquiv→isEmbedding : isEquiv f → isEmbedding f
 isEquiv→isEmbedding e x = isContr→isProp (e x)

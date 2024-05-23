@@ -43,7 +43,7 @@ no way to prove that `false` is true. Let's give a special name to the
 element `tt : isTrue true` to help us remember.
 
 ```
-trueIsTrue : isTrue true
+trueIsTrue : IsTrue true
 trueIsTrue = tt
 ```
 
@@ -52,7 +52,7 @@ exists only conditionally, with the condition being some Boolean `φ`.
 
 ```
 BooleanPartial : Bool → Type → Type
-BooleanPartial φ A = isTrue φ → A
+BooleanPartial φ A = IsTrue φ → A
 ```
 
 Any actual element of `A` is also a partially defined one: if it
@@ -765,30 +765,13 @@ lUnit {x = x} p i j = hcomp (lUnit-faces p i j) (lUnit-base p i j)
 
 ## Isos Revisited
 
-mvrnote: section
-
-The identity function is always an isomorphism, with itself as its own
-inverse.
-
-```
-idfun-Iso : (A : Type ℓ) → Iso A A
-idfun-Iso A = iso (idfun A) (idfun A) (λ x → refl) (λ x → refl)
-```
-
-Given any isomorphism, we can flip it around by switching the function
-for the inverse. We call this inverting the isomorphism.
-
-```
-invIso : Iso A B → Iso B A
-invIso f = iso (Iso.inv f) (Iso.fun f) (Iso.leftInv f) (Iso.rightInv f)
-```
+As promised earlier, we can finally prove that isomorphisms compose.
 
 ```
 compIso : Iso A B → Iso B C → Iso A C
-Iso.fun (compIso {A = A} {C = C} i j) = Iso.fun j ∘ Iso.fun i
-Iso.inv (compIso {A = A} {C = C} i j) = Iso.inv i ∘ Iso.inv j
-Iso.rightInv (compIso {A = A} {C = C} i j) b =
-  cong (Iso.fun j) (Iso.rightInv i (Iso.inv j b)) ∙ Iso.rightInv j b
-Iso.leftInv (compIso {A = A} {C = C} i j) a =
-  cong (Iso.inv i) (Iso.leftInv j (Iso.fun i a)) ∙ Iso.leftInv i a
+compIso i j = iso fun inv rightInv leftInv
+  where fun = isoFun j ∘ isoFun i
+        inv = isoInv i ∘ isoInv j
+        rightInv = λ b → cong (isoFun j) (isoRightInv i (isoInv j b)) ∙ isoRightInv j b
+        leftInv  = λ a → cong (isoInv i) (isoLeftInv j  (isoFun i a)) ∙ isoLeftInv i a
 ```

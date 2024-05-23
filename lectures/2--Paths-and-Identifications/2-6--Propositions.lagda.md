@@ -74,7 +74,7 @@ are the same by virtue of the paths between them.
 Homotopically speaking, this means that the type `A` *contracts onto
 `x`*. So, if we have an element of `∃! A` we say that `A` is
 *contractible*. This terminology is more common in homotopy type
-theory, so we record it here as well.p
+theory, so we record it here as well.
 
 ```
 isContr : Type ℓ → Type ℓ
@@ -149,7 +149,7 @@ Iso⊤IsContr : {A : Type ℓ} → Iso A ⊤ → isContr A
 Iso⊤IsContr iso = {!!}
 ```
 
-There is a unique map from `∅`{.Agda} to any type.
+mvrnote: Move to extras? There is a unique map from `∅`{.Agda} to any type.
 
 ```
 ∅-rec-unique : {A : Type ℓ} → isContr (∅ → A)
@@ -300,28 +300,9 @@ isProp-≤ℕ (suc n) zero = isProp∅
 isProp-≤ℕ (suc n) (suc m) = isProp-≤ℕ n m
 ```
 
-On the other hand, if a type has at most one element and also has an
-element, then that element is unique. In other words, if a proposition
-has a proof then it is contractible.
-
-```
-Prop-with-point-isContr : isProp A → A → isContr A
--- Exercise:
-Prop-with-point-isContr p a = {!!}
-```
-
-We can go the other way too. In words: if whenever `A` has an element, it has a
-unique element, then it has at most one element.
-
-```
-isContr-prop-with-point : (A → isContr A) → isProp A
--- Exercise:
-isContr-prop-with-point c x y = ?
-```
-
-Of course, the point having a definition like `isProp`{.Agda} is that
-not all types are propositions. Use `true≢false`{.Agda} to show that
-`Bool`{.Agda} is not a proposition.
+Of course, the point of having a definition like `isProp`{.Agda} is
+that not all types are propositions. Use `true≢false`{.Agda} to show
+that `Bool`{.Agda} is not a proposition.
 
 ```
 ¬isPropBool : ¬ isProp Bool
@@ -329,23 +310,24 @@ not all types are propositions. Use `true≢false`{.Agda} to show that
 ¬isPropBool pBool = ?
 ```
 
-mvrnote: this also shows that coproducts of propositons are not
-propositions, because we already established `Iso Bool (⊤ ⊎ ⊤)`.
+mvrnote: and do similarly for `ℕ`?
 
-mvrnote: from 1lab:
+If two propositions imply each other, then they are in fact
+isomorphic. This is known as "proposition extensionality". mvrnote:
+prose, this is an argument for prop being a good notion? the
+particular evidence isn't important.
+
 ```
-isPropDisjoint⊎ : isProp A → isProp B → ¬ (A × B) → isProp (A ⊎ B)
+propExt : isProp A → isProp B
+        → (A → B) → (B → A)
+        → Iso A B
 -- Exercise:
-isPropDisjoint⊎ pA pB disjoint x y = ?
+propExt pA pB f g = {!!}
 ```
 
-mvrnote: prose. other direction is annoying to state without something like isIso
+mvrnote: We could in fact show that `A iffP B` is isomorphic to `Iso A B`.
 
-```
-isProp→IsoDiag : isProp A → Iso A (A × A)
--- Exercise:
-isProp→IsoDiag pA = ?
-```
+## Being a Proposition is a Proposition
 
 The fact of being contractible is a proposition. That is, `isContr A`
 is a proposition for any type `A`: the proposition that `A` has a
@@ -429,7 +411,7 @@ isPropIsProp isProp1 isProp2 i a b
 ```
 
 mvrnote: prose, one more fact which is used later. does it follow from
-something we have?
+something we already have? Where should this go?
 ```
 isProp→PathP : ∀ {B : I → Type ℓ} → ((i : I) → isProp (B i))
                → (b0 : B i0) (b1 : B i1)
@@ -473,22 +455,6 @@ isContr→ : isContr B → isContr (A → B)
 isContr→ (cB , hB) = ?
 ```
 
-If two propositions imply each other, then they are in fact
-isomorphic. This fact is known as "proposition extensionality".
-
-```
-propExt : isProp A → isProp B
-        → (A → B) → (B → A)
-        → Iso A B
--- Exercise:
-Iso.fun (propExt isPropA isPropB f g) = f
-Iso.inv (propExt isPropA isPropB f g) = g
-Iso.rightInv (propExt isPropA isPropB f g) b = isPropB (f (g b)) b
-Iso.leftInv (propExt isPropA isPropB f g) a = isPropA (g (f a)) a
-```
-
-We could in fact show that `A iffP B` is isomorphic to `Iso A B`.
-
 As a special case of implication, we find that type negation `¬ A` is
 always a proposition even when `A` itself isn't, since we defined `¬ A
 = A → ∅`.
@@ -522,9 +488,25 @@ isContr×-conv : isContr (A × B) → isContr A × isContr B
 isContr×-conv cAB = ?
 ```
 
-If `A` is a retract of `B`, then in some
-sense `A` is a continuous shrinking of `B`. And so if `B` is a
-contractible then `A` must be too:
+By contrast, disjoint unions of contractible types are not
+contractible, and similarly for propositions. We have seen an example
+of this: we just showed in `¬isPropBool`{.Agda} that `Bool`{.Agda} is
+not a proposition, and we previous established in
+`Bool-⊤⊎⊤-Iso`{.Agda} that `Bool`{.Agda} is equivalent to the disjoint
+union `⊤ ⊎ ⊤`.
+
+If we happen to know that two propositions are mutually exclusive,
+then their disjoint union is still a proposition.
+
+```
+isPropExclusive⊎ : isProp A → isProp B → ¬ (A × B) → isProp (A ⊎ B)
+-- Exercise:
+isPropExclusive⊎ pA pB disjoint x y = ?
+```
+
+If `A` is a retract of `B`, then in some sense `A` is a continuous
+shrinking of `B`. And so if `B` is a contractible then `A` must be
+too:
 
 ```
 isPropRetract :
@@ -533,9 +515,14 @@ isPropRetract :
   → isProp B → isProp A
 -- Exercise:
 isPropRetract f g h isPropB x y i =
+```
 
-isPropAcrossIso : Iso A B → isProp B → isProp A
-isPropAcrossIso f pB = isPropRetract (Iso.fun f) (Iso.inv f) (Iso.leftInv f) pB
+In particular, any type equivalent to a proposition is also a
+propositon.
+
+```
+isPropIso : Iso A B → isProp B → isProp A
+isPropIso f pB = isPropRetract (isoFun f) (isoInv f) (isoLeftInv f) pB
 ```
 
 And the same is true for contractible types:
@@ -553,8 +540,8 @@ snd (isContrRetract f g h (center , contr)) x =
   g (f x)  ≡⟨ h x ⟩
   x ∎
 
-isContrAcrossIso : Iso A B → isContr B → isContr A
-isContrAcrossIso f pB = isContrRetract (Iso.fun f) (Iso.inv f) (Iso.leftInv f) pB
+isContrIso : Iso A B → isContr B → isContr A
+isContrIso f pB = isContrRetract (isoFun f) (isoInv f) (isoLeftInv f) pB
 ```
 
 Contrary to contractibility, a product of types being a proposition
@@ -562,9 +549,36 @@ does not imply that the two components are.
 
 ```
 ¬isProp×-conv : ¬ (∀ (A B : Type) → isProp (A × B) → isProp A × isProp B)
--- Exercise:
+-- Exercise: (Hint: ∅)
 ¬isProp×-conv = ?
 ```
+
+mvrnote: prose. the other direction is annoying to state without something like isIso
+```
+isProp→IsoDiag : isProp A → Iso A (A × A)
+-- Exercise:
+isProp→IsoDiag pA = ?
+```
+
+If a type has at most one element and also has an element, then that
+element is unique. In other words, if a proposition has a proof then
+it is contractible.
+
+```
+Prop-with-point-isContr : Iso (isProp A) (A → isContr A)
+-- Exercise: (use propExt)
+Prop-with-point-isContr = ?
+
+    fro : (A → isContr A) → isProp A
+    fro c x y =
+          x         ≡⟨ sym (snd (c x) x) ⟩
+          fst (c x) ≡⟨ (snd (c x) y) ⟩
+          y         ∎
+```
+
+HoTT book:
+Exercise 3.4. Show that A is a mere proposition if and only if A → A is contractible.
+Exercise 3.9. Show that if LEM holds, then the type Prop :≡ ∑(A:U) isProp(A) is equivalent to 2.
 
 ## Subtypes and Predicates
 
@@ -651,6 +665,12 @@ underlying data, ignoring all the axioms.
 
     fro-to : retract to (cong fst)
     fro-to e i j = e j
+```
+
+mvrnote: work this in?
+```
+Prop : ∀ ℓ → Type (ℓ-suc ℓ)
+Prop ℓ = Σ[ X ∈ Type ℓ ] isProp X
 ```
 
 ## Propositional Truncation
@@ -801,7 +821,7 @@ Challenges:
 
 ## Decidable Types
 
-mvrnote: move to an extras file? I don't think we use this in the circle proof
+mvrnote: move to an extras file? I don't think we use this in the S^1 proof
 
 mvrnote: add prose on classical logic
 

@@ -182,7 +182,7 @@ If you ever forget how to write a symbol, there are ways to look it
 up. In Emacs, place your cursor over the symbol and type `M-x
 describe-char`. A window will pop up with details about the symbol:
 the line beginning with `to input:` is what you want. In VSCode, use
-the command `C-x C-=`. A textbox will appear that you can paste the
+the command `C-x C-=`. A text box will appear that you can paste the
 character into. Test it out on the symbol here: `⊗`.
 
 The functions we have written so far are all specialised to work with
@@ -290,14 +290,15 @@ express that fact in theory and have Agda verify that it is correct!
 The other basic type forming operation we have is the type of pairs.
 The pair of the elements `a : A` and `b : B` is written `(a , b)`,
 which is an element of the type `A × B`. The space before the comma is
-necessary, or Agda thinks you are referring to a variable called "`a,`".
+essential, without it Agda thinks you are referring to a variable
+called `a,` (which almost certainly doesn't exist).
 
 ```
 pair× : {A : Type} → {B : Type} → A → B → (A × B)
 pair× a b = (a , b)
 ```
 
-To use a pair, we can "project out" the first and second components
+To use a pair, we can "project" the first and second components
 using the in-built functions `fst`{.Agda} and `snd`{.Agda}.
 
 ```
@@ -337,7 +338,7 @@ to reach the thing we want.
 ×-assoc-toI (a , (b , c)) = (a , b) , c
 
 ×-assoc-froI : {A B C : Type} → ((A × B) × C) → (A × (B × C))
--- Exercise:
+-- Exercise: (Remember to put a space before the comma in a pair!)
 ×-assoc-froI = {!!}
 
 ×-commI : {A B C : Type} → (A × B) → (B × A)
@@ -452,7 +453,7 @@ doubleNonDep : (n : ℕ) → ConstantlyℕFamily n
 doubleNonDep = double
 ```
 
-Most of the functions in this file have actully been dependent
+Most of the functions in this file have actually been dependent
 function types already! In `idfunE : (A : Type) → A → A`, the type `A → A`
 depends on `A : Type`, so this is a dependent function using the
 type family
@@ -568,7 +569,7 @@ some "Russell-style" paradoxes. (Search up "Girard's paradox" if you
 are curious!)
 
 For this reason, Agda allows us to specify "universe levels", usually
-written `ℓ`, that stratify types into a heirarchy. `Type`{.Agda} on its own
+written `ℓ`, that stratify types into a hierarchy. `Type`{.Agda} on its own
 is secretly `Type₀` the type of all types at level zero. But `Type₀`
 itself does not live at level zero, but one step up: `Type₀ : Type₁`.
 Similarly, `Type₁ : Type₂`, and so on. In general, the universe `Type

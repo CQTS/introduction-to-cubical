@@ -26,7 +26,7 @@ open import 2--Paths-and-Identifications.2-9--Univalence
 So far, we have seen a heirarchy of types of increasing complexity:
 contractible types followed by propositions and then sets. But not all
 types are sets. In particular, via univalence, it is easy to check
-that `Type`{.Agda} is not a set.
+that `Type`{.Agda} itself is not a set.
 
 ```
 not-Path : Bool ≡ Bool
@@ -38,15 +38,26 @@ not-Path = ua (isoToEquiv not-Iso)
         bad-Path = s Bool Bool refl not-Path
 ```
 
-As an aside, the type of propositions is a set, however:
+As an aside, univalence allows us to prove that the type of
+propositions is a set.
 
 ```
-Prop : ∀ ℓ → Type (ℓ-suc ℓ)
-Prop ℓ = Σ[ X ∈ Type ℓ ] isProp X
+-- mvrnote: Bit annoying
+-- isContrEquivOfContr : isContr P → isContr Q → isContr (P ≃ Q)
+-- isContrEquivOfContr pP pQ = {!!}
 
--- mvrnote: todo
--- isSetProp : ∀ {ℓ} → isSet (Prop ℓ)
--- isSetProp (X , pX) (Y , pY) p q = {!!}
+-- mvrnote: turn parts of this into exercise
+isPropEquivOfProp : ∀ {ℓ} → (X Y : Prop ℓ) → isProp (fst X ≃ fst Y)
+isPropEquivOfProp (X , pX) (Y , pY) e f = equivEq (isProp→ pY _ _)
+
+isPropProp≡ : ∀ {ℓ} → (X Y : Prop ℓ) → isProp (fst X ≡ fst Y)
+isPropProp≡ (X , pX) (Y , pY) = isPropIso univalenceIso (isPropEquivOfProp (X , pX) (Y , pY))
+
+isSetProp : ∀ {ℓ} → isSet (Prop ℓ)
+isSetProp (X , pX) (Y , pY)
+  = isPropIso
+      (invIso (Σ≡PropIso (∀isProp→isPred λ _ → isPropIsProp) (X , pX) (Y , pY)))
+      (isPropProp≡ (X , pX) (Y , pY))
 ```
 
 ## The Circle
@@ -129,6 +140,7 @@ refl≢loop = {!!}
           |           |        j |
          pt  — — — > pt          ∙ — >
              line1                 i
+
 ```
 data Torus : Type where
   point : Torus
@@ -183,17 +195,23 @@ The simplest example is when we feed `Susp`{.Agda} the empty type
 `∅`{.Agda}.
 
 ```
-Susp∅≅Interval : Iso (Susp ∅) Bool
+Susp∅≅Bool : Iso (Susp ∅) Bool
 -- Exercise (trivial):
 -- Susp∅≅Interval = {!!}
-Iso.fun Susp∅≅Interval north = true
-Iso.fun Susp∅≅Interval south = false
-Iso.inv Susp∅≅Interval true = north
-Iso.inv Susp∅≅Interval false = south
-Iso.rightInv Susp∅≅Interval true = refl
-Iso.rightInv Susp∅≅Interval false = refl
-Iso.leftInv Susp∅≅Interval north = refl
-Iso.leftInv Susp∅≅Interval south = refl
+Susp∅≅Bool = iso fun inv rightInv leftInv
+  where
+    fun : Susp ∅ → Bool
+    fun north = true
+    fun south = false
+    inv : Bool → Susp ∅
+    inv true = north
+    inv false = south
+    rightInv : section fun inv
+    rightInv true = refl
+    rightInv false = refl
+    leftInv : retract fun inv
+    leftInv north = refl
+    leftInv south = refl
 ```
 
 Next simplest is the unit type `⊤`{.Agda} the reuslt looks like the
@@ -206,20 +224,26 @@ data Interval : Type where
   seg  : zero ≡ one
 
 Susp⊤≅Interval : Iso (Susp ⊤) Interval
--- Exercise (trivial):
+-- Exercise (also trivial):
 -- Susp⊤≅Interval = {!!}
-Iso.fun Susp⊤≅Interval north = zero
-Iso.fun Susp⊤≅Interval south = one
-Iso.fun Susp⊤≅Interval (merid tt i) = seg i
-Iso.inv Susp⊤≅Interval zero = north
-Iso.inv Susp⊤≅Interval one = south
-Iso.inv Susp⊤≅Interval (seg i) = merid tt i
-Iso.rightInv Susp⊤≅Interval zero = refl
-Iso.rightInv Susp⊤≅Interval one = refl
-Iso.rightInv Susp⊤≅Interval (seg i) = refl
-Iso.leftInv Susp⊤≅Interval north = refl
-Iso.leftInv Susp⊤≅Interval south = refl
-Iso.leftInv Susp⊤≅Interval (merid tt i) = refl
+Susp⊤≅Interval = iso fun inv rightInv leftInv
+  where
+    fun : Susp ⊤ → Interval
+    fun north = zero
+    fun south = one
+    fun (merid tt i) = seg i
+    inv : Interval → Susp ⊤
+    inv zero = north
+    inv one = south
+    inv (seg i) = merid tt i
+    rightInv : section fun inv
+    rightInv zero = refl
+    rightInv one = refl
+    rightInv (seg i) = refl
+    leftInv : retract fun inv
+    leftInv north = refl
+    leftInv south = refl
+    leftInv (merid tt i) = refl
 ```
 
 This `Interval`{.Agda} is an ordinary type, in contrast to the
@@ -328,7 +352,7 @@ The `(i = i0)` face is more slightly more interesting, here it is written flat:
 
 For this we can combine `loopⁿ` with `sucℤ-Iso`{.Agda} in the first argument.
 ```
-S¹-decode-faces i y j k (i = i0) = loopⁿ (Iso.leftInv sucℤ-Iso y k) j
+S¹-decode-faces i y j k (i = i0) = loopⁿ (isoLeftInv sucℤ-Iso y k) j
 ```
 
 All that remains is to construct the base square, and for this we have
@@ -430,16 +454,13 @@ S¹-encodeDecode (negsuc (suc n)) = cong predℤ (S¹-encodeDecode (negsuc n))
 And we're done!
 ```
 ΩS¹Isoℤ : Iso (base ≡ base) ℤ
-Iso.fun ΩS¹Isoℤ      = S¹-encode base
-Iso.inv ΩS¹Isoℤ      = S¹-decode base
-Iso.rightInv ΩS¹Isoℤ = S¹-encodeDecode
-Iso.leftInv ΩS¹Isoℤ  = S¹-decodeEncode
+ΩS¹Isoℤ = iso (S¹-encode base) (S¹-decode base) S¹-encodeDecode S¹-decodeEncode
 ```
 
 mvrnote: yet another way of implementing `+ℤ`{.Agda}
 ```
 _+ℤ''_ : ℤ → ℤ → ℤ
-x +ℤ'' y = Iso.fun ΩS¹Isoℤ (λ i → (Iso.inv ΩS¹Isoℤ x i) ·S¹ (Iso.inv ΩS¹Isoℤ y i))
+x +ℤ'' y = isoFun ΩS¹Isoℤ (λ i → (isoInv ΩS¹Isoℤ x i) ·S¹ (isoInv ΩS¹Isoℤ y i))
 ```
 
 
@@ -488,4 +509,42 @@ mvrnote: exercises
 -- Iso.inv S¹-auto = {!!}
 -- Iso.rightInv S¹-auto = {!!}
 -- Iso.leftInv S¹-auto = {!!}
+```
+
+HoTT book: Exercise 8.4.
+
+```
+data S∞ : Type where
+  snorth : S∞
+  ssouth : S∞
+  smerid : S∞ → snorth ≡ ssouth
+
+S∞SelfSusp : Iso S∞ (Susp S∞)
+S∞SelfSusp = iso to fro sec ret
+  where
+    to : S∞ → Susp S∞
+    to snorth = north
+    to ssouth = south
+    to (smerid s i) = merid s i
+    fro : Susp S∞ → S∞
+    fro north = snorth
+    fro south = ssouth
+    fro (merid a i) = smerid a i
+    sec : section to fro
+    sec north = refl
+    sec south = refl
+    sec (merid a i) = refl
+    ret : retract to fro
+    ret snorth = refl
+    ret ssouth = refl
+    ret (smerid a i) = refl
+
+isContrS∞ : isContr S∞
+fst isContrS∞ = snorth
+snd isContrS∞ = go
+  where go : (y : S∞) → snorth ≡ y
+        go snorth = refl ∙ refl
+        go ssouth = smerid snorth ∙ refl
+        go (smerid s i) = connection∧ (smerid snorth) i ∙ cong (λ t → smerid t i) (go s)
+
 ```

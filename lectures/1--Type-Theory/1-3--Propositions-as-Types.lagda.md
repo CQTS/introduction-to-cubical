@@ -64,23 +64,23 @@ The idea of "propositions as types" is that a proposition is a
 an element of that type. We can turn the Booleans into types like so:
 
 ```
-trueP : Type
-trueP = ⊤
+TrueP : Type
+TrueP = ⊤
 
-falseP : Type
-falseP = ∅
+FalseP : Type
+FalseP = ∅
 
-isTrue : Bool → Type₀
-isTrue true  = trueP
-isTrue false = falseP
+IsTrue : Bool → Type
+IsTrue true  = TrueP
+IsTrue false = FalseP
 ```
 
-So `isTrue`{.Agda} sends `true`{.Agda} to the type `⊤`{.Agda}, which
+So `IsTrue`{.Agda} sends `true`{.Agda} to the type `⊤`{.Agda}, which
 has an element `tt`{.Agda}; under the interpretation that proofs of
 propositions are the elements of the types representing those
-propositions, this means we can prove that `isTrue true` holds. On the
+propositions, this means we can prove that `IsTrue true` holds. On the
 other hand, `false`{.Agda} gets sent to `∅`{.Agda}, which has no
-elements by definition. Therefore, we can't prove that `isTrue false`
+elements by definition. Therefore, we can't prove that `IsTrue false`
 holds --- at least, not without assuming some contradictory
 hypotheses.
 
@@ -88,7 +88,7 @@ An amazing feature of the propositions-as-types idea is that the
 operations on types we have seen in the last two lectures become
 operations on propositions.
 
-In ordinarly logic, to prove `P and Q` we need to prove `P` and to
+In ordinary logic, to prove `P and Q` we need to prove `P` and to
 prove `Q`. That is, a proof of `P and Q` consists of a pair of proofs,
 one for `P` and one for `Q`. We can turn this directly into a
 definition.
@@ -98,7 +98,7 @@ _andP_ : {ℓ ℓ' : Level} → Type ℓ → Type ℓ' → Type _
 P andP Q = P × Q
 ```
 
-Now consdier implication. Implication means that, assuming you have a
+Now consider implication. Implication means that, assuming you have a
 proof of `P`, you can get a proof of `Q`. This is exactly what
 functions do, so we can also turn this into a definition:
 
@@ -119,14 +119,14 @@ P iffP Q = (P impliesP Q) andP (Q impliesP P)
 We can prove that these definitions correspond correctly with the
 operations on Booleans. Prove the following by case splitting. On the
 left of the `iffP`{.Agda}, we use the ordinary operation on Booleans, and on
-the right, we use the corresponding operation on propostions-as-types.
+the right, we use the corresponding operation on propositions-as-types.
 
 ```
-and→Type : (a b : Bool) → (isTrue (a and b)) iffP ((isTrue a) andP (isTrue b))
+and→Type : (a b : Bool) → (IsTrue (a and b)) iffP ((IsTrue a) andP (IsTrue b))
 -- Exercise:
 and→Type a b = {!!}
 
-⇒→Type : (a b : Bool) → (isTrue (a ⇒ b)) iffP ((isTrue a) impliesP (isTrue b))
+⇒→Type : (a b : Bool) → (IsTrue (a ⇒ b)) iffP ((IsTrue a) impliesP (IsTrue b))
 -- Exercise:
 ⇒→Type a b = {!!}
 ```
@@ -137,12 +137,12 @@ Negation can be seen as a special case of implication: "not P" is the same as "P
 infix 3 ¬_  -- This is just to make ¬ go on the outside of most formulas
 
 ¬_ : {ℓ : Level} → Type ℓ → Type ℓ
-¬_ P = P impliesP falseP  -- P → ⊥
+¬_ P = P impliesP FalseP  -- P → ⊥
 ```
 
 We had better make sure this means what we think it does.
 ```
-not→Type : (a : Bool) → (isTrue (not a)) iffP (¬ isTrue a)
+not→Type : (a : Bool) → (IsTrue (not a)) iffP (¬ IsTrue a)
 -- Exercise:
 not→Type a = ?
 ```
@@ -232,22 +232,22 @@ continues with `or`{.Agda}, but runs into a subtle hiccup. First,
 define maps both ways.
 
 ```
-or→Type-fro : (a b : Bool) → ((isTrue a) ⊎ (isTrue b)) → isTrue (a or b)
+or→Type-fro : (a b : Bool) → ((IsTrue a) ⊎ (IsTrue b)) → IsTrue (a or b)
 -- Exercise:
 or→Type-fro a b p = {!!}
 
-or→Type-to : (a b : Bool) → isTrue (a or b) → ((isTrue a) ⊎ (isTrue b))
+or→Type-to : (a b : Bool) → IsTrue (a or b) → ((IsTrue a) ⊎ (IsTrue b))
 -- Exercise:
 or→Type-to a b p = {!!}
 ```
 
-What this shows is that `isTrue (a or b)` and `(isTrue a) ⊎ (isTrue b)`
+What this shows is that `IsTrue (a or b)` and `(IsTrue a) ⊎ (IsTrue b)`
 are logically equivalent, that is, one `iffP`{.Agda} the other. But:
 Define the map backwards again, but make the opposite choice in
 the case `or→Type-to' true true`.
 
 ```
-or→Type-to' : (a b : Bool) → isTrue (a or b) → ((isTrue a) ⊎ (isTrue b))
+or→Type-to' : (a b : Bool) → IsTrue (a or b) → ((IsTrue a) ⊎ (IsTrue b))
 -- Exercise:
 or→Type-to' a b p = {!!}
 ```
@@ -259,7 +259,7 @@ are noticing with `or`{.Agda} above is that the disjoint union of two
 propositions can be a non-trivial data type. We actually saw this
 earlier, when we proved that `Bool`{.Agda} is bijective with `⊤ ⊎ ⊤`.
 
-In this case, having an element of `(isTrue a) ⊎ (isTrue b)`, is
+In this case, having an element of `(IsTrue a) ⊎ (IsTrue b)`, is
 *more* information than just knowing that `a` or `b` is true. If it
 happens to be the case that both `a` and `b` are true, the element
 still makes a choice between the two sides.
@@ -320,40 +320,10 @@ Bool-ind : {ℓ : Level} {C : Bool → Type ℓ}
 Bool-ind ctrue cfalse x = {!!}
 ```
 
-Here's a basic example. We can think of a dependent function type as a
-generalised cartesian product. In a function with type `(x : A) → C
-x`, the `x : A` acts like an index, so for each index `x` we have an
-element of the corresponding `C x`. This is especially clear when we
-pick domain is `Bool`{.Agda}. When `A` is `Bool`{.Agda}, the domain
-has exactly the two elements `true`{.Agda} and `false`{.Agda}, so
-`(x : Bool) → C x` is the binary cartesian product of `C true` and `C
-false`. Going the other way, we can easily extract the elements of `C
-true` and `C false` from such a function.
-
-The fact that the two types come from the same type family `C` makes
-it feel like they have to be somehow related, but we can construct a
-type family out of any two types `A` and `B` at all, via another use
-of `Bool-ind`{.Agda}.
-
-```
-Bool×-family : {ℓ : Level} (A B : Type ℓ) → Bool → Type ℓ
-Bool×-family A B = Bool-ind A B
-
-Bool×-to : {ℓ : Level} {A B : Type ℓ}
-  → ((x : Bool) → Bool×-family A B x) → A × B
--- Exercise:
-Bool×-to f = {!!}
-
-Bool×-fro : {ℓ : Level} {A B : Type ℓ}
-  → A × B → ((x : Bool) → Bool×-family A B x)
--- Exercise:
-Bool×-fro f = {!!}
-```
-
 The induction principle for `A ⊎ B` is upgraded in a similar way. In
 the recursion principle, the inputs were maps `A → C` and `B → C`. If
 `C` is now a type dependent on `A ⊎ B`, these maps have to land in `C
-x`, where `x : A ⊎ B`. Luckly, there are obvious candidates for `x` in
+x`, where `x : A ⊎ B`. Luckily, there are obvious candidates for `x` in
 both cases: take the `inl` or `inr` of the input `a : A` or `b : B`
 respectively.
 
@@ -366,12 +336,13 @@ respectively.
 ⊎-ind cinl cinr x = {!!}
 ```
 
-`ℕ`{.Agda} is a little trickier. It is best to think of ordinary mathematical
-induction, and consider `C` to be some property of the natural numbers
-we are trying to check. Then the two inputs make sense: we first have
-the base case of type `C zero`, claiming that the property `C` holds for
-`zero`{.Agda}. Then we have the inductive step for `suc`{.Agda}: saying that, for any `n : ℕ`,
-if we can prove `C` holds for `n` then it also holds for `suc n`.
+`ℕ`{.Agda} is a little trickier. It is best to think of ordinary
+mathematical induction, and consider `C` to be some property of the
+natural numbers we are trying to check. Then the two inputs make
+sense: we first have the base case of type `C zero`, claiming that the
+property `C` holds for `zero`{.Agda}. Then we have the inductive step
+for `suc`{.Agda}: saying that, for any `n : ℕ`, if we can prove `C`
+holds for `n` then it also holds for `suc n`.
 
 If we can provide both of those things, then we get a function from
 `(n : ℕ) → C n`, meaning that `C` holds for every `n`.
@@ -391,13 +362,13 @@ pattern-matching features of Agda directly.
 
 ```
 isEvenP : ℕ → Type
-isEvenP n = isTrue (isEven n)
+isEvenP n = IsTrue (isEven n)
 
 isOddP : ℕ → Type
-isOddP n = isTrue (isOdd n)
+isOddP n = IsTrue (isOdd n)
 
 isZeroP : ℕ → Type
-isZeroP n = isTrue (isZero n)
+isZeroP n = IsTrue (isZero n)
 
 ```
 
@@ -478,7 +449,8 @@ relation on Booleans.
 ```
 
 We can also show that all of our logical operations preserve the
-relation of equality, as expected.
+relation of equality, as expected. These can be proven purely by
+splitting into all the possible cases.
 
 ```
 not-equals : (a b : Bool)
@@ -505,8 +477,10 @@ n ≡ℕ m = ?
 Try writing out this definition in plain language to check your
 understanding.
 
-We can prove that equality of natural numbers is a reflexive,
-symmetric, and transitive relation.
+Similarly to `≡Bool`, We can prove that equality of natural numbers is
+a reflexive, symmetric, and transitive relation. The difference in the
+proofs is that, because `ℕ`{.Agda} is a recursive datatype, our proofs
+will need to be recursive too.
 
 ```
 ≡ℕ-refl : (n : ℕ) → n ≡ℕ n
@@ -539,13 +513,34 @@ equality.
 +-≡ℕ n1 n2 m1 m2 p q = {!!}
 ```
 
+Finally, show that addition is unital, associative and commutative.
+(These are all very easy by induction.)
+
+```
+≡ℕ-unitl : (n : ℕ) → n ≡ℕ (zero +ℕ n)
+-- Exercise:
+≡ℕ-unitl n = {!!}
+
+≡ℕ-unitr : (n : ℕ) → n ≡ℕ (n +ℕ zero)
+-- Exercise:
+≡ℕ-unitr n = {!!}
+
+≡ℕ-assoc : (n m k : ℕ) → (n +ℕ (m +ℕ k)) ≡ℕ ((n +ℕ m) +ℕ k)
+-- Exercise:
+≡ℕ-assoc n m k = {!!}
+
+≡ℕ-comm : (n m : ℕ) → (n +ℕ m) ≡ℕ (n +ℕ m)
+-- Exercise:
+≡ℕ-comm n m = {!!}
+```
+
 It would be quite tedious if we had to define the specific notion of
 equality we wanted for every type we had. It's also not clear exactly
 how we could do it. For example, to say that elements in the disjoint
 union `A ⊎ B` are equal, we would want to say that if `a = a'` then
 `inl a = inl a'` and if `b = b'` then `inr b = inr b'` and that it is
 never the case that `inl a = inr b` or vice versa (since the union is
-disjoint). But without knowning specifically what the types `A` and
+disjoint). But without knowing specifically what the types `A` and
 `B` are, we wouldn't know what equality meant for them.
 
 Remarkably, it is possible to give a uniform notion of "equality" for
@@ -555,12 +550,13 @@ will not always be a proposition --- paths will often be interesting
 pieces of data in their own right.
 
 Before we go on, let's see one more inductively defined proposition:
-the ordering of natural numbers:
+the ordering of natural numbers: mvrnote: does this get used? did we
+put this in for Fin eventually?
 
 ```
 _≤ℕ_ : (n m : ℕ) → Type
-zero ≤ℕ m = trueP
-suc n ≤ℕ zero = falseP
+zero ≤ℕ m = TrueP
+suc n ≤ℕ zero = FalseP
 suc n ≤ℕ suc m = n ≤ℕ m
 
 -- data _≤ℕ_ : (n m : ℕ) → Type₀ where

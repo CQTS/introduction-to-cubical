@@ -76,9 +76,9 @@ false or y = {!!}
 
 Here is the definition of logical implication. There is a strange
 feature of this definition which has a fancy Latin name: "ex falso
-quodlibet" --- false implies anything. Over the course of this and the
-next lecture, we'll see why this is a useful principle to take, even
-if it seems unintuitive.
+quodlibet" --- `false`{.Agda} implies anything. Over the course of
+this and the next lecture, we'll see why this is a useful principle to
+take, even if it seems unintuitive.
 
 ```
 _⇒_ : Bool → Bool → Bool
@@ -90,7 +90,7 @@ false ⇒ _    = true
 ```
 
 In general, inductive data types are characterized by their induction
-principles. In this lecture we will start focussing on a simpler
+principles. In this lecture we will start focusing on a simpler
 incarnation, "recursion", and will return to induction in the next
 lecture.
 
@@ -126,6 +126,24 @@ to tell Agda where the function arguments go. Writing the
 application `if b then a1 else a2` is the same as
 `if_then_else_ b a1 a2`.
 
+We usually won't need to use the recursion principle `Bool-rec`{.Agda}
+and other recursion principles by name: instead, we can just do a
+pattern match on an argument of `Bool`{.Agda} ourselves like we did
+above for the Boolean operations `not`{.Agda} and `or`{.Agda}, and so
+on. But, for some practice, use `Bool-rec`{.Adga} to re-implement
+these:
+
+```
+not-fromRec : Bool → Bool
+-- Exercise:
+not-fromRec x = {!!}
+
+-- You will need to use `Bool-rec` at least twice!
+or-fromRec : Bool → Bool → Bool
+-- Exercise:
+or-fromRec x y = {!!}
+```
+
 ## Unit
 
 `Bool`{.Agda} is a pretty simple data type, but it isn't the simplest. We can
@@ -146,7 +164,8 @@ function `⊤ → A`, it suffices to give an element `a : A` (which is to
 be the image of the single element `tt`{.Agda}).
 
 There is a sense in which `⊤`{.Agda} contains no information, so that
-pairing it with another type gives back that type again.
+pairing it with another type gives back that type again. We might read
+this as "one times `A` is always `A`".
 
 ```
 ⊤×-to : {ℓ : Level} (A : Type ℓ) → ⊤ × A → A
@@ -158,19 +177,24 @@ pairing it with another type gives back that type again.
 ⊤×-fro A a = {!!}
 ```
 
-We can go even further, however. We can define a data type `∅` with no
-constructors. This is called the "empty type":
+## Empty
+
+We can go even further. We can define a data type `∅`{.Agda} with no
+constructors at all. This is called the "empty type":
 
 ```
-data ∅ : Type₀ where
+data ∅ : Type where
+-- Nothing!
 ```
 
 The recursion principle of the empty type is a version of the "ex
 falso quodlibet" principle of logic: with no assumptions, we may
 define a map `∅ → A`. The definition of this map is also by pattern
 matching, except in this case there are no constructions and so no
-patterns to match with. Agda has special syntax for this situation:
-`()`, the empty pattern.
+patterns to match with. We cannot just write no definition at all, so
+Agda has special syntax for this situation: `()`, the "absurd"
+pattern, because to have an actual element of `∅`{.Agda} to match on
+here would be absurd.
 
 ```
 ∅-rec : {ℓ : Level} {A : Type ℓ}
@@ -179,9 +203,25 @@ patterns to match with. Agda has special syntax for this situation:
 ```
 
 Whenever we are provided an argument of type `∅`{.Agda}, we can use
-this empty pattern to avoid having to write anything at all. On
-occasion, we will use instead use some inputs to produce an element of
-`∅`{.Agda}: in that case, we will have to use `∅-rec`{.Agda} by hand.
+this empty pattern to avoid writing anything at all. On occasion, we
+will have to do some constructions to produce an element of `∅`{.Agda}
+rather than having it handed to us: in those cases we will have to use
+`∅-rec`{.Agda} by hand.
+
+As an aside, we can show that "zero times `A` is always zero",
+interpreting "times" and "zero" as type constructors.
+
+```
+∅×-to : {ℓ : Level} (A : Type ℓ) → ∅ × A → ∅
+-- Exercise:
+∅×-to A x = {!!}
+
+∅×-fro : {ℓ : Level} (A : Type ℓ) → ∅ → ∅ × A
+-- Exercise:
+∅×-fro A a = {!!}
+```
+
+## The Natural Numbers
 
 Enough with the simple data types, let's start to do some
 mathematics. We can define the natural numbers with a recursive data
@@ -191,24 +231,27 @@ is already a natural number, then `suc n` (the "successor" of `n`, i.e.
 `n + 1`) is a natural number.
 
 We actually already defined `ℕ`{.Agda} behind the scenes, so that we
-could use it in the previous lecture. Its definition is written:
+could use it in the previous lecture. Its definition is:
 
 ```
--- data ℕ : Type₀ where
+-- data ℕ : Type where
 --   zero : ℕ
 --   suc  : ℕ → ℕ
 ```
+
+(But we leave it commented out, so that Agda doesn't complain about
+defining a new type with the same name as an existing one.)
 
 The recursion principle for the natural numbers is the usual
 definition of a function by recursion:
 
 ```
 ℕ-rec : {ℓ : Level} {A : Type ℓ}
-      → (a₀ : A)                 -- The base case
+      → (a : A)                 -- The base case
       → (recurse : ℕ → A → A)    -- The recursion law
       → (ℕ → A)
-ℕ-rec a₀ recurse zero = a₀
-ℕ-rec a₀ recurse (suc n) = recurse n (ℕ-rec a₀ recurse n)
+ℕ-rec a recurse zero = a
+ℕ-rec a recurse (suc n) = recurse n (ℕ-rec a recurse n)
 ```
 
 Using pattern matching, we can define the arithmetic operations on
@@ -217,24 +260,50 @@ numbers:
 ```
 _+ℕ_ : ℕ → ℕ → ℕ
 zero    +ℕ m = m
-(suc n) +ℕ m = suc (n + m)
-
-_·ℕ_ : ℕ → ℕ → ℕ
--- Exercise:
-n ·ℕ m = {!!}
+(suc n) +ℕ m = suc (n +ℕ m)
 ```
 
 Here we have chosen to case-split on the first argument, but we could
 instead case-split on the second:
 
 ```
-_+s_ : ℕ → ℕ → ℕ
-n +s zero = n
-n +s (suc m) = suc (n + m)
+_+ℕs_ : ℕ → ℕ → ℕ
+n +ℕs zero = n
+n +ℕs (suc m) = suc (n +ℕ m)
 ```
 
 We will be able to show that these two versions are equal as
-functions, but Agda doesn't consider them exactly the same.
+functions, but Agda doesn't consider them *exactly* the same.
+
+Try some other ordinary operations:
+
+```
+-- Multiplication
+_·ℕ_ : ℕ → ℕ → ℕ
+-- Exercise:
+n ·ℕ m = {!!}
+
+-- Exponentiation
+_^ℕ_ : ℕ → ℕ → ℕ
+-- Exercise:
+n ^ℕ m = {!!}
+
+-- If Agda accepts these, your implementations are probably correct!
+_ : 2 ·ℕ 0 ≡ 0
+_ = λ i → 0
+
+_ : 2 ·ℕ 3 ≡ 6
+_ = λ i → 6
+
+_ : 2 ^ℕ 0 ≡ 1
+_ = λ i → 1
+
+_ : 2 ^ℕ 4 ≡ 16
+_ = λ i → 16
+```
+
+Remember that you can test your code by typing "C-c C-n" and then
+`2 ^ℕ 3`, say.
 
 We can also define a "predecessor" operation, which partially undoes
 the successor `suc : ℕ → ℕ`. Of course, it can't fully undo it, since
@@ -253,7 +322,7 @@ but it's worth seeing a smidge of list-fu.
 ```
 data List (A : Type) : Type where
   [] : List A                   -- The empty list, which has nothing in it
-  _∷_  : A → List A → List A    -- Adding a single item to the front of a list
+  _::_  : A → List A → List A   -- Adding a single item to the front of a list
 ```
 
 We use some reasonably common symbols as the names of the two
@@ -264,7 +333,7 @@ by stringing together the `∷`{.Agda} constructor:
 
 ```
 shortList : List ℕ
-shortList = 1 ∷ 2 ∷ 3 ∷ []
+shortList = 1 :: 2 :: 3 :: []
 ```
 
 We can define concatenation of lists by recursion. For example, the
@@ -273,11 +342,11 @@ concatenation `[1, 2, 3] ++ [4, 5, 6]` is `[1, 2, 3, 4, 5, 6]`.
 ```
 _++_ : {A : Type} → List A → List A → List A
 [] ++ L2 = L2                        -- concatenating the empty list to a list doesn't change it.
-(x ∷ L1) ++ L2 = x ∷ (L1 ++ L2)      -- [x, rest] ++ L2 should be [x, rest ++ L2].
+(x :: L1) ++ L2 = x :: (L1 ++ L2)    -- [x, rest] ++ L2 should be [x, rest ++ L2].
 ```
 
 Compare this to the definition of addition on `ℕ`{.Agda}, the structure is
-*exactly* the same (if we write the second case as `_∷_ x L` rather than using the constructor infix).
+*exactly* the same (if we write the second case as `_::_ x L` rather than using the constructor infix).
 
 We can define the length of a list by recursion:
 
@@ -285,6 +354,9 @@ We can define the length of a list by recursion:
 length : {A : Type} → List A → ℕ
 -- Exercise:
 length L = {!!}
+
+_ : length shortList ≡ 3
+_ = λ i → 3
 ```
 
 A natural number can be seen as a list of tally marks.
@@ -293,6 +365,9 @@ A natural number can be seen as a list of tally marks.
 ℕ→List⊤ : ℕ → List ⊤
 -- Exercise:
 ℕ→List⊤ n = {!!}
+
+_ : ℕ→List⊤ 3 ≡ tt :: tt :: tt :: []
+_ = λ i → ℕ→List⊤ 3
 ```
 
 Together with `length : List ⊤ → ℕ`, we have a bijection between the
@@ -380,18 +455,6 @@ The type `∅`{.Agda} acts like zero.
 ∅⊎-fro A a = {!!}
 ```
 
-As an aside, multiplication with zero is always zero.
-
-```
-∅×-to : {ℓ : Level} (A : Type ℓ) → ∅ × A → ∅
--- Exercise:
-∅×-to A x = {!!}
-
-∅×-fro : {ℓ : Level} (A : Type ℓ) → ∅ → ∅ × A
--- Exercise:
-∅×-fro A a = {!!}
-```
-
 ## The Integers
 
 Now we can describe the integers. An integer is either a natural
@@ -399,7 +462,7 @@ number or a *strictly* negative number (so that we don't have two
 copies of 0). We can turn this into an inductive definition:
 
 ```
-data ℤ : Type₀ where
+data ℤ : Type where
   pos    : (n : ℕ) → ℤ
   negsuc : (n : ℕ) → ℤ
 ```
@@ -496,6 +559,6 @@ infix  8 -_
 infixl 7 _·ℕ_ _·ℤ_
 infixl 6 _+ℕ_ _+ℤ_ _-_
 
-infixr 5 _∷_
+infixr 5 _::_
 infixr 5 _++_
 ```

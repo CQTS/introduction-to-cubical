@@ -174,11 +174,24 @@ au-ua : (e : A ≃ B) → au (ua e) ≡ e
 au-ua e = equivEq (funExt (uaβ e))
 
 univalenceIso : Iso (A ≡ B) (A ≃ B)
-univalenceIso .Iso.fun = au
-univalenceIso .Iso.inv = ua
-univalenceIso .Iso.rightInv = au-ua
-univalenceIso .Iso.leftInv = ua-au
+univalenceIso = iso au ua au-ua ua-au
 ```
+
+##
+
+HoTT book:
+Exercise 2.17.
+(i) Show that if A ≃ A
+′ and B ≃ B
+′
+, then (A × B) ≃ (A
+′ × B
+′
+).
+(ii) Give two proofs of this fact, one using univalence and one not using it, and show that the
+two proofs are equal.
+
+## Integers
 
 Here is an interesting application: we can implement addition in
 `ℤ`{.Agda} as composition of paths, and addition with any fixed

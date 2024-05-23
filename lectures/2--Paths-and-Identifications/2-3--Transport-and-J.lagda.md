@@ -164,7 +164,7 @@ One lingering question is what paths are in the inductive types we
 have seen (`⊤`{.Agda}, `∅`{.Agda}, `Bool`{.Agda}, `ℕ`{.Agda} and
 `⊎`{.Agda}). There is a general way these constructions go for
 inductive types, known as the "encode-decode" method, originally due
-to Dan Licata.
+to Dan Licata. mvrnote: link
 
 Let's take `Bool`{.Agda} as our first example. We already have a
 candidate for what paths in `Bool`{.Agda} should be, that is,
@@ -322,20 +322,14 @@ deleted.
 ```
 
 And try the same for `∅`{.Agda}. (There is also a much shorter way to
-prove this isomorphism!)
+prove this isomorphism!) mvrnote: this might be too silly to include
 
 ```
 ≡Iso≡∅ : (X : Type) (n m : ∅) → Iso (n ≡ m) X
 -- Exercise:
 ≡Iso≡∅ X m n = ?
 ≡Iso≡∅ X () lol baited
-
--- You can do it the long way of course
-≡Iso≡∅' : (X : Type) (n m : ∅) → Iso (n ≡ m) X
-≡Iso≡∅' X n m = iso (encode n m) (decode n m) (sec n m) (ret n m)
-  where
-    code : ∅ → ∅ → Type
-    code x y = X
+≡Iso≡∅' : (X : Type) (n m : ∅) → Iso (n ≡ m) X You can do it the long way of course
 
     encodeRefl : (x : ∅) → code x x
     encodeRefl ()
@@ -356,7 +350,7 @@ prove this isomorphism!)
     ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
 ```
 
-For `ℕ`{.Agda}, we already have a candidate for `code`, i.e.
+For `ℕ`{.Agda}, we also already have a candidate for `code`, that is,
 `≡ℕ`{.Agda}.
 
 ```
@@ -390,10 +384,13 @@ For `ℕ`{.Agda}, we already have a candidate for `code`, i.e.
     ret x y p = ?
 ```
 
-And one final application: disjoint unions. For this one, it is more
-convenient to define `encode` manually rather than via `subst`{.Agda}.
+And one final application: disjoint unions. We haven't yet got a
+candidate `≡⊎`{.Agda} for the paths to be equal to, but it's not hard
+to guess what it should be. After all, the two sides are supposed to
+be *disjoint*, and so there should be no paths between an `inl`{.Agda}
+and and `inr`{.Agda}.
 
-mvrnote: Adding universe levels means lifting `∅` unfortunately
+mvrnote: Adding universe levels means lifting `∅` unfortunately. should we just do it?
 
 ```
 _≡⊎_ : {A B : Type} (x y : A ⊎ B) → Type
@@ -401,7 +398,12 @@ inl a1 ≡⊎ inl a2 = a1 ≡ a2
 inl a ≡⊎ inr b = ∅
 inr b ≡⊎ inl a = ∅
 inr b1 ≡⊎ inr b2 = b1 ≡ b2
+```
 
+For the proof, it is more convenient to define `encode` manually rather
+than via `subst`{.Agda}.
+
+```
 ≡Iso≡⊎ : {A B : Type} (x y : A ⊎ B) → Iso (x ≡ y) (x ≡⊎ y)
 ≡Iso≡⊎ {A = A} {B = B} x y = iso (encode x y) (decode x y) (sec x y) (ret x y)
   where

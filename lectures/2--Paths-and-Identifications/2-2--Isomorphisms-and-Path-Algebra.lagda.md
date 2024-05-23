@@ -45,21 +45,61 @@ retract : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'}
 retract f g = ∀ a → g (f a) ≡ a
 ```
 
-An isomorphism is therefore a function `f : A → B` with an inverse
-map `g : B → A` so that `g` is both a section and a retract of `f`.
+An isomorphism is therefore a function `f : A → B` with an inverse map
+`g : B → A` so that `g` is both a section and a retract of `f`. We
+will package this up into an iterated pair type.
 
 ```
-record Iso {ℓ ℓ'} (A : Type ℓ) (B : Type ℓ') : Type (ℓ-max ℓ ℓ') where
-  no-eta-equality
-  constructor iso
-  field
-    fun : A → B
-    inv : B → A
-    rightInv : section fun inv
-    leftInv  : retract fun inv
+Iso : (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
+Iso A B = Σ[ fun ∈ (A → B) ]
+          Σ[ inv ∈ (B → A) ]
+          section fun inv ×
+          retract fun inv
 ```
 
-mvrnote: discuss records, or make it not a record
+To make these less annoying to work with, we'll write some helpers for
+constructing and destructing these `Iso`s.
+
+```
+iso : (fun : A → B)
+    → (inv : B → A)
+    → (rightInv : section fun inv)
+    → (leftInv  : retract fun inv)
+    → Iso A B
+iso fun inv rightInv leftInv = fun , inv , rightInv , leftInv
+
+isoFun : Iso A B → (A → B)
+isoFun iso = fst iso
+isoInv : Iso A B → (B → A)
+isoInv iso = fst (snd iso)
+isoRightInv : (iso : Iso A B) → section (isoFun iso) (isoInv iso)
+isoRightInv iso = fst (snd (snd iso))
+isoLeftInv : (iso : Iso A B) → retract (isoFun iso) (isoInv iso)
+isoLeftInv iso = snd (snd (snd iso))
+```
+
+mvrnote: discuss records?
+
+Here's a couple of basic examples. First, ihe identity function is
+always an isomorphism, acting as its own inverse.
+
+```
+idIso : (A : Type ℓ) → Iso A A
+-- Exercise:
+idIso A = ?
+```
+
+And, the data of an isomorphism is completely symmetric between `A`
+and `B`, so given any isomorphism, we can flip it around.
+
+```
+invIso : Iso A B → Iso B A
+-- Exercise:
+invIso f = ?
+```
+
+Isomorphisms compose like functions do, but we will prove this a
+little later (`compIso`{.Agda} in Lecture 2-4).
 
 An isomorphism between two types says, in effect, that elements of
 those types are different representations of essentially the same
@@ -184,9 +224,19 @@ functions involved are also definitional inverses and so assemble into
 funExt-Iso : {f g : A → B} → Iso ((x : A) → f x ≡ g x) (f ≡ g)
 funExt-Iso = iso funExt funExt⁻ (λ _ → refl) (λ _ → refl)
 
-ΣPath-PathΣ-Iso : {A : I → Type ℓ} {B : (i : I) → (a : A i) → Type ℓ'}
-                  {x : Σ[ a ∈ A i0 ] B i0 a} {y : Σ[ a ∈ A i1 ] B i1 a} →
-  Iso (Σ[ p ∈ PathP A (fst x) (fst y) ] (PathP (λ i → B i (p i)) (snd x) (snd y)))
+-- Paths in a product are the same as the product of paths
+×Path-Path×-Iso : {x y : A × B} →
+  Iso (Path A (fst x) (fst y) × Path B (snd x) (snd y))
+      (Path (A × B) x y)
+×Path-Path×-Iso = iso ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
+
+-- The same is true when everything is maximally dependent
+ΣPath-PathΣ-Iso : {A : I → Type ℓ}
+                  {B : (i : I) → (a : A i) → Type ℓ'}
+                  {x : Σ[ a ∈ A i0 ] B i0 a}
+                  {y : Σ[ a ∈ A i1 ] B i1 a} →
+  Iso (Σ[ p ∈ PathP A (fst x) (fst y) ]
+             (PathP (λ i → B i (p i)) (snd x) (snd y)))
       (PathP (λ i → Σ[ a ∈ A i ] B i a) x y)
 ΣPath-PathΣ-Iso = iso ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
 ```
@@ -312,7 +362,7 @@ section and retract here need to be constructed recursively:
 --  Exercise:
 --  sec x = ?
     sec [] = refl
-    sec (tt ∷ L) = cong (tt ∷_) (sec L)
+    sec (tt :: L) = cong (tt ::_) (sec L)
 
     ret : retract ℕ→List⊤ length
 --  Exercise:

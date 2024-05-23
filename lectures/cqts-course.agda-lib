@@ -5,3 +5,4 @@ depend:
 flags: 
   --cubical
   --no-load-primitives
+  --allow-unsolved-metas
