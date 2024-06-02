@@ -334,10 +334,7 @@ depFunExt : {B : A → I → Type ℓ₂}
   → ((x : A) → PathP (B x) (f x) (g x))
   → PathP (λ i → (x : A) → B x i) f g
 -- Exercise:
-depFunExt : {B : A → I → Type}
-  {f : (x : A) → B x i0} {g : (x : A) → B x i1}
-  → ((x : A) → PathP ? ? ?)
-  → PathP ? f g
+depFunExt p i x = {!!}
 ```
 
 Similarly, we can upgrade `congNonDep`{.Agda} to work with dependent
