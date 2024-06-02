@@ -334,8 +334,8 @@ correspondence.
 -- graphEquivIsOneToOne : {A B : Type} (e : A ≃ B)
 --                      → isOneToOne (graph (fst e))
 -- -- Exercise:
-graphEquivIsOneToOne e = ?
-graphEquivIsOneToOne (e , p) = (isFunctionalGraph e) , p
+-- graphEquivIsOneToOne e = ?
+-- graphEquivIsOneToOne (e , p) = (isFunctionalGraph e) , p
 ```
 
 It is also possible to go the other way, but again we'll come back to
