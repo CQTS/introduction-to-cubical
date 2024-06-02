@@ -288,7 +288,7 @@ The graph of a function is a functional relation --- hence the name.
 ```
 isFunctionalGraph : {A B : Type ℓ} (f : A → B) → isFunctional (graph f)
 -- Exercise:
-isFuncationalGraph f a = ?
+isFunctionalGraph f a = ?
 ```
 
 On the other hand, any functional relation gives rise to a function.
@@ -366,3 +366,4 @@ pathToEquivRefl : {A : Type ℓ} → pathToEquiv refl ≡ idEquiv A
 pathToEquivRefl {A = A} = equivEq (λ i x → transp (λ _ → A) i x)
 ```
 
+ 
