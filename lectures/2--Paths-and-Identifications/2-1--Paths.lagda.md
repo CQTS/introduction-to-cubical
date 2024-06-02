@@ -361,8 +361,7 @@ module _ {A : Type ℓ} {B : A → Type ℓ₂}
   ΣPathP→PathPΣ' : Σ[ p ∈ (fst x ≡ fst y) ] PathP (λ i → B (p i)) (snd x) (snd y)
          → x ≡ y
   -- Exercise:
-  ΣPathP→PathPΣ' : Σ[ p ∈ (fst x ≡ fst y) ] PathP ? ? ?
-         → x ≡ y
+  ΣPathP→PathPΣ' eq i = {!!}
 
   PathPΣ→ΣPathP' : x ≡ y
          → Σ[ p ∈ (fst x ≡ fst y) ] PathP (λ i → B (p i)) (snd x) (snd y)
