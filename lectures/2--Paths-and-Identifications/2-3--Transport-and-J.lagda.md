@@ -328,8 +328,14 @@ prove this isomorphism!) mvrnote: this might be too silly to include
 ≡Iso≡∅ : (X : Type) (n m : ∅) → Iso (n ≡ m) X
 -- Exercise:
 ≡Iso≡∅ X m n = ?
-≡Iso≡∅ X () lol baited
-≡Iso≡∅' : (X : Type) (n m : ∅) → Iso (n ≡ m) X You can do it the long way of course
+≡Iso≡∅ X () -- lol baited
+
+-- You can do it the long way of course
+≡Iso≡∅' : (X : Type) (n m : ∅) → Iso (n ≡ m) X
+≡Iso≡∅' X n m = iso (encode n m) (decode n m) (sec n m) (ret n m)
+  where
+    code : ∅ → ∅ → Type
+    code x y = X
 
     encodeRefl : (x : ∅) → code x x
     encodeRefl ()
