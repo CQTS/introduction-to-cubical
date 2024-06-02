@@ -99,7 +99,7 @@ Give it a try in the reverse:
 ```
 false≢true : ¬ false ≡ true
 -- Exercise:
-false≢true p = ?
+false≢true p = {!   !}
 ```
 
 ## The J Rule
@@ -215,7 +215,7 @@ That this is a section is similar, after splitting into cases:
 ```
     sec : (x y : Bool) → section (encode x y) (decode x y)
     -- Exercise:
-    section p = ?
+    sec p = {!   !}
 ```
 
 For the retract, we have another trick. The proof is easy if we are
@@ -296,26 +296,26 @@ deleted.
   where
     code : ⊤ → ⊤ → Type
     -- Exercise:
-    code x y = ?
+    code x y = {!   !}
 
     encodeRefl : (x : ⊤) → code x x
     -- Exercise:
-    encodeRefl x = ?
+    encodeRefl x = {!   !}
 
     encode : (x y : ⊤) → x ≡ y → code x y
     encode x y p = subst (λ z → code x z) p (encodeRefl x)
 
     decode : (x y : ⊤) → code x y → x ≡ y
     -- Exercise:
-    decode x y c = ?
+    decode x y c = {!   !}
 
     sec : (x y : ⊤) → section (encode x y) (decode x y)
     -- Exercise:
-    sec x y c = ?
+    sec x y c = {!   !}
 
     retRefl : (x : ⊤) → decode x x (encode x x refl) ≡ refl
     -- Exercise:
-    retRefl x = ?
+    retRefl x = {!   !}
 
     ret : (x y : ⊤) → retract (encode x y) (decode x y)
     ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
@@ -327,7 +327,7 @@ prove this isomorphism!) mvrnote: this might be too silly to include
 ```
 ≡Iso≡∅ : (X : Type) (n m : ∅) → Iso (n ≡ m) X
 -- Exercise:
-≡Iso≡∅ X m n = ?
+≡Iso≡∅ X m n = {!   !}
 ≡Iso≡∅ X () -- lol baited
 
 -- You can do it the long way of course
@@ -368,26 +368,26 @@ For `ℕ`{.Agda}, we also already have a candidate for `code`, that is,
 
     encodeRefl : (n : ℕ) → code n n
     -- Exercise:
-    encodeRefl n = ?
+    encodeRefl n = {!   !}
 
     encode : (n m : ℕ) → n ≡ m → code n m
     encode n m p = subst (λ z → code n z) p (encodeRefl n)
 
     decode : (n m : ℕ) → code n m → n ≡ m
     -- Exercise:
-    decode n m c = ?
+    decode n m c = {!   !}
 
     sec : (x y : ℕ) → section (encode x y) (decode x y)
     -- Exercise:
-    sec x y p = ?
+    sec x y p = {!   !}
 
     retRefl : (x : ℕ) → decode x x (encode x x refl) ≡ refl
     -- Exercise:
-    retRefl x = ?
+    retRefl x = {!   !}
 
     ret : (x y : ℕ) → retract (encode x y) (decode x y)
     -- Exercise:
-    ret x y p = ?
+    ret x y p = {!   !}
 ```
 
 And one final application: disjoint unions. We haven't yet got a
