@@ -382,9 +382,8 @@ module _ {A : I → Type ℓ} {B : (i : I) → A i → Type ℓ₂}
   ΣPathP→PathPΣ : Σ[ p ∈ PathP A (fst x) (fst y) ] PathP (λ i → B i (p i)) (snd x) (snd y)
          → PathP (λ i → Σ[ a ∈ A i ] B i a) x y
   -- Exercise:
-  ΣPathP→PathPΣ : Σ[ p ∈ PathP ? ? ? ] PathP ? ? ?
-         → PathP (λ i → Σ[ a ∈ A i ] B i a) x y
-
+  ΣPathP→PathPΣ eq i = {!!}
+  
   PathPΣ→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
          → Σ[ p ∈ PathP A (fst x) (fst y) ] PathP (λ i → B i (p i)) (snd x) (snd y)
   -- Exercise:
