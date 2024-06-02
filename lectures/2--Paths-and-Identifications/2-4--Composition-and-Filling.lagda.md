@@ -143,7 +143,7 @@ suc n ≤ suc m = n ≤ m
 
 take : (n : ℕ) (L : List A) → BooleanPartial (n ≤ length L) (List A)
 -- Exercise:
-take n L = ?
+take n L = {!   !}
 ```
 
 ## Partial Elements
@@ -273,7 +273,7 @@ Try it yourself: describe a formula which gives the two sides of a box
 ```
 sides-of-square : I → I → I
 -- Exercise:
-sides-of-square i j = ?
+sides-of-square i j = {!   !}
 ```
 
 How about a three dimensional example. Come up with a formula to
@@ -298,7 +298,7 @@ of the sides.
 ```
 exercise-shape : I → I → I → I
 -- Exercise:
-exercise-shape i j k = ?
+exercise-shape i j k = {!   !}
 ```
 
 
@@ -632,13 +632,13 @@ Now we have, in fact, seen all of these faces before.
 diamondFaces : {x y z : A} (p : x ≡ y) (q : y ≡ z)
   → (i : I) → (j : I) → I → Partial (∂ i ∨ ∂ j) A
 -- Exercise:
-diamondFaces p q i j k (i = i0) = ?
-diamondFaces p q i j k (i = i1) = ?
-diamondFaces p q i j k (j = i0) = ?
-diamondFaces p q i j k (j = i1) = ?
+diamondFaces p q i j k (i = i0) = {!   !}
+diamondFaces p q i j k (i = i1) = {!   !}
+diamondFaces p q i j k (j = i0) = {!   !}
+diamondFaces p q i j k (j = i1) = {!   !}
 
 -- Exercise:
-diamond p q i j = hcomp (diamondFaces p q i j) ?
+diamond p q i j = hcomp (diamondFaces p q i j) {!   !}
 ```
 
 This is not the only way to do it! The composition problems that
@@ -665,10 +665,10 @@ same `diamond` square, but using the following cube:
 ```
 diamondFacesAlt : {x y z : A} (p : x ≡ y) (q : y ≡ z) → (i : I) → (j : I) → I → Partial (∂ i ∨ ∂ j) A
 -- Exercise:
-diamondFacesAlt p q i j k (i = i0) = ?
-diamondFacesAlt p q i j k (i = i1) = ?
-diamondFacesAlt p q i j k (j = i0) = ?
-diamondFacesAlt p q i j k (j = i1) = ?
+diamondFacesAlt p q i j k (i = i0) = {!   !}
+diamondFacesAlt p q i j k (i = i1) = {!   !}
+diamondFacesAlt p q i j k (j = i0) = {!   !}
+diamondFacesAlt p q i j k (j = i1) = {!   !}
 
 diamondAlt : (p : x ≡ y) (q : y ≡ z) → Square p q p q
 diamondAlt {x = x} p q i j = hcomp (diamondFacesAlt p q i j) x
@@ -698,14 +698,14 @@ top face is the path-between-paths that we want.
 ```
 assoc-faces : {w x y z : A} (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → (i : I) → (j : I) → (k : I) → Partial (∂ i ∨ ∂ j) A
 -- Exercise:
-assoc-faces         r p q i j k (i = i0) = ?
-assoc-faces         r p q i j k (i = i1) = ?
-assoc-faces {w = w} r p q i j k (j = i0) = ?
-assoc-faces         r p q i j k (j = i1) = ?
+assoc-faces         r p q i j k (i = i0) = {!   !}
+assoc-faces         r p q i j k (i = i1) = {!   !}
+assoc-faces {w = w} r p q i j k (j = i0) = {!   !}
+assoc-faces         r p q i j k (j = i1) = {!   !}
 
 assoc-base : {w x y z : A} (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → Square (r ∙ p) (r ∙ p) refl refl
 -- Exercise:
-assoc-base r p q i j = ?
+assoc-base r p q i j = {!   !}
 
 assoc : (r : w ≡ x) (p : x ≡ y) (q : y ≡ z)
   → r ∙ (p ∙ q) ≡ (r ∙ p) ∙ q
@@ -750,14 +750,14 @@ The faces are straightforward to construct if you stare at the diagram.
 ```
 lUnit-faces : {x y : A} (p : x ≡ y) → (i : I) → (j : I) → (k : I) → Partial (~ i ∨ ∂ j) A
 -- Exercise:
-lUnit-faces         p i j k (i = i0) = ? Constant in the `j` direction
-lUnit-faces {x = x} p i j k (j = i0) = ? Completely constant
-lUnit-faces         p i j k (j = i1) = ? Constructed from `p` using connections
+lUnit-faces         p i j k (i = i0) = {!   !} -- Constant in the `j` direction
+lUnit-faces {x = x} p i j k (j = i0) = {!   !} -- Completely constant
+lUnit-faces         p i j k (j = i1) = {!   !} -- Constructed from `p` using connections
 
 lUnit-base : {x y : A} (p : x ≡ y) → Square p refl refl (sym p)
 -- Exercise:
-lUnit-base p i j = ?
-Hint: Constructed from `p` using connections in a different way
+lUnit-base p i j = {!   !}
+-- Hint: Constructed from `p` using connections in a different way
 
 lUnit : (p : x ≡ y) → p ≡ refl ∙ p
 lUnit {x = x} p i j = hcomp (lUnit-faces p i j) (lUnit-base p i j)
