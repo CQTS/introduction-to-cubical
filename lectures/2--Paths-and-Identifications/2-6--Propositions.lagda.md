@@ -514,7 +514,7 @@ isPropRetract :
   → (h : retract f g)
   → isProp B → isProp A
 -- Exercise:
-isPropRetract f g h isPropB x y i =
+isPropRetract f g h isPropB x y i = {!!}
 ```
 
 In particular, any type equivalent to a proposition is also a
