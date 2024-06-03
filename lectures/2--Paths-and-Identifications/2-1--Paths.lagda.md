@@ -151,15 +151,15 @@ proving some useful equalities.
           (f : A → B)
         → (h ∘ g) ∘ f ≡ h ∘ (g ∘ f)
 -- Exercise:
-∘-assoc h g f i x = ?
+∘-assoc h g f i x = {!   !}
 
 ∘-idˡ : (f : A → B) → f ∘ (λ a → a) ≡ f
 -- Exercise:
-∘-idˡ f i x = ?
+∘-idˡ f i x = {!   !}
 
 ∘-idʳ : (f : A → B) → (λ b → b) ∘ f ≡ f
 -- Exercise:
-∘-idʳ f i x = ?
+∘-idʳ f i x = {!   !}
 ```
 
 We can even show that `Bool` has the structure of a *Boolean algebra*.
@@ -225,13 +225,13 @@ cong-bin : (f : A → B → C) {a a' : A} {b b' : B}
          → (q : b ≡ b')
          → (f a b) ≡ (f a' b')
 -- Exercise:
-cong-bin f p q = ?
+cong-bin f p q = {!   !}
 
 cong-∘ : (f : A → B) (g : B → C)
   → (p : x ≡ y)
   → congNonDep (g ∘ f) p ≡ congNonDep g (congNonDep f p)
 -- Exercise:
-cong-∘ f g p = ?
+cong-∘ f g p = {!   !}
 ```
 
 ## Paths in Pair and Function Types
@@ -250,15 +250,15 @@ correct endpoints.
 ```
 ≡-× : {x y : A × B} → (fst x ≡ fst y) × (snd x ≡ snd y) → x ≡ y
 -- Exercise:
-≡-× (p , q) = ?
+≡-× (p , q) = {!   !}
 
 ≡-fst : {x y : A × B} → x ≡ y → (fst x ≡ fst y)
 -- Exercise:
-≡-fst p = ?
+≡-fst p = {!   !}
 
 ≡-snd : {x y : A × B} → x ≡ y → (snd x ≡ snd y)
 -- Exercise:
-≡-snd p = ?
+≡-snd p = {!   !}
 ```
 
 Similarly, what is a path in a function type? It is a function landing
@@ -269,13 +269,13 @@ funExt : {f g : A → B}
   → ((x : A) → f x ≡ g x)
   → f ≡ g
 -- Exercise:
-funExt f = ?
+funExt f = {!   !}
 
 funExt⁻ : {f g : A → B}
   → f ≡ g
   → ((x : A) → f x ≡ g x)
 -- Exercise:
-funExt⁻ p = ?
+funExt⁻ p = {!   !}
 ```
 This is the principle of "function extensionality": to say that `f`
 is the same as `g` means that, for all `x`, `f x` is the same as `g x`.
@@ -290,7 +290,7 @@ funExt2 : {f g : A → B → C}
        (p : (x : A) (y : B) → f x y ≡ g x y)
        → f ≡ g
 -- Exercise:
-funExt2 p i x y = ?
+funExt2 p i x y = {!   !}
 ```
 
 ## Paths over Paths
@@ -316,7 +316,7 @@ functions `A → B` are exactly dependent functions `(x : A) → B` where
 ```
 myPath : (A : Type) (x : A) (y : A) → Type
 -- Exercise: (easy)
-myPath A x y = ?
+myPath A x y = {!   !}
 ```
 
 We can now clear up a lingering question from the previous section. We
@@ -334,10 +334,7 @@ depFunExt : {B : A → I → Type ℓ₂}
   → ((x : A) → PathP (B x) (f x) (g x))
   → PathP (λ i → (x : A) → B x i) f g
 -- Exercise:
-depFunExt : {B : A → I → Type}
-  {f : (x : A) → B x i0} {g : (x : A) → B x i1}
-  → ((x : A) → PathP ? ? ?)
-  → PathP ? f g
+depFunExt p i x = {!!}
 ```
 
 Similarly, we can upgrade `congNonDep`{.Agda} to work with dependent
@@ -364,14 +361,12 @@ module _ {A : Type ℓ} {B : A → Type ℓ₂}
   ΣPathP→PathPΣ' : Σ[ p ∈ (fst x ≡ fst y) ] PathP (λ i → B (p i)) (snd x) (snd y)
          → x ≡ y
   -- Exercise:
-  ΣPathP→PathPΣ' : Σ[ p ∈ (fst x ≡ fst y) ] PathP ? ? ?
-         → x ≡ y
+  ΣPathP→PathPΣ' eq i = {!!}
 
   PathPΣ→ΣPathP' : x ≡ y
          → Σ[ p ∈ (fst x ≡ fst y) ] PathP (λ i → B (p i)) (snd x) (snd y)
   -- Exercise:
-  PathPΣ→ΣPathP' : x ≡ y
-         → Σ[ p ∈ (fst x ≡ fst y) ] PathP ? ? ?
+  PathPΣ→ΣPathP' eq = {!!}
 
 ```
 
@@ -387,14 +382,12 @@ module _ {A : I → Type ℓ} {B : (i : I) → A i → Type ℓ₂}
   ΣPathP→PathPΣ : Σ[ p ∈ PathP A (fst x) (fst y) ] PathP (λ i → B i (p i)) (snd x) (snd y)
          → PathP (λ i → Σ[ a ∈ A i ] B i a) x y
   -- Exercise:
-  ΣPathP→PathPΣ : Σ[ p ∈ PathP ? ? ? ] PathP ? ? ?
-         → PathP (λ i → Σ[ a ∈ A i ] B i a) x y
-
+  ΣPathP→PathPΣ eq i = {!!}
+  
   PathPΣ→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
          → Σ[ p ∈ PathP A (fst x) (fst y) ] PathP (λ i → B i (p i)) (snd x) (snd y)
   -- Exercise:
-  ΣPathP→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
-         → Σ[ p ∈ PathP ? ? ? ] PathP ? ? ?
+  PathPΣ→ΣPathP eq = {!!}
 ```
 
 ## Squares

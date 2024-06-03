@@ -86,7 +86,7 @@ always an isomorphism, acting as its own inverse.
 ```
 idIso : (A : Type ℓ) → Iso A A
 -- Exercise:
-idIso A = ?
+idIso A = {!   !}
 ```
 
 And, the data of an isomorphism is completely symmetric between `A`
@@ -95,7 +95,7 @@ and `B`, so given any isomorphism, we can flip it around.
 ```
 invIso : Iso A B → Iso B A
 -- Exercise:
-invIso f = ?
+invIso f = {!   !}
 ```
 
 Isomorphisms compose like functions do, but we will prove this a
@@ -150,16 +150,16 @@ OtherIsoBoolRedOrBlue = iso to fro s r
 {-
   where
     to : Bool → RedOrBlue
-    to x = ?
+    to x = {!   !}
 
     fro : RedOrBlue → Bool
-    fro x = ?
+    fro x = {!   !}
 
     s : section to fro
-    s x = ?
+    s x = {!   !}
 
     r : retract to fro
-    r x = ?
+    r x = {!   !}
 -}
   where
     to : Bool → RedOrBlue
@@ -254,6 +254,8 @@ Bool-⊤⊎⊤-Iso = iso Bool→⊤⊎⊤ ⊤⊎⊤→Bool sec ret
   where
     sec : section Bool→⊤⊎⊤ ⊤⊎⊤→Bool
 --  Exercise:
+--  Hint: Check your definitions for Bool→⊤⊎⊤ and ⊤⊎⊤→Bool
+--  in 1-2 if this throws an error.
 --  sec x = ?
     sec (inl tt) = refl
     sec (inr tt) = refl

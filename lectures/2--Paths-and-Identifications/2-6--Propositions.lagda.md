@@ -107,7 +107,7 @@ Super Hint: It's exactly the connection square
 ```
 isContrSingl : (a : A) → isContr (singl a)
 -- Exercise:
-isContrSingl a = ?
+isContrSingl a = {!   !}
 ```
 
 We show that our type `⊤`{.Agda}, which was defined to have only a
@@ -116,7 +116,7 @@ single element `tt`{.Agda}, is contractible.
 ```
 isContr⊤ : isContr ⊤
 -- Exercise:
-isContr⊤ = ?
+isContr⊤ = {!   !}
 ```
 
 On the other hand, `∅`{.Agda} is not contractible: it doesn't have any
@@ -125,7 +125,7 @@ elements at all.
 ```
 ¬isContr∅ : ¬ isContr ∅
 -- Exercise:
-¬isContr∅ = ?
+¬isContr∅ = {!   !}
 ```
 
 Any two contractible types are isomorphic.
@@ -133,7 +133,7 @@ Any two contractible types are isomorphic.
 ```
 isContr→Iso : {A : Type ℓ} {B : Type ℓ'} → isContr A → isContr B → Iso A B
 -- Exercise:
-isContr→Iso c c' = ?
+isContr→Iso c c' = {!   !}
 
 isContrIso⊤ : {A : Type}  → isContr A → Iso A ⊤
 isContrIso⊤ c = isContr→Iso c isContr⊤
@@ -154,7 +154,7 @@ mvrnote: Move to extras? There is a unique map from `∅`{.Agda} to any type.
 ```
 ∅-rec-unique : {A : Type ℓ} → isContr (∅ → A)
 -- Exercise:
-∅-rec-unique = ?
+∅-rec-unique = {!   !}
 ```
 
 If `B : A → Type` is a family of contractible types depending on `A`,
@@ -165,8 +165,8 @@ isContrFun : ∀ {A : Type ℓ} {B : A → Type ℓ}
            → ((a : A) → isContr (B a))
            → isContr ((a : A) → B a)
 -- Exercise:
-fst (isContrFun c) = ?
-snd (isContrFun c) f i a = ?
+fst (isContrFun c) = {!   !}
+snd (isContrFun c) f i a = {!   !}
 ```
 
 In particular, the map `(λ _. tt) : A → ⊤` (which always exists for
@@ -179,8 +179,8 @@ involve some `hcomp`{.Agda}s.
 ```
 isContrisContr≡ : {A : Type ℓ} (c : isContr A) (a b : A) → isContr (a ≡ b)
 -- Exercise:
-fst (isContrisContr≡ (c₀ , c) a b) = ?
-snd (isContrisContr≡ (c₀ , c) a b) = ?
+fst (isContrisContr≡ (c₀ , c) a b) = {!   !}
+snd (isContrisContr≡ (c₀ , c) a b) = {!   !}
 ```
 
 ## Aside: Equational Reasoning
@@ -289,6 +289,7 @@ isProp-≡Bool false false = isProp⊤
 
 isProp-≡ℕ : (n m : ℕ) → isProp (n ≡ℕ m)
 -- Exercise:
+isProp-≡ℕ n m = {!!}
 ```
 
 The ordering on the natural numbers is also a proposition.
@@ -307,7 +308,7 @@ that `Bool`{.Agda} is not a proposition.
 ```
 ¬isPropBool : ¬ isProp Bool
 -- Exercise:
-¬isPropBool pBool = ?
+¬isPropBool pBool = {!   !}
 ```
 
 mvrnote: and do similarly for `ℕ`?
@@ -433,7 +434,7 @@ isPropΠ : {A : Type ℓ} {B : A → Type ℓ'}
             (p : ∀ a → isProp (B a))
           → isProp (∀ a → B a)
 -- Exercise:
-isPropFun p f g = ?
+isPropΠ p f g = {!!}
 ```
 
 As a special case of this, we get "implies". If `A` and `B` are
@@ -452,7 +453,7 @@ contractible as soon as `B` is contractible.
 ```
 isContr→ : isContr B → isContr (A → B)
 -- Exercise:
-isContr→ (cB , hB) = ?
+isContr→ (cB , hB) = {!   !}
 ```
 
 As a special case of implication, we find that type negation `¬ A` is
@@ -468,7 +469,7 @@ The "and" of two proposition `A` and `B` is the type of pairs `A × B`.
 ```
 isProp× : isProp A → isProp B → isProp (A × B)
 -- Exercise:
-isProp pA pB = ?
+isProp× pA pB = {!   !}
 ```
 
 Similarly to `→`, if `A` and `B` are true (contracible), then `A × B` should
@@ -477,7 +478,7 @@ also be contractible.
 ```
 isContr× : isContr A → isContr B → isContr (A × B)
 -- Exercise:
-isContr cA cB = ?
+isContr× cA cB = {!   !}
 ```
 
 For contractibility, the converse holds: if the product is
@@ -485,7 +486,7 @@ contractible then the inputs must have been.
 ```
 isContr×-conv : isContr (A × B) → isContr A × isContr B
 -- Exercise:
-isContr×-conv cAB = ?
+isContr×-conv cAB = {!   !}
 ```
 
 By contrast, disjoint unions of contractible types are not
@@ -501,7 +502,7 @@ then their disjoint union is still a proposition.
 ```
 isPropExclusive⊎ : isProp A → isProp B → ¬ (A × B) → isProp (A ⊎ B)
 -- Exercise:
-isPropExclusive⊎ pA pB disjoint x y = ?
+isPropExclusive⊎ pA pB disjoint x y = {!   !}
 ```
 
 If `A` is a retract of `B`, then in some sense `A` is a continuous
@@ -514,7 +515,7 @@ isPropRetract :
   → (h : retract f g)
   → isProp B → isProp A
 -- Exercise:
-isPropRetract f g h isPropB x y i =
+isPropRetract f g h isPropB x y i = {!!}
 ```
 
 In particular, any type equivalent to a proposition is also a
@@ -550,14 +551,14 @@ does not imply that the two components are.
 ```
 ¬isProp×-conv : ¬ (∀ (A B : Type) → isProp (A × B) → isProp A × isProp B)
 -- Exercise: (Hint: ∅)
-¬isProp×-conv = ?
+¬isProp×-conv = {!   !}
 ```
 
 mvrnote: prose. the other direction is annoying to state without something like isIso
 ```
 isProp→IsoDiag : isProp A → Iso A (A × A)
 -- Exercise:
-isProp→IsoDiag pA = ?
+isProp→IsoDiag pA = {!   !}
 ```
 
 If a type has at most one element and also has an element, then that
@@ -567,8 +568,9 @@ it is contractible.
 ```
 Prop-with-point-isContr : Iso (isProp A) (A → isContr A)
 -- Exercise: (use propExt)
-Prop-with-point-isContr = ?
+Prop-with-point-isContr = {!   !}
 
+  where
     fro : (A → isContr A) → isProp A
     fro c x y =
           x         ≡⟨ sym (snd (c x) x) ⟩
@@ -611,13 +613,13 @@ It is not difficult to show we can go from one to the other.
 isPred→∀isProp : {A : Type ℓ} {B : A → Type ℓ'}
                → isPred B → ∀ a → isProp (B a)
 -- Exercise:
-isPred→∀isProp p = ?
+isPred→∀isProp p = {!   !}
 
 ∀isProp→isPred : {A : Type ℓ} {B : A → Type ℓ'}
                → (∀ a → isProp (B a)) → isPred B
 -- mvrnote: does this need a hint?
 -- Exercise:
-∀isProp→isPred p = ?
+∀isProp→isPred p = {!   !}
 ```
 
 This lets us easily prove an upgraded, dependent version of
@@ -735,7 +737,7 @@ we can get an implication `∃ A → P` whenever `P` is a proposition.
 ```
 ∃-map : (A → B) → (∃ A → ∃ B)
 -- Exercise:
-∃-map f = ?
+∃-map f = {!   !}
 ```
 
 When `P` is already a proposition, truncating it should do nothing:
@@ -743,8 +745,8 @@ When `P` is already a proposition, truncating it should do nothing:
 ```
 isProp→Iso∃ : isProp P → Iso P (∃ P)
 -- Exercise:
-isProp→Iso∃ isPropP = ?
-Hint: use `propExt`
+isProp→Iso∃ isPropP = {!   !}
+-- Hint: use `propExt`
 ```
 
 If `P : A → Type` is a family of propositions on `A` --- that is, a
@@ -799,8 +801,8 @@ mvrnote: prose
 ```
 ¬¬-∃-Iso : Iso (¬ ¬ ∃ A) (¬ ¬ A)
 -- Exercise: Hint: use `propExt`
-¬¬-∃-Iso = ?
-
+¬¬-∃-Iso = {!   !}
+  where
     fro : ¬ ¬ A → ¬ ¬ ∃ A
     fro ¬¬a ¬∃a = ¬¬a (λ x → ¬∃a ∣ x ∣)
 ```
@@ -878,16 +880,16 @@ Dec-extract d f = {!!}
 
 Dec-Idem : Dec (Dec A) → Dec A
 -- Exercise:
-Dec-Idem d = ?
+Dec-Idem d = {!   !}
 
 isProp-Dec : isProp A → isProp (Dec A)
 -- Exercise:
-isProp-Dec isPropA = ?
+isProp-Dec isPropA = {!   !}
 
 ∃-Dec-Iso : Iso (Dec (∃ A)) (∃ (Dec A))
 -- Exercise: Hint: use `propExt`
-∃-Dec-Iso = ?
-
+∃-Dec-Iso = {!   !}
+  where
     fro-lemma : Dec A → Dec (∃ A)
     fro-lemma (yes p) = yes ∣ p ∣
     fro-lemma (no ¬p) = no (∃-rec isProp∅ ¬p)
@@ -897,7 +899,7 @@ isProp-Dec isPropA = ?
 
 Dec→SplitSupport : Dec A → (∃ A → A)
 -- Exercise:
-Dec→SplitSupport d = ?
+Dec→SplitSupport d = {!   !}
 ```
 
 mvrnote: would be good to extend this to Hedberg's theorem, but that

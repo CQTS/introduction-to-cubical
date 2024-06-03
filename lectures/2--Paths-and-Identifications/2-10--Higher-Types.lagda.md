@@ -23,7 +23,7 @@ open import 2--Paths-and-Identifications.2-9--Univalence
 ```
 -->
 
-So far, we have seen a heirarchy of types of increasing complexity:
+So far, we have seen a hierarchy of types of increasing complexity:
 contractible types followed by propositions and then sets. But not all
 types are sets. In particular, via univalence, it is easy to check
 that `Type`{.Agda} itself is not a set.
