@@ -2,7 +2,7 @@
 module 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra where
 ```
 
-# Lecture 2-2: Isomorphisms and Path Algebra
+# Lecture 2-2: Equivalence and Path Algebra
 
 <!--
 ```
@@ -10,6 +10,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Propositions-as-Types
+open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 
 private
@@ -20,90 +21,72 @@ private
 ```
 -->
 
-We have enough tools now to define an *isomorphism* between two
-types. "Isomorphism" is a faux-Greek word meaning "same shape" ---
-"iso-" and "morph". The idea of an isomorphism between two types is
-that these types contain equivalent data.
+A function `f : A → B` lets us transform data of type `A` into data of
+type `B`. If we have some other construction that needs an element of
+`B`, we can use `f` to feed in an element of `A` instead. In this way,
+we can see a function `f : A → B` as giving us a way to represent
+elements of `B` by elements of `A`.
 
-Explicitly, an isomorphism between types `A` and `B` will be a pair
-of maps `f : A → B` and `g : B → A` so that `f ∘ g ≡ id` and `g ∘ f ≡
-id`. In other words, we can transform data of type `A` into data of
-type `B` and vice versa, so that if we go from `A` to `B` and back
-again, we get back to where we started.
-
-If `f ∘ g ≡ id`, we say that `g` is a *section* of `f`, and if `g ∘ f
-≡ id` we say that `g` is a *retract* of `f`.
+For example, in many languages, it is common to represent Booleans by
+numbers by considering the number `0` to be `false`{.Agda}, and any
+other number to be `true`{.Agda}. In Agda, we could write this
+representation as a function `ℕ → Bool`.
 
 ```
-section : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'}
-  → (f : A → B) → (g : B → A) → Type ℓ'
-section f g = ∀ b → f (g b) ≡ b
-
-  -- Note: `g` is the retraction!
-retract : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'}
-  → (f : A → B) → (g : B → A) → Type ℓ
-retract f g = ∀ a → g (f a) ≡ a
+isPositive : ℕ → Bool
+isPositive zero = false
+isPositive (suc n) = true
 ```
 
-An isomorphism is therefore a function `f : A → B` with an inverse map
-`g : B → A` so that `g` is both a section and a retract of `f`. We
-will package this up into an iterated pair type.
+If this is going to give us a way to represent Booleans as natural
+numbers, there needs to be at least some way to represent each
+individual Boolean. This is certainly true, for example, we can use
+`0` for `false`{.Agda} and `1` for `true`{.Agda}.
 
 ```
-Iso : (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
-Iso A B = Σ[ fun ∈ (A → B) ]
-          Σ[ inv ∈ (B → A) ]
-          section fun inv ×
-          retract fun inv
+Bool→ℕ : Bool → ℕ
+Bool→ℕ true = suc zero
+Bool→ℕ false = zero
 ```
 
-To make these less annoying to work with, we'll write some helpers for
-constructing and destructing these `Iso`s.
+The number `Bool→ℕ b` faithfully represents the Boolean `b` via the
+function `isPositive`{.Agda}, because `isPositive (Bool→ℕ b) ≡ b`.
 
 ```
-iso : (fun : A → B)
-    → (inv : B → A)
-    → (rightInv : section fun inv)
-    → (leftInv  : retract fun inv)
-    → Iso A B
-iso fun inv rightInv leftInv = fun , inv , rightInv , leftInv
-
-isoFun : Iso A B → (A → B)
-isoFun iso = fst iso
-isoInv : Iso A B → (B → A)
-isoInv iso = fst (snd iso)
-isoRightInv : (iso : Iso A B) → section (isoFun iso) (isoInv iso)
-isoRightInv iso = fst (snd (snd iso))
-isoLeftInv : (iso : Iso A B) → retract (isoFun iso) (isoInv iso)
-isoLeftInv iso = snd (snd (snd iso))
+isPositive-represents-Bool : (b : Bool) → isPositive (Bool→ℕ b) ≡ b
+isPositive-represents-Bool true = refl
+isPositive-represents-Bool false = refl
 ```
 
-mvrnote: discuss records?
-
-Here's a couple of basic examples. First, ihe identity function is
-always an isomorphism, acting as its own inverse.
-
-```
-idIso : (A : Type ℓ) → Iso A A
--- Exercise:
-idIso A = {!   !}
-```
-
-And, the data of an isomorphism is completely symmetric between `A`
-and `B`, so given any isomorphism, we can flip it around.
+Generally speaking, if `f : A → B` is to give us a way to represent
+elements of `B` by elements of `A`, we should expect to have at least
+some way to represent any element of `B` by some element of `A`. And
+we have a function `g : B → A` the other way so that for all `b : B`,
+we have `f (g b) ≡ b`, we say that `g` is a *section* of `f`.
 
 ```
-invIso : Iso A B → Iso B A
--- Exercise:
-invIso f = {!   !}
+module _ {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} where
+  isSection : (f : A → B) → (g : B → A) → Type ℓ'
+  isSection f g = ∀ b → f (g b) ≡ b
+
+  sectionOf : (f : A → B) → Type (ℓ-max ℓ ℓ')
+  sectionOf f = Σ[ g ∈ (B → A)] isSection f g
 ```
 
-Isomorphisms compose like functions do, but we will prove this a
-little later (`compIso`{.Agda} in Lecture 2-4).
+So here, `Bool→ℕ`{.Agda} is a section of `isPositive`{.Agda}; this is
+exactly what `isPositive-represents-Bool`{.Agda} above is saying.
 
-An isomorphism between two types says, in effect, that elements of
-those types are different representations of essentially the same
-data. For example, suppose we define the following type:
+```
+isSection-isPositive-Bool→ℕ : isSection isPositive Bool→ℕ
+isSection-isPositive-Bool→ℕ = isPositive-represents-Bool
+```
+
+While every Boolean `b` can be represented by the natural number
+`Bool→ℕ b`, it is not the case that every natural number `a` can be
+represented by a Boolean with respect to the function `Bool→ℕ`{.Agda}.
+A natural number gives more data than a Boolean.
+
+But what about the following type `RedOrBlue`{.Agda}?
 
 ```
 data RedOrBlue : Type where
@@ -111,89 +94,180 @@ data RedOrBlue : Type where
   blue : RedOrBlue
 ```
 
-This is a type with two elements, `red`{.Agda} and `blue`{.Agda}. We
-already have a type with two elements: `Bool`{.Agda} with the elements
-`true`{.Agda} and `false`{.Agda}. Our code really shouldn't depend
-essentially on what we named the two elements of `Bool`{.Agda}; we can
-demonstrate this explicitly by showing that `Bool`{.Agda} is
-isomorphic to `RedOrBlue`{.Agda}.
+It is quite apparent that `RedOrBlue`{.Agda} has the same data as
+`Bool`{.Agda}: each has two elements and nothing more. We can
+represent a Boolean by an element of `RedOrBlue`{.Agda} as follows:
 
 ```
-IsoBoolRedOrBlue : Iso Bool RedOrBlue
-IsoBoolRedOrBlue = iso to fro s r
-  where
-    to : Bool → RedOrBlue
-    to true = red
-    to false = blue
+RedOrBlue→Bool : RedOrBlue → Bool
+RedOrBlue→Bool red = true
+RedOrBlue→Bool blue = false
+```
 
-    fro : RedOrBlue → Bool
-    fro red = true
-    fro blue = false
+And we can choose a representative for every Boolean by giving a
+section `Bool→RedOrBlue`{.Agda} of `RedOrBlue→Bool`{.Agda}.
 
-    s : section to fro
-    s red = refl
-    s blue = refl
+```
+Bool→RedOrBlue : Bool → RedOrBlue
+Bool→RedOrBlue true = red
+Bool→RedOrBlue false = blue
 
-    r : retract to fro
-    r true = refl
-    r false = refl
+isSection-RedOrBlue-Bool : isSection RedOrBlue→Bool Bool→RedOrBlue
+isSection-RedOrBlue-Bool true = refl
+isSection-RedOrBlue-Bool false = refl
+```
+
+But this time, we can choose a representative for every
+`RedOrBlue`{.Agda} as a Boolean too!
+
+```
+isSection-Bool-RedOrBlue : isSection Bool→RedOrBlue RedOrBlue→Bool
+isSection-Bool-RedOrBlue red = refl
+isSection-Bool-RedOrBlue blue = refl
+```
+
+In this reversed situation, we say that `f : A → B` is a *retract* when
+it *has* a section.
+
+```
+module _ {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} where
+  isRetract : (f : A → B) → (g : B → A) → Type ℓ
+  isRetract f g = isSection g f
+
+  retractOf : (f : A → B) → Type (ℓ-max ℓ ℓ')
+  retractOf f = Σ[ g ∈ (B → A)] isRetract f g
+```
+
+When the function `f : A → B` has a section `g : B → A`, and has a
+retract `h : B → A`, as is the case for `RedOrBlue→Bool`{.Agda} here,
+we say that `f` is an *equivalence*. In this situation, we can use `f`
+to represent elements of `B` by elements of `A` (with chosen
+representatives by `g`), and we can use `h` to represent elements of
+`A` by elements of `B` (with chosen representatives by `f`). In other
+words, we can represent elements of `B` by elements of `A` and
+vice-versa --- the types describe equivalent data.
+
+```
+isEquiv : {A : Type ℓ} → {B : Type ℓ'} → (A → B) → Type (ℓ-max ℓ ℓ')
+isEquiv f = sectionOf f × retractOf f
+
+Equiv : (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
+Equiv A B = Σ[ f ∈ (A → B) ] isEquiv f
+```
+
+We will use the syntax `A ≃ B` for the type of equivalences between
+`A` and `B`. (The symbol `≃`{.Agda} is input as `\simeq`.)
+
+```
+_≃_ : (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
+_≃_ = Equiv
+
+infix 4 _≃_
+```
+
+This is the notion of sameness for types that we will be working with
+in these lecture notes.
+
+To make these less annoying to work with, we'll write some helpers for
+constructing and destructing these `Equiv`s.
+
+```
+equivFun : A ≃ B → (A → B)
+equivFun e = fst e
+
+equivSec : (e : A ≃ B) → sectionOf (equivFun e)
+equivSec e = fst (snd e)
+
+equivRet : (e : A ≃ B) → retractOf (equivFun e)
+equivRet e = snd (snd e)
+```
+
+It is very common that the section of `f` and retract of `f` are the
+same map, so we will us a helper to duplicate the map in this case.
+
+```
+equiv : (fun : A → B)
+      → (inv : B → A)
+      → (rightInv : isSection fun inv)
+      → (leftInv  : isRetract fun inv)
+      → A ≃ B
+equiv fun inv rightInv leftInv = fun , (inv , rightInv) , (inv , leftInv)
+```
+
+::: Aside:
+A pair of maps `fun` and `inv` where `inv` is a both a section and
+retract of `fun` is called an *isomorphism* (a faux-Greek word meaning
+"same shape"). You may be wondering why we don't just use isomorphism
+as our notion of sameness of types, rather than equivalence. While
+every isomorphism gives rise to an equivalence (the function
+`equiv`{.Agda} does this), and every equivalence gives rise to an
+isomorphism, the type of equivalences and the type of isomorphisms
+between two types are not in general the same!
+
+It will turn out that equivalence as we've defined it here is the
+better notion, because the type `isEquiv f` is a *proposition* about
+the function `f`, whereas being an *isomorphism* sneaks in extra data.
+We can happily forget about the term "isomorphism" now and stick with
+equivalence.
+:::
+
+At the very least, we can show that the identity function on any type
+is always an equivalence.
+
+```
+idEquiv : (A : Type ℓ) → A ≃ A
+-- Exercise:
+idEquiv A = {!!}
+```
+
+An equivalence between two types says, in effect, that elements of
+those types are different representations of the same data. Putting
+together the maps we defined above, `Bool`{.Agda} is equivalent to
+`RedOrBlue`{.Agda}
+
+```
+Bool≃RedOrBlue : Bool ≃ RedOrBlue
+Bool≃RedOrBlue = equiv Bool→RedOrBlue RedOrBlue→Bool isSection-Bool-RedOrBlue isSection-RedOrBlue-Bool 
 ```
 
 Now, this isn't the only way we could have shown that `Bool`{.Agda}
-was isomorphic to `RedOrBlue`{.Agda}; we could also have sent
+was equivalent to `RedOrBlue`{.Agda}; we could also have sent
 `true`{.Agda} to `blue`{.Agda} and `false`{.Agda} to `red`{.Agda}.
-Define this other isomorphism below:
+Define this other equivalence below:
 
 ```
-OtherIsoBoolRedOrBlue : Iso Bool RedOrBlue
-OtherIsoBoolRedOrBlue = iso to fro s r
-{-
-  where
-    to : Bool → RedOrBlue
-    to x = {!   !}
-
-    fro : RedOrBlue → Bool
-    fro x = {!   !}
-
-    s : section to fro
-    s x = {!   !}
-
-    r : retract to fro
-    r x = {!   !}
--}
-  where
-    to : Bool → RedOrBlue
-    to true = blue
-    to false = red
-
-    fro : RedOrBlue → Bool
-    fro red = false
-    fro blue = true
-
-    s : section to fro
-    s red = refl
-    s blue = refl
-
-    r : retract to fro
-    r true = refl
-    r false = refl
+OtherBool≃RedOrBlue : Bool ≃ RedOrBlue
+OtherBool≃RedOrBlue = equiv to fro to-fro fro-to
+-- Exercise:
+    where
+      to : Bool → RedOrBlue
+      to x = {!!}
+--
+      fro : RedOrBlue → Bool
+      fro x = {!!}
+--
+      to-fro : isSection to fro
+      to-fro x = {!!}
+--
+      fro-to : isRetract to fro
+      fro-to x = {!!}
 ```
 
-Not every function `Bool → RedOrBlue` is an isomorphism. If we sent
+Not every function `Bool → RedOrBlue` is an equivalence. If we sent
 both `true`{.Agda} and `false`{.Agda} to `red`{.Agda}, for example,
-then there is no way we could find an inverse. Any inverse would have
-to send `red`{.Agda} to `true`{.Agda} and to `false`{.Agda}, but these
-aren't equal!
+then there is no way we could find an inverse. Any section would have
+to send `red`{.Agda} to `true`{.Agda} and also to `false`{.Agda}, but
+these aren't equal!
 
-In Lecture 1-2, we had a few "bijections" between types. At least, we
-had maps going each way. Now we can show that these really are
-isomorphisms. Here's an especially easy one, where the paths in the
-`section`{.Agda} and `retract`{.Agda} can be also `refl`{.Agda} for
-any argument.
+In Lecture 1-2, we had a few "bijections" between types. At the time,
+all we could do is produce maps going each way. Now we can show that
+these really are equivalences. Here's an especially easy one, where
+the paths in the `to-fro`{.Agda} and `fro-to`{.Agda} functions can be
+`refl`{.Agda} for any argument.
 
 ```
-×-assoc-Iso : Iso (A × (B × C)) ((A × B) × C)
-×-assoc-Iso = iso to fro sec ret
+×-assoc-≃ : (A × (B × C)) ≃ ((A × B) × C)
+×-assoc-≃ = equiv to fro to-fro fro-to
   where
     -- We defined these maps way back in Lecture 1-1, but only for
     -- types in the lowest universe, so we have to redefine them here.
@@ -203,175 +277,147 @@ any argument.
     fro : ((A × B) × C) → (A × (B × C))
     fro ((a , b) , c) = (a , (b , c))
 
-    sec : section to fro
+    to-fro : isSection to fro
 --  Exercise:
---  s x = ?
-    sec x = refl
+    to-fro x = {!!}
 
-    ret : retract to fro
+    fro-to : isRetract to fro
 --  Exercise:
---  r x = ?
-    ret x = refl
+    fro-to x = {!!}
 ```
 
-This worked because the composition of the two functions is
-*definitionally* the identity on any argument. In the previous Lecture
-we gave descriptions of `PathP`{.Agda}s in various types. The
-functions involved are also definitional inverses and so assemble into
-`Iso`{.Agda}s in a similar way.
+This worked because the composition of the two functions computes to
+the identity on any argument.
+
+In the previous Lecture we gave descriptions of `PathP`{.Agda}s in
+various types. The functions involved are also definitional inverses
+and so assemble into equivalences in a similar way.
 
 ```
-funExt-Iso : {f g : A → B} → Iso ((x : A) → f x ≡ g x) (f ≡ g)
-funExt-Iso = iso funExt funExt⁻ (λ _ → refl) (λ _ → refl)
+funExt-≃ : {f g : A → B} → ((x : A) → f x ≡ g x) ≃ (f ≡ g)
+funExt-≃ = equiv funExt funExt⁻ (λ _ → refl) (λ _ → refl)
 
--- Paths in a product are the same as the product of paths
-×Path-Path×-Iso : {x y : A × B} →
-  Iso (Path A (fst x) (fst y) × Path B (snd x) (snd y))
-      (Path (A × B) x y)
-×Path-Path×-Iso = iso ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
+-- mvrnote: is orienting these the other direction more natural?
+×Path-Path×-≃ : {x y : A × B} →
+  (fst x ≡ fst y) × (snd x ≡ snd y)
+  ≃ (x ≡ y)
+×Path-Path×-≃ = equiv ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
 
 -- The same is true when everything is maximally dependent
-ΣPath-PathΣ-Iso : {A : I → Type ℓ}
+ΣPath-PathΣ-≃ : {A : I → Type ℓ}
                   {B : (i : I) → (a : A i) → Type ℓ'}
                   {x : Σ[ a ∈ A i0 ] B i0 a}
                   {y : Σ[ a ∈ A i1 ] B i1 a} →
-  Iso (Σ[ p ∈ PathP A (fst x) (fst y) ]
-             (PathP (λ i → B i (p i)) (snd x) (snd y)))
-      (PathP (λ i → Σ[ a ∈ A i ] B i a) x y)
-ΣPath-PathΣ-Iso = iso ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
+  (Σ[ p ∈ PathP A (fst x) (fst y) ]
+    (PathP (λ i → B i (p i)) (snd x) (snd y)))
+  ≃ (PathP (λ i → Σ[ a ∈ A i ] B i a) x y)
+ΣPath-PathΣ-≃ = equiv ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
 ```
 
-We will not always be so lucky. In the following `Iso`{.Agda}, we
+We will not always be so lucky. In the following equivalence, we
 cannot simply supply `refl`{.Agda} for an arbitrary argument `x`
 because Agda does not know which cases of `Bool→⊤⊎⊤`{.Agda} and
-`⊤⊎⊤→Bool`{.Agda} should be used with that `x`. But: if we split into
-cases for `x`, then the functions compute and we can again supply
-`refl`{.Agda} in each case.
+`⊤⊎⊤→Bool`{.Agda} should be used for that `x`. But: if we split into
+cases for `x`, then the functions do compute and we can again supply
+`refl`{.Agda} in each case. If this doesn't work, go back and check
+that the definitions of `Bool→⊤⊎⊤`{.Agda} and `⊤⊎⊤→Bool`{.Agda} you
+gave are actually inverses!
 
 ```
-Bool-⊤⊎⊤-Iso : Iso Bool (⊤ ⊎ ⊤)
-Bool-⊤⊎⊤-Iso = iso Bool→⊤⊎⊤ ⊤⊎⊤→Bool sec ret
+Bool-⊤⊎⊤-≃ : Bool ≃ (⊤ ⊎ ⊤)
+Bool-⊤⊎⊤-≃ = equiv Bool→⊤⊎⊤ ⊤⊎⊤→Bool to-fro fro-to
   where
-    sec : section Bool→⊤⊎⊤ ⊤⊎⊤→Bool
+    to-fro : isSection Bool→⊤⊎⊤ ⊤⊎⊤→Bool
 --  Exercise:
---  Hint: Check your definitions for Bool→⊤⊎⊤ and ⊤⊎⊤→Bool
---  in 1-2 if this throws an error.
---  sec x = ?
-    sec (inl tt) = refl
-    sec (inr tt) = refl
+    to-fro x = {!!}
 
-    ret : retract Bool→⊤⊎⊤ ⊤⊎⊤→Bool
+    fro-to : isRetract Bool→⊤⊎⊤ ⊤⊎⊤→Bool
 --  Exercise:
---  ret x = ?
-    ret true = refl
-    ret false = refl
+    fro-to x = {!!}
 ```
 
-The next is similar.
+The next few are similar.
 
 ```
-ℤ-ℕ⊎ℕ-Iso : Iso ℤ (ℕ ⊎ ℕ)
-ℤ-ℕ⊎ℕ-Iso = iso ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ sec ret
+ℤ-ℕ⊎ℕ-≃ : ℤ ≃ (ℕ ⊎ ℕ)
+ℤ-ℕ⊎ℕ-≃ = equiv ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ to-fro fro-to
   where
-    sec : section ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ
+    to-fro : isSection ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ
 --  Exercise:
---  sec x = ?
-    sec (inl x) = refl
-    sec (inr x) = refl
+    to-fro x = {!!}
 
-    ret : retract ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ
+    fro-to : isRetract ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ
 --  Exercise:
---  ret x = ?
-    ret (pos n) = refl
-    ret (negsuc n) = refl
-```
+    fro-to x = {!!}
 
-```
-∅⊎-Iso : ∀ {ℓ} (A : Type ℓ) → Iso (∅ ⊎ A) A
-∅⊎-Iso A = iso (∅⊎-to A) (∅⊎-fro A) sec ret
+∅⊎-≃ : {ℓ : Level} (A : Type ℓ) → (∅ ⊎ A) ≃ A
+∅⊎-≃ A = equiv (∅⊎-to A) (∅⊎-fro A) to-fro fro-to
   where
-    sec : section (∅⊎-to A) (∅⊎-fro A)
+    to-fro : isSection (∅⊎-to A) (∅⊎-fro A)
 --  Exercise:
---  sec x = ?
-    sec x = refl
+    to-fro x = {!!}
 
-    ret : retract (∅⊎-to A) (∅⊎-fro A)
+    fro-to : isRetract (∅⊎-to A) (∅⊎-fro A)
 --  Exercise:
---  ret x = ?
-    ret (inr x) = refl
+    fro-to x = {!!}
 
-∅×-Iso : Iso (∅ × A) ∅
-∅×-Iso {A = A} = iso (∅×-to A) (∅×-fro A) sec ret
+∅×-≃ : (A : Type) → (∅ × A) ≃ ∅
+∅×-≃ A = equiv (∅×-to A) (∅×-fro A) to-fro fro-to
   where
-    sec : section (∅×-to A) (∅×-fro A)
+    to-fro : isSection (∅×-to A) (∅×-fro A)
 --  Exercise:
---  sec x = ?
-    sec ()
+    to-fro x = {!!}
 
-    ret : retract (∅×-to A) (∅×-fro A)
+    fro-to : isRetract (∅×-to A) (∅×-fro A)
 --  Exercise:
---  ret x = ?
-    ret (() , a)
+    fro-to x = {!!}
 ```
 
-Not all isomorphisms have to go between different types. A type
-can be isomorphic to itself in a non-trivial way.
+Equivalences do not necessarily go between different types. A type can
+be equivalent to itself in a non-trivial way. This will be crucial
+later!
 
 ```
-not-Iso : Iso Bool Bool
-not-Iso = iso not not sec ret
+not-≃ : Bool ≃ Bool
+not-≃ = equiv not not to-fro fro-to
   where
-    sec : section not not
+    to-fro : isSection not not
 --  Exercise:
---  sec x = ?
-    sec true = refl
-    sec false = refl
+    to-fro x = {!!}
 
-    ret : retract not not
+    fro-to : isSection not not
 --  Exercise:
---  ret x = ?
-    ret true = refl
-    ret false = refl
+    fro-to x = {!!}
 
-sucℤ-Iso : Iso ℤ ℤ
-sucℤ-Iso = iso sucℤ predℤ sec ret
+sucℤ-≃ : ℤ ≃ ℤ
+sucℤ-≃ = equiv sucℤ predℤ to-fro fro-to
   where
-    sec : section sucℤ predℤ
+    to-fro : isSection sucℤ predℤ
 --  Exercise:
---  sec x = ?
-    sec (pos zero) = refl
-    sec (pos (suc n)) = refl
-    sec (negsuc zero) = refl
-    sec (negsuc (suc n)) = refl
+    to-fro x = {!!}
 
-    ret : retract sucℤ predℤ
+    fro-to : isRetract sucℤ predℤ
 --  Exercise:
---  ret x = ?
-    ret (pos zero) = refl
-    ret (pos (suc n)) = refl
-    ret (negsuc zero) = refl
-    ret (negsuc (suc n)) = refl
+    fro-to x = {!!}
 ```
 
-And not all isomorphisms will be simply case-split-then-`refl`{.Agda}. The
-section and retract here need to be constructed recursively:
+And not all equivalences will be simply proven by
+case-split-then-`refl`{.Agda}. The section and retract here need to be
+constructed recursively:
 
 ```
-ℕ-List⊤-Iso : Iso ℕ (List ⊤)
-ℕ-List⊤-Iso = iso ℕ→List⊤ length sec ret
+ℕ-List⊤-≃ : ℕ ≃ (List ⊤)
+ℕ-List⊤-≃ = equiv ℕ→List⊤ length to-fro fro-to
   where
-    sec : section ℕ→List⊤ length
+    to-fro : isSection ℕ→List⊤ length
 --  Exercise:
---  sec x = ?
-    sec [] = refl
-    sec (tt :: L) = cong (tt ::_) (sec L)
+    to-fro x = {!!}
 
-    ret : retract ℕ→List⊤ length
+    fro-to : isRetract ℕ→List⊤ length
 --  Exercise:
---  ret x = ?
-    ret zero = refl
-    ret (suc x) = cong suc (ret x)
+    fro-to x = {!!}
 ```
+
 
 ## Path Algebra
 
@@ -380,21 +426,21 @@ the fact that they are functions `I → A`. In this lecture, we'll
 introduce some more axioms for the interval which will let us prove
 more.
 
-So far, we have only used that the interval has endpoints `i0 i1 :
-I`. But the actual unit interval $[0, 1]$ of topology has a lot more
+So far, we have only used that the interval has endpoints `i0 : I and
+`i1 : I`. But the actual unit interval $[0, 1]$ has a lot more
 structure than just its endpoints. We'll axiomatize some of this
 structure so we can use it to define operations on paths.
 
-First, there is the function $r(x) = 1 - x : [0, 1] → [0, 1]$. If
-$p : [0, 1] → S$ is a path in the space $S$ from $p(0)$ to $p(1)$,
-then $p ∘ r : [0, 1] → S$ is a path in $S$ from $p(1)$ to $p(0)$ ---
-since $(p ∘ r)(0) = p(1)$ and $(p ∘ r)(1) = p(0)$ by definition.
+First, there is the function $r(x) = 1 - x : [0, 1] → [0, 1]$ that
+reverses the interval. If $p : [0, 1] → S$ is a path in the space $S$
+from $p(0)$ to $p(1)$, then $p ∘ r : [0, 1] → S$ is a path in $S$ from
+$p(1)$ to $p(0)$ --- since $(p ∘ r)(0) = p(1)$ and $(p ∘ r)(1) = p(0)$
+by definition.
 
-Cubical Agda has a similar primitive operation on cubical variables:
-`~ : I → I` is a built-in function that reverses the interval. By
-definition we have that `~ i0 = i1` and `~ i1 = i0`. Uncomment the
-goal and normalise the expression by moving the cursor into the goal
-and pressing `C-c C-n`. (`C-n` for "normalise").
+Cubical Agda has a primitive operation on elements of the interval:
+`~_ : I → I`, which we think of as reversal. By definition, it holds
+that `~ i0 = i1` and `~ i1 = i0`. Uncomment the goal and normalise the
+expression by moving the cursor into the goal and pressing `C-c C-n`.
 
 ```
 {-
@@ -403,20 +449,21 @@ _ = {! ~ i0!}
 -}
 ```
 
-We can use this operation to give the symmetry principle for paths.
+We can use this operation to give reverse a path.
 
 ```
 sym : x ≡ y → y ≡ x
 sym p i = p (~ i)
 ```
 
-We upgrade this to also apply to paths over a path. We have to flip
-the path of types too, so that the end-points lie in the correct
-types.
+And we can upgrade this principle to also apply to pathovers. We have
+to flip the path of types `A` too, so that the endpoints lie in the
+correct types.
 
 ```
 symP : {A : I → Type ℓ} → {x : A i1} → {y : A i0}
-  → (p : PathP (λ i → A (~ i)) x y) → PathP A y x
+  → PathP (λ i → A (~ i)) x y
+  → PathP A y x
 symP p j = p (~ j)
 ```
 
@@ -429,32 +476,30 @@ symP-inv : (p : PathP _ x y) → symP (symP p) ≡ p
 symP-inv p = refl
 ```
 
-This is an example of a path between paths. In this case, the
-path-between-paths is trivial. But the paths-between-paths we run into
-won't be trivial for long.
-
-These two definitions can be put together as an isomorphism.
+And so `symP`{.Agda} is an equivalence.
 
 ```
-symP-Iso : {A : I → Type ℓ} → {x : A i1} → {y : A i0}
-  → Iso (PathP (λ i → A (~ i)) x y) (PathP A y x)
-symP-Iso = iso symP symP symP-inv symP-inv
+symP-≃ : {A : I → Type ℓ} → {x : A i1} → {y : A i0}
+  → PathP (λ i → A (~ i)) x y ≃ PathP A y x
+symP-≃ = equiv symP symP symP-inv symP-inv
 ```
+
 
 ## The Interval De Morgan Algebra
 
-To define interesting squares, we'll need to axiomatize a bit more
-structure from the unit interval $[0,1]$. The functions $\max, \min :
-[0, 1] × [0, 1] → [0, 1]$ are quite useful for constructing
-homotopies: if $p : [0, 1] → S$ is a path in $S$, then $p ∘ \max$ is a
-homotopy between $p$ and the constant path at $p(1), because $p(\max(0,
-i)) = p(i)$ and $p(\max(1, i)) = p(1)$. For similar reasons, $p ∘ \min$
-is a homotopy between the constant path at $p(0)$ and $p$.
+To define interesting `Squares`{.Agda}s, we'll need to axiomatize more
+structure from the unit interval $[0, 1]$. Mathematically, the
+functions $\max, \min : [0, 1] × [0, 1] → [0, 1]$ are quite useful for
+constructing homotopies: if $p : [0, 1] → S$ is a path in $S$, then $p
+∘ \max$ is a homotopy between $p$ and the constant path at $p(1),
+because $p(\max(0, i)) = p(i)$ and $p(\max(1, i)) = p(1)$. For similar
+reasons, $p ∘ \min$ is a homotopy between the constant path at $p(0)$
+and $p$.
 
-We will axiomatize these with interval operations `∨`{.Agda} and
-`∧`{.Agda} (for $\max$ and $\min$ respectively). Agda automatically
-computes the values of `∨`{.Agda} and `∧`{.Agda} when either side is
-one of the endpoints `i0`{.Agda} or `i1`{.Agda}.
+We will axiomatize these with two more in-built interval operations
+`∨`{.Agda} and `∧`{.Agda} (for $\max$ and $\min$ respectively). Agda
+automatically computes the values of `∨`{.Agda} and `∧`{.Agda} when
+either side is one of the endpoints `i0`{.Agda} or `i1`{.Agda}.
 
 Uncomment this block and try normalising the following expressions.
 
@@ -475,8 +520,7 @@ _ = {! i0 ∧ i1 !}
 ```
 
 There are a few additional equalities which hold for $\max$ and $\min$
-that Agda builds in for `∧`{.Agda} and `∨`{.Agda}, so that they hold
-definitionally:
+that Agda makes true for `∧`{.Agda} and `∨`{.Agda}.
 
 * Top and Bottom:
   $$
@@ -524,21 +568,28 @@ definitionally:
 
 (You don't have to memorise these.)
 
+::: Aside:
 Pen-and-Paper Exercise: Convince yourself that all of these axioms are
-true for the actual unit interval $[0, 1]$ where `∨ = max`, `∧ = min`,
-and `~ i = 1 - i`.
 
-These laws make `I`{.Agda} into an algebraic structure known as a *De
-Morgan algebra*. De Morgan was a British mathematician and
-contemporary of Boole (from whom we get *Boolean algebra* and the name
-of the type `Bool`{.Agda}). De Morgan was the first to state the laws
-which have his name, coined the term "mathematical induction" and was
-the first to formally state the induction principle for natural
-numbers. De Morgan, like Boole, was concerned with turning logic into
-algebra.
+These laws make the interval `I`{.Agda} into an algebraic structure
+known as a *De Morgan algebra*. We saw a version of the "De Morgan
+laws" earler, for types, when we proved `DeMorgan-law-1`{.Agda},
+`DeMorgan-law-2`{.Agda} and `DeMorgan-law-3`{.Agda}. Unlike for types,
+the algebra on the interval also satisfies the missing fourth law
+which we mentioned there.
+
+::: Aside:
+De Morgan was a British mathematician and contemporary of Boole (from
+whom we get *Boolean algebra* and the name of the type `Bool`{.Agda}).
+He was the first to state the laws which have his name, coined the
+term "mathematical induction" and was the first to formally state the
+induction principle for natural numbers. De Morgan, like Boole, was
+concerned with turning logic into algebra.
+:::
 
 We can use the De Morgan algebra structure `∨`{.Agda} and `∧`{.Agda}
-to build some squares that were unavailable to us before:
+to build some squares that were unavailable to us before. The
+following two are called *connections*.
 
              p
          x - - - > y
@@ -564,7 +615,7 @@ connection∨ : (p : x ≡ y) → Square p refl p refl
 connection∨ p i j = p (i ∨ j)
 ```
 
-Below we have drawn some more squares for you to fill in.
+Below we have drawn some more squares for you to fill in as practice.
 
            p⁻¹
        y - - - > x
@@ -577,7 +628,7 @@ Below we have drawn some more squares for you to fill in.
 ```
 connectionEx1 : (p : x ≡ y) → Square p refl refl (sym p)
 -- Exercise:
-connectionEx1 p i j = ?
+connectionEx1 p i j = {!!}
 
 ```
             p
@@ -587,55 +638,39 @@ connectionEx1 p i j = ?
         |         |               j |
         y — — — > y                 ∙ — >
            refl                       i
+
 ```
 connectionEx2 : (p : x ≡ y) → Square (sym p) refl refl p
 -- Exercise:
-connectionEx2 p i j = ?
+connectionEx2 p i j = {!!}
 ```
 
-Here's a nice application. The definition of `ℤ`{.Agda} we gave back
-in Lecture 1-2 is a little janky --- we treat the negatives and the
-positives asymmetrically, handing `zero`{.Agda} to the `pos`{.Agda}
-side and shifting the `negsuc`{.Agda} side down by one. Now that we have
-paths, we can define a version of the integers that treats them the
-same --- but we have to add in a path between "positive 0" and
-"negative 0":
+As an immediate application of connections, we can show that the
+`ℤ→ℤ'`{.Agda} and `ℤ'→ℤ`{.Agda} maps we defined earlier are an
+equivalence. You will need to use a connection in the case for
+`poszero≡negzero`{.Agda}.
 
 ```
-data ℤ' : Type where
-  pos' : ℕ → ℤ'
-  neg' : ℕ → ℤ'
-  poszero≡negzero : pos' zero ≡ neg' zero
-```
-
-Using a connection, we can prove that these new integers are in fact
-isomorphic to original ones.
-
-```
-ℤ'→ℤ : ℤ' → ℤ
--- Exercise:
-ℤ'→ℤ z = ?
-
-ℤ→ℤ' : ℤ → ℤ'
--- Exercise:
-ℤ→ℤ' z = ?
-
-ℤIsoℤ' : Iso ℤ ℤ'
-ℤIsoℤ' = iso ℤ→ℤ' ℤ'→ℤ s r
+ℤ≃ℤ' : ℤ ≃ ℤ'
+ℤ≃ℤ' = equiv ℤ→ℤ' ℤ'→ℤ to-fro fro-to
   where
-    s : section ℤ→ℤ' ℤ'→ℤ
---  Exercise: Use a conneciton in the case for `poszero≡negzero`!
---  s z = ?
-    s (pos' x) = refl
-    s (neg' zero) = poszero≡negzero
-    s (neg' (suc zero)) = refl
-    s (neg' (suc (suc x))) = refl
-    s (poszero≡negzero i) = λ j → poszero≡negzero (i ∧ j)
-
-    r : retract ℤ→ℤ' ℤ'→ℤ
+    to-fro : isSection ℤ→ℤ' ℤ'→ℤ
 --  Exercise:
---  r z = ?
-    r (pos n) = refl
-    r (negsuc zero) = refl
-    r (negsuc (suc n)) = refl
+    to-fro z = {!!}
+
+    fro-to : isRetract ℤ→ℤ' ℤ'→ℤ
+--  Exercise:
+    fro-to z = {!!}
 ```
+
+## Equivalent notions of Equivalence
+
+mvrnote: out of date
+There are many different, but equivalent, ways to define the notion of
+equivalence in homotopy type theory. Above we defined equivalences using what we
+could more precisely call a "bi-sectional equivalence": an equivalence is a
+function which has section that itself has a section. We can also define
+equivalences using `bi-invertible equivalences`: an equivalence is a function
+with a section and a *retract*. Let's see this definition now.
+
+mvrnote possible exercise: x ≤ y if and only if Σ z ꞉ ℕ , x + z ≡ y

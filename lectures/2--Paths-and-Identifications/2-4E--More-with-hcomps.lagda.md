@@ -96,7 +96,7 @@ isContr→isContrPath cA = everythingEqual→isContrPath (isContr→everythingEq
 -- isContr→isEquiv {A = A} {B = B} c c' f b = isContrRetract fst g r c
 --   where g : A → fiber f b
 --         g a = a , trans (sym (snd c' (f a))) (snd c' b)
---         r : retract {A = fiber f b} {B = A} fst g
+--         fro-to : retract {A = fiber f b} {B = A} fst g
 --         fst (r (a , p) i) = a
 --         snd (r (a , p) i) = isContr→everythingEqual (isContr→isContrPath c' (f a) b) (snd (g a)) p i
 ```
@@ -171,7 +171,7 @@ Iso.leftInv (OneToOne→Iso R (fl , fl')) = {!!}
 
 ```
 -- FunIsoFunctionalGraph : {A B : Type} → Iso (A → B) (Σ[ R ∈ Rel A B ] (isFunctional R))
--- FunIsoFunctionalGraph {A} {B} = iso to fro s r
+-- FunIsoFunctionalGraph {A} {B} = iso to fro to-fro r
 --   where
 --     to : (A → B) → Σ[ R ∈ Rel A B ] (isFunctional R)
 --     to f = graphRel f , isFunctionalGraph f
@@ -180,10 +180,10 @@ Iso.leftInv (OneToOne→Iso R (fl , fl')) = {!!}
 --     fro : Σ[ R ∈ Rel A B ] (isFunctional R) → (A → B)
 --     fro = uncurry isFunctional→Fun
 
---     s : section to fro
---     s (R , c) = {!!}
+--     to-fro : section to fro
+--     to-fro (R , c) = {!!}
 
---     r : retract to fro
+--     fro-to : section fro to
 --     r f = refl
 ```
 

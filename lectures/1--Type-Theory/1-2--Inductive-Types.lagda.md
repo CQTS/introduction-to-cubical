@@ -13,9 +13,11 @@ open import Library.Prelude
 In the last lecture, we saw some abstract type theory. In this
 lecture, we'll get to define our own concrete data types.
 
+
+## The Booleans
+
 A data type, also known as an inductive type, is a type whose elements
-are built up out of "constructors". Here is the data type of Boolean
-values:
+are built up out of "constructors". Here is the data type of Booleans:
 
 ```
 data Bool : Type where
@@ -30,8 +32,8 @@ that is, a Boolean is either `true`{.Agda} or `false`{.Agda}.
 What makes a data type "inductive" is its "induction principle": to
 define a function out of an inductive type, it suffices to define the
 behavior of the function on all the constructors. For example, we may
-define the logical `not`{.Agda} by saying what it does to `true`{.Agda} and to
-`false`{.Agda}:
+define the logical `not`{.Agda} by saying what it does to
+`true`{.Agda} and to `false`{.Agda}:
 
 ```
 not : Bool → Bool
@@ -41,23 +43,24 @@ not false = true
 
 Induction may seem like an odd name if you are used to "proof by
 induction" from your discrete math course, but we will see below that
-the induction principle for `ℕ`{.Agda} is basically the induction you are
-used to.
+the induction principle for `ℕ`{.Agda} is basically the mathematical
+induction you are used to.
 
 The method of writing functions where we describe what they do on
-particular forms of their input is called "pattern matching". Agda has
-nice support for the pattern matching style of defining functions ---
-it can automatically write out all cases you need to cover to define a
-function out of an inductive data type. This is called doing a "case
-split". To have Agda do this for you use the Emacs function
-`agda2-make-case` (`C-c C-c` in `agda2-mode`) with your cursor in a hole,
-and then list the variables you want to case split on, separated by
-spaces.
+particular forms of their input is called "pattern matching", we
+already saw an example of this when writing functions with pair types
+as arguments. Agda has nice support for working with pattern matching
+--- it can automatically write out all cases you need to cover to
+define a function out of an inductive data type. This is called doing
+a "case split". To have Agda do this for you, place your cursor in a
+hole and press `C-c C-c`. You will be prompted for the list of
+variables separated by spaces that you want to apply case-splitting to.
 
-Try this here: press `C-c C-c` in hole 0 below and type `x y`, and watch
-Agda split this definition into all the cases you need to handle. The
-logical "and" of two Booleans `x` and `y` is `true`{.Agda} just when both `x`
-and `y` are `true`{.Agda}.
+Try this below: press `C-c C-c` in the hole for `and`{.Agda} below and
+enter `x y`, to have Agda split this definition into all the cases you
+need to handle. (Recall that the logical "and" of two Booleans `x` and `y` is
+`true`{.Agda} exactly when both `x` and `y` are `true`{.Agda} and
+`false`{.Agda} otherwise.)
 
 ```
 _and_ : Bool → Bool → Bool
@@ -66,12 +69,15 @@ x and y = {!!}
 ```
 
 You don't have to split on all variables at once. Give a definition of
-the logical "or" by case splitting only on the variable `x`:
+the logical "or" by case splitting only on the variable `x`. (Recall
+that the logical "or" of two Booleans `x` and `y` is `true`{.Agda} if
+either of `x` or `y` are `true`{.Agda} and `false`{.Agda} if they are
+both `false`{.Agda}.)
+
 ```
 _or_ : Bool → Bool → Bool
 -- Exercise:
-true or y = {!!}
-false or y = {!!}
+x or y = {!!}
 ```
 
 Here is the definition of logical implication. There is a strange
@@ -81,27 +87,29 @@ this and the next lecture, we'll see why this is a useful principle to
 take, even if it seems unintuitive.
 
 ```
-_⇒_ : Bool → Bool → Bool
-true ⇒ true  = true
-true ⇒ false = false
--- Here we use a "wildcard" (the underscore "_") to say that the
--- definition we are given is valid for anything we put in that spot.
-false ⇒ _    = true
+_implies_ : Bool → Bool → Bool
+true implies true  = true
+true implies false = false
+false implies _    = true
 ```
 
-In general, inductive data types are characterized by their induction
-principles. In this lecture we will start focusing on a simpler
-incarnation, "recursion", and will return to induction in the next
-lecture.
+Here we use a "wildcard" (the underscore "_") to say that the
+definition we are given is valid for anything we put in that spot, so
+we don't bother giving the variable a name at all.
+
+In general, inductive data types are characterized by their "induction
+principles". In this lecture we will start by focusing on a simpler
+version of this principle, "recursion", and will return to induction
+in a later lecture.
 
 The recursion principle for a type packs together the data that is
 necessary to produce a non-dependent function out of it. To construct
 a function `Bool → A`, we just need two elements of `A` to serve as
-the images of `true` and `false`. We can write out the recursion
-principle for `Bool` as follows:
+the images of `true`{.Agda} and `false`{.Agda}. We can write out the
+recursion principle for `Bool`{.Agda} as follows:
 
 ```
-Bool-rec : {ℓ : Level} {A : Type ℓ}
+Bool-rec : {A : Type}
          → A
          → A
          → (Bool → A)
@@ -109,129 +117,138 @@ Bool-rec a1 a2 true = a1
 Bool-rec a1 a2 false = a2
 ```
 
-The recursion principle for Booleans is known under a more common
-name: the "if-then-else" pattern familiar in many programming
-languages:
+The `Bool`{.Agda} type is so simple that the name "recursion" feels
+inappropriate: the principle doesn't actually do a recursive call of
+any kind! The name will make more sense when we get to `ℕ`{.Agda}.
+
+The recursion principle for Booleans is known under a more familiar
+name: the "if-then-else" pattern familiar from almost every
+programming language:
 
 ```
-if_then_else_ : {ℓ : Level} {A : Type ℓ}
+if_then_else_ : {A : Type}
               → Bool
               → A
               → A
               → A
 if b then a1 else a2 = Bool-rec a1 a2 b
 ```
-As in the definition of composition `f ∘ g`, we are using underscores
-to tell Agda where the function arguments go. Writing the
-application `if b then a1 else a2` is the same as
-`if_then_else_ b a1 a2`.
 
-We usually won't need to use the recursion principle `Bool-rec`{.Agda}
-and other recursion principles by name: instead, we can just do a
-pattern match on an argument of `Bool`{.Agda} ourselves like we did
-above for the Boolean operations `not`{.Agda} and `or`{.Agda}, and so
-on. But, for some practice, use `Bool-rec`{.Adga} to re-implement
-these:
+::: Aside:
+As in the definition of composition `f ∘ g`, we are using underscores
+to tell Agda where the function arguments go. Writing the application
+`if b then a1 else a2` is considered by Agda precisely the same as
+`if_then_else_ b a1 a2`. (We won't use this kind of "mixfix" notation
+much.)
+:::
+
+We won't usually need ot use the recursion principle `Bool-rec`{.Agda}
+by name: instead, we can just do a pattern match on an argument of
+type `Bool`{.Agda} ourselves as we did above for the Boolean
+operations `not`{.Agda}, `and`{.Agda}, and so on. But, for some
+practice, try using `Bool-rec`{.Adga} to re-implement these:
 
 ```
 not-fromRec : Bool → Bool
--- Exercise:
+-- Exercise: (Don't pattern match on `x`!)
 not-fromRec x = {!!}
 
--- You will need to use `Bool-rec` at least twice!
+-- You will need to use `Bool-rec` twice!
 or-fromRec : Bool → Bool → Bool
--- Exercise:
+-- Exercise: (Don't pattern match on either `x` or `y`!)
 or-fromRec x y = {!!}
 ```
 
-## Unit
+There is nothing special about `Bool`{.Agda} having two constructors
+here, we can equally well define a type for the days of the week:
 
-`Bool`{.Agda} is a pretty simple data type, but it isn't the simplest. We can
+```
+data Day : Type where
+  monday    : Day
+  tuesday   : Day
+  wednesday : Day
+  thursday  : Day
+  friday    : Day
+  saturday  : Day
+  sunday    : Day
+```
+
+And then define functions out of it by providing cases for each of the
+constructors:
+
+```
+isWeekend : Day → Bool
+isWeekend monday    = false
+isWeekend tuesday   = false
+isWeekend wednesday = false
+isWeekend thursday  = false
+isWeekend friday    = false
+isWeekend saturday  = true
+isWeekend sunday    = true
+
+nextDay : Day → Day
+-- Exercise:
+nextDay c = {!!}
+```
+
+
+## The Unit Type
+
+`Bool`{.Agda} is a simple data type, but it isn't the simplest. We can
 use even fewer constructors. With one constructor, we have the unit
-type `⊤`{.Agda}:
+type `⊤`{.Agda}, with its unique element `tt`{.Agda}:
 
 ```
 data ⊤ : Type where
   tt : ⊤
+```
 
-⊤-rec : {ℓ : Level} {A : Type ℓ} (a : A)
+To define a function `⊤ → A`, we just have to say what it does on the
+constructor `tt`{.Agda}. This is so simple that it is difficult to
+come up with interesting examples.
+
+```
+pick-true : ⊤ → Bool
+pick-true tt = true
+```
+
+This idea can be packaged up into another recursion principle, which
+says that to define a function `⊤ → A`, it suffices to give an element
+`a : A` (which is to be the image of the unique element `tt`{.Agda}).
+
+```
+⊤-rec : {A : Type}
+      → (a : A)
       → (⊤ → A)
 ⊤-rec a tt = a
 ```
 
-The recursion principle for the unit type `⊤`{.Agda} says that to define a
-function `⊤ → A`, it suffices to give an element `a : A` (which is to
-be the image of the single element `tt`{.Agda}).
-
 There is a sense in which `⊤`{.Agda} contains no information, so that
-pairing it with another type gives back that type again. We might read
-this as "one times `A` is always `A`".
+pairing it with another type gives back that type again. We can read
+the following two execises as showing that "one times `A` equals `A`".
 
 ```
-⊤×-to : {ℓ : Level} (A : Type ℓ) → ⊤ × A → A
+⊤×-to : (A : Type) → ⊤ × A → A
 -- Exercise:
 ⊤×-to A x = {!!}
 
-⊤×-fro : {ℓ : Level} (A : Type ℓ) → A → ⊤ × A
+⊤×-fro : (A : Type) → A → ⊤ × A
 -- Exercise:
 ⊤×-fro A a = {!!}
 ```
 
-## Empty
-
-We can go even further. We can define a data type `∅`{.Agda} with no
-constructors at all. This is called the "empty type":
-
-```
-data ∅ : Type where
--- Nothing!
-```
-
-The recursion principle of the empty type is a version of the "ex
-falso quodlibet" principle of logic: with no assumptions, we may
-define a map `∅ → A`. The definition of this map is also by pattern
-matching, except in this case there are no constructions and so no
-patterns to match with. We cannot just write no definition at all, so
-Agda has special syntax for this situation: `()`, the "absurd"
-pattern, because to have an actual element of `∅`{.Agda} to match on
-here would be absurd.
-
-```
-∅-rec : {ℓ : Level} {A : Type ℓ}
-        → ∅ → A
-∅-rec ()
-```
-
-Whenever we are provided an argument of type `∅`{.Agda}, we can use
-this empty pattern to avoid writing anything at all. On occasion, we
-will have to do some constructions to produce an element of `∅`{.Agda}
-rather than having it handed to us: in those cases we will have to use
-`∅-rec`{.Agda} by hand.
-
-As an aside, we can show that "zero times `A` is always zero",
-interpreting "times" and "zero" as type constructors.
-
-```
-∅×-to : {ℓ : Level} (A : Type ℓ) → ∅ × A → ∅
--- Exercise:
-∅×-to A x = {!!}
-
-∅×-fro : {ℓ : Level} (A : Type ℓ) → ∅ → ∅ × A
--- Exercise:
-∅×-fro A a = {!!}
-```
 
 ## The Natural Numbers
 
-Enough with the simple data types, let's start to do some
-mathematics. We can define the natural numbers with a recursive data
-type. We have a constructor `zero : ℕ`, saying that zero is a natural
-number, and a constructor `suc : (n : ℕ) → ℕ` which says that if `n`
-is already a natural number, then `suc n` (the "successor" of `n`, i.e.
-`n + 1`) is a natural number.
+Enough with the simple data types, let's do some mathematics. We can
+define the natural numbers as an inductive data type. There is a
+constructor `zero : ℕ`, saying that zero is a natural number, and a
+constructor `suc : ℕ → ℕ`, which says that if `n` is already a natural
+number then `suc n` (the "successor" of `n`, i.e. `1 + n`) is also a
+natural number.
 
-We actually already defined `ℕ`{.Agda} behind the scenes, so that we
-could use it in the previous lecture. Its definition is:
+We actually defined `ℕ`{.Agda} behind the scenes so that we could use
+it in the previous lecture. Its definition, copy-pasted, is:
 
 ```
 -- data ℕ : Type where
@@ -242,16 +259,54 @@ could use it in the previous lecture. Its definition is:
 (But we leave it commented out, so that Agda doesn't complain about
 defining a new type with the same name as an existing one.)
 
-The recursion principle for the natural numbers is the usual
-definition of a function by recursion:
+Defining functions out of `ℕ`{.Agda} is similar to defining functions
+out of `Bool`{.Agda}, we just have to give cases for the two
+constructors. The difference is that the `suc`{.Agda} constructor
+tells us which (other) natural number the provided argument is the
+successor of.
+
+Here's a first example:
 
 ```
-ℕ-rec : {ℓ : Level} {A : Type ℓ}
-      → (a : A)                 -- The base case
-      → (recurse : ℕ → A → A)    -- The recursion law
-      → (ℕ → A)
-ℕ-rec a recurse zero = a
-ℕ-rec a recurse (suc n) = recurse n (ℕ-rec a recurse n)
+isZero : ℕ → Bool
+isZero zero = true
+isZero (suc n) = false
+```
+
+So, `isZero`{.Agda} is `true`{.Agda} for zero, and `false`{.Agda} for
+any successor. In this case, we didn't need to use the variable `n`,
+but to do anything interesting we will. For example:
+
+```
+double : ℕ → ℕ
+double zero = zero
+double (suc n) = suc (suc (double n))
+```
+
+Thinking mathematically, $2 × 0 = 0$, covering the first case. For the
+second case, $2 × (1 + n) = 2 + (2 × n)$. To achieve the $2 +$ part,
+we use `suc`{.Agda} twice, and to achieve the $2 × n$ part, we use the
+`double`{.Agda} function we are currently defining!
+
+Agda allows this kind of recursion so long as it is convinced that the
+argument that you provide to the recursive call is smaller than the
+argument that you started with. That is certainly the case here,
+because we go from `suc n` to just `n`.
+
+We can even do what is called "mutual" recursion, where two
+definitions depend on each other to make sense. Here is a definition
+of the proposition that a number is even, defined together with the
+proposition that a number is odd:
+
+```
+isEven : ℕ → Bool
+isOdd  : ℕ → Bool
+
+isEven zero = true
+isEven (suc n) = isOdd n
+
+isOdd zero = false
+isOdd (suc n) = isEven n
 ```
 
 Using pattern matching, we can define the arithmetic operations on
@@ -263,19 +318,26 @@ zero    +ℕ m = m
 (suc n) +ℕ m = suc (n +ℕ m)
 ```
 
-Here we have chosen to case-split on the first argument, but we could
-instead case-split on the second:
+Remember that you can test any piece of code by typing "C-c C-n" and
+then `2 +ℕ 3`, say.
+
+Here we have chosen to split into cases on the left side and leave the
+right side alont, but we could equally well split into cases on the
+right instead:
 
 ```
-_+ℕs_ : ℕ → ℕ → ℕ
-n +ℕs zero = n
-n +ℕs (suc m) = suc (n +ℕ m)
+_+ℕ'_ : ℕ → ℕ → ℕ
+n +ℕ' zero = n
+n +ℕ' (suc m) = suc (n +ℕ m)
 ```
 
 We will be able to show that these two versions are equal as
 functions, but Agda doesn't consider them *exactly* the same.
 
-Try some other ordinary operations:
+Try some other ordinary operations on natural numbers. To figure these
+out, calculate what the answer should be mathematically, $(1 + n) × m
+= m + (n × m)$ for example, and then turn those equations into
+definitions.
 
 ```
 -- Multiplication
@@ -287,33 +349,62 @@ n ·ℕ m = {!!}
 _^ℕ_ : ℕ → ℕ → ℕ
 -- Exercise:
 n ^ℕ m = {!!}
-
--- If Agda accepts these, your implementations are probably correct!
-_ : 2 ·ℕ 0 ≡ 0
-_ = λ i → 0
-
-_ : 2 ·ℕ 3 ≡ 6
-_ = λ i → 6
-
-_ : 2 ^ℕ 0 ≡ 1
-_ = λ i → 1
-
-_ : 2 ^ℕ 4 ≡ 16
-_ = λ i → 16
 ```
 
-Remember that you can test your code by typing "C-c C-n" and then
-`2 ^ℕ 3`, say.
+Make sure to test these using `C-c C-n`!
 
 We can also define a "predecessor" operation, which partially undoes
 the successor `suc : ℕ → ℕ`. Of course, it can't fully undo it, since
-`zero`{.Agda} has nowhere to go but `zero`{.Agda} again.
+`zero`{.Agda} has nowhere to go except `zero`{.Agda} again.
 
 ```
 predℕ : ℕ → ℕ
-predℕ zero = zero
-predℕ (suc n) = n
+-- Exercise:
+predℕ n = {!!}
 ```
+
+Finally, we can package the recursion principle up into a function
+function, making clear that the pattern matching we've been doing is
+the usual definition of a function by recursion:
+
+```
+ℕ-rec : {A : Type}
+      → A                 -- The base casea
+      → (A → A)           -- The recursion law
+      → (ℕ → A)
+ℕ-rec a r zero = a
+ℕ-rec a r (suc n) = r (ℕ-rec a r n)
+```
+
+So: we have a base case `a`, which is used for `zero`, and a recursive
+case, which is used for `suc n` and handed the result for `n`.
+
+Try re-implementing `double`{.Agda} using `ℕ-rec`{.Agda}:
+
+```
+double' : ℕ → ℕ
+-- Exercise:
+double' = ℕ-rec {!!} {!!}
+```
+
+When pattern matching, in the `suc`{.Agda} case we are allowed access
+to access to the previous `n`: without this, functions like
+`predℕ`{.Agda} are a bit irritating to write. We can define an
+improved version of `ℕ-rec`{.Agda} that provides access to this `n`.
+For an extra challenge, try defineing this only in terms of
+`ℕ-rec`{.Agda}!
+
+```
+ℕ-rec' : {A : Type}
+      → A                 -- The base case
+      → (ℕ → A → A)       -- The recursion law
+      → (ℕ → A)
+-- Exercise:
+ℕ-rec' a r n = {!!}
+```
+
+
+## Lists
 
 If this were a course on functional programming, we would spend a lot
 more time with lists. This isn't a course on functional programming,
@@ -321,15 +412,18 @@ but it's worth seeing a smidge of list-fu.
 
 ```
 data List (A : Type) : Type where
-  [] : List A                   -- The empty list, which has nothing in it
-  _::_  : A → List A → List A   -- Adding a single item to the front of a list
+  []    : List A                -- The empty list
+  _::_  : A → List A → List A   -- The list with a head item and a tail remainder list
 ```
 
+That is, a list is either the empty list `[]`{.Agda}, or the list `a
+:: l` which has `a` at the head and `l` as the remainder of th list.
 We use some reasonably common symbols as the names of the two
-constructors. Other languages might call these `nil` and `cons`.
+constructors. Other functional languages might call these `nil` and
+`cons`.
 
 A list that we would typically write as `[1, 2, 3]` can be constructed
-by stringing together the `∷`{.Agda} constructor:
+by stringing together the `::`{.Agda} constructor:
 
 ```
 shortList : List ℕ
@@ -341,22 +435,27 @@ concatenation `[1, 2, 3] ++ [4, 5, 6]` is `[1, 2, 3, 4, 5, 6]`.
 
 ```
 _++_ : {A : Type} → List A → List A → List A
-[] ++ L2 = L2                        -- concatenating the empty list to a list doesn't change it.
-(x :: L1) ++ L2 = x :: (L1 ++ L2)    -- [x, rest] ++ L2 should be [x, rest ++ L2].
+[] ++ l2 = l2
+(x :: l1) ++ l2 = x :: (l1 ++ l2)
 ```
 
-Compare this to the definition of addition on `ℕ`{.Agda}, the structure is
-*exactly* the same (if we write the second case as `_::_ x L` rather than using the constructor infix).
+In words, concatenating the empty list to any list doesn't change it,
+and when concatenating a list with a head to another list, the result
+has the same head, and the remainder is the concatenation with the
+remainder.
 
-We can define the length of a list by recursion:
+Compare this to the definition of addition on `ℕ`{.Agda}, the
+structure is *exactly* the same (if we rewrite the second case as
+`_::_ x l` rather than using the constructor infix). All that is
+different is keeping track of the element of `A`.
+
+We can define the length of a list by recursion, essentially by
+forgetting the elements in the list::
 
 ```
 length : {A : Type} → List A → ℕ
 -- Exercise:
 length L = {!!}
-
-_ : length shortList ≡ 3
-_ = λ i → 3
 ```
 
 A natural number can be seen as a list of tally marks.
@@ -371,95 +470,15 @@ _ = λ i → ℕ→List⊤ 3
 ```
 
 Together with `length : List ⊤ → ℕ`, we have a bijection between the
-type of natural numbers and the type of lists of tally marks. We don't
-yet have the tools to express this, but we will develop them in Part 2
-of this course.
+type of natural numbers and the type of lists of tally marks.
 
-## Disjoint Unions
-
-Next, let's define the disjoint union of two types. An element of the
-disjoint union `A ⊎ B` should either be an element of `A` or an element
-of `B`. We can turn this into the definition of an inductive type.
-
-```
-data _⊎_ {ℓ ℓ'} (A : Type ℓ) (B : Type ℓ') : Type (ℓ-max ℓ ℓ') where
-  inl : A → A ⊎ B
-  inr : B → A ⊎ B
-```
-The names of the constructors mean "in-left" and "in-right".
-
-The recursion principle for the disjoint union is "dual" to the
-universal mapping property of the product that we saw at the end of
-the last lecture. There, we had that `f : C → A` and `g : C → B` we
-get `×-ump f g : C → A × B`. Now, from `f : A → C` and `g : B → C`, we
-get a map `⊎-rec f g : A ⊎ B → C,`.
-
-```
-⊎-rec : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
-      → (f : A → C)
-      → (g : B → C)
-      → (A ⊎ B → C)
-⊎-rec f g (inl a) = f a
-⊎-rec f g (inr b) = g b
-```
-
-Since a `Bool`{.Agda} is either `true`{.Agda} or `false`{.Agda}, we should be able to see
-`Bool`{.Agda} and the disjoint union of the set $\{true\}$ (represented by `⊤`{.Agda})
-and $\{true\}$ (represented by another copy of `⊤`{.Agda}). We can construct
-maps to that effect:
-
-```
-Bool→⊤⊎⊤ : Bool → ⊤ ⊎ ⊤
--- Exercise:
-Bool→⊤⊎⊤ b = {!!}
-
-⊤⊎⊤→Bool : ⊤ ⊎ ⊤ → Bool
--- Exercise:
-⊤⊎⊤→Bool c = {!!}
-```
-
-Clearly, if you turned a `Bool`{.Agda} into an element of `⊤ ⊎ ⊤` and then
-back into a Boolean using these maps, you'd get to where you started
-and vice-versa. Therefore, these maps give a bijection between Bool
-and `⊤ ⊎ ⊤`.
-
-There is a sense in which `⊎`{.Agda} acts like an addition of types,
-and in fact the operation is associative and commutative. It satisfies
-the expected laws up to equivalence, but again we can't yet fully
-express that with the tools we have.
-```
-⊎-assoc-to : {ℓ₁ ℓ₂ ℓ₃ : Level} {A : Type ℓ₁} {B : Type ℓ₂} {C : Type ℓ₃}
-  → A ⊎ (B ⊎ C) → (A ⊎ B) ⊎ C
--- Exercise:
-⊎-assoc-to = {!!}
-
-⊎-assoc-fro : {ℓ₁ ℓ₂ ℓ₃ : Level} {A : Type ℓ₁} {B : Type ℓ₂} {C : Type ℓ₃}
-  → (A ⊎ B) ⊎ C → A ⊎ (B ⊎ C)
--- Exercise:
-⊎-assoc-fro = {!!}
-
-⊎-comm : {ℓ₁ ℓ₂ : Level} {A : Type ℓ₁} {B : Type ℓ₂}
-  → A ⊎ B → B ⊎ A
--- Exercise:
-⊎-comm = {!!}
-```
-
-The type `∅`{.Agda} acts like zero.
-```
-∅⊎-to : {ℓ : Level} (A : Type ℓ) → ∅ ⊎ A → A
--- Exercise:
-∅⊎-to A x = {!!}
-
-∅⊎-fro : {ℓ : Level} (A : Type ℓ) → A → ∅ ⊎ A
--- Exercise:
-∅⊎-fro A a = {!!}
-```
 
 ## The Integers
 
 Now we can describe the integers. An integer is either a natural
-number or a *strictly* negative number (so that we don't have two
-copies of 0). We can turn this into an inductive definition:
+number or a *strictly* negative number. We have to be careful here, we
+don't want more than one copy of 0! Turning this into an inductive
+definition:
 
 ```
 data ℤ : Type where
@@ -468,36 +487,21 @@ data ℤ : Type where
 ```
 
 The `negsuc`{.Agda} constructor represents the negative of the
-successor of a natural number, so `negsuc 3` represents `-4`.
+successor of a natural number, so `negsuc n` represents $-(n + 1)$.
 
-It's worth noting that the integers are the disjoint union of two
-copies of the natural numbers (with one copy shifted up by one and
-then negated):
-
-```
-ℤ→ℕ⊎ℕ : ℤ → ℕ ⊎ ℕ
--- Exercise:
-ℤ→ℕ⊎ℕ z = {!!}
-
-
-ℕ⊎ℕ→ℤ : ℕ ⊎ ℕ → ℤ
--- Exercise:
-ℕ⊎ℕ→ℤ z = {!!}
-```
-
-We can define the various arithmetic operations of the
-integers. First, we need a few helper functions. This one negates a
-natural number into an integer (without shifting it first):
+We can define the various arithmetic operations of the integers.
+First, we need a few helper functions. This one negates a natural
+number into an integer. We can't just define `negℕ n = negsuc n`,
+because this would send $n$ to $-(n + 1)$!
 
 ```
-neg : ℕ → ℤ
-neg zero = pos zero
-neg (suc n) = negsuc n
+negℕ : ℕ → ℤ
+negℕ zero = pos zero
+negℕ (suc n) = negsuc n
 ```
 
-Now we can define the successor of an integer, which sends `z` to `z +
-1`, and similarly the predecessor function which sends `z` to `z - 1`.
-This time, we can send 0 to -1.
+Next, the successor of an integer, which sends $z$ to $z + 1$, and
+similarly the predecessor function which sends $z$ to $z - 1$.
 
 ```
 sucℤ : ℤ → ℤ
@@ -510,14 +514,17 @@ predℤ z = {!!}
 ```
 
 Now for addition of integers. Since the integers are a disjoint union
-there are two cases to handle. We'll make things simpler by separating
-these cases out.
+of the natural numbers and the negative numbers, it helps to handle
+these two cases separately. You will have to use `sucℤ`{.Agda} and
+`predℤ`{.Agda} in these definitions.
 
 ```
+-- This should correspond to $z + n$, where $n$ is a natural number
 _+pos_ : ℤ → ℕ → ℤ
 -- Exercise:
 z +pos n = {!!}
 
+-- This should correspond to $z + -(n+1)$, where $n$ is a natural number
 _+negsuc_ : ℤ → ℕ → ℤ
 -- Exercise:
 z +negsuc n = {!!}
@@ -535,12 +542,13 @@ terms of addition and negation.
 -- Exercise:
 - z = {!!}
 
-_-_ : ℤ → ℤ → ℤ
-m - n = m +ℤ (- n)
+_-ℤ_ : ℤ → ℤ → ℤ
+m -ℤ n = m +ℤ (- n)
 ```
 
 See if you can come up with the correct definition for multiplication
-of integers.
+of integers. This can be done by case-splitting on only one of the
+sides.
 
 ```
 _·ℤ_ : ℤ → ℤ → ℤ
@@ -548,17 +556,36 @@ _·ℤ_ : ℤ → ℤ → ℤ
 n ·ℤ m = {!!}
 ```
 
-Here are the fixity declarations for the operators we defined in this
-lecture. Each `infix` line specifies the precedence that the operator
-has (so `a + b · c` is interpreted as `a + (b · c)`), and whether it
-associates to the left or the right (so `a + b + c` is interpreted as
-`(a + b) + c`).
+Make sure to test this one via `C-c C-n`, especially the
+`negsuc`{.Agda} cases! They are easy to get wrong.
+
+Soon we will have the tools to write some test-cases and have Agda
+check them, so we don't have to use the "normalise" command by hand.
+
+
+## Fixities
+
+These final lines specify the precedence that each operator has (so
+that `a + b · c` is interpreted as `a + (b · c)`), and whether it
+associates to the left or the right (so that `a + b + c` is
+interpreted as `(a + b) + c`).
 
 ```
 infix  8 -_
 infixl 7 _·ℕ_ _·ℤ_
-infixl 6 _+ℕ_ _+ℤ_ _-_
+infixl 6 _+ℕ_ _+ℤ_ _-ℤ_
 
 infixr 5 _::_
 infixr 5 _++_
 ```
+
+## Unicode Dictionary
+
+| Char | Input              |
+|------|--------------------|
+| ⇒    | \=> or \Rightarrow |
+| ⊤    | \top               |
+| ∅    | \0 or \emptyset    |
+| ⊎    | \uplus             |
+| ·    | \cdot              |
+| ℤ    | \bZ                |

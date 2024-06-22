@@ -10,6 +10,7 @@ module 2--Paths-and-Identifications.2-4--Composition-and-Filling where
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
+open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 open import 1--Type-Theory.1-3--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra
@@ -17,7 +18,7 @@ open import 2--Paths-and-Identifications.2-3--Transport-and-J
 
 private
   variable
-    ℓ : Level
+    ℓ ℓ' : Level
     A B C : Type ℓ
     x y z w : A
 ```
@@ -74,9 +75,9 @@ nothing = ∅-rec
 
 Now, you might wonder at the utility of these definitions. After all,
 if `φ` is `true`, then `BooleanPartial φ A` is `⊤ → A`, which is
-isomorphic to `A`. If `φ` is `false`, then `BooleanPartial φ A` is `∅
-→ A`, which is isomorphic to `⊤`. In other words, this type is either
-isomorphic to `A` or `⊤`, depending on whether `φ` is `true` or
+equivalent to `A`. If `φ` is `false`, then `BooleanPartial φ A` is `∅
+→ A`, which is equivalent to `⊤`. In other words, this type is either
+equivalnt to `A` or `⊤`, depending on whether `φ` is `true` or
 `false` --- what's the big deal?
 
 The reason that `BooleanPartial`{.Agda} is an interesting type is
@@ -143,7 +144,7 @@ suc n ≤ suc m = n ≤ m
 
 take : (n : ℕ) (L : List A) → BooleanPartial (n ≤ length L) (List A)
 -- Exercise:
-take n L = {!   !}
+take n L = {!!}
 ```
 
 ## Partial Elements
@@ -167,7 +168,7 @@ a set that we can take subsets of.
 For example, the formula `i ∨ ~ i` (which can be read "`i` or not `i`")
 should correspond to the subset $\{ x ∈ [0, 1] ∣ \max(x, 1-x) = 1 \}$,
 which a bit of thinking shows is the set of endpoints $\{0, 1\} ⊆ [0 , 1]$
-of the unit interval. Likewise for us, we will think of the formula `i
+of the unit interval. We will therefore think of the formula `i
 ∨ ~ i` as defining the part of the interval consisting only of the
 endpoints `i0` and `i1`.
 
@@ -273,7 +274,7 @@ Try it yourself: describe a formula which gives the two sides of a box
 ```
 sides-of-square : I → I → I
 -- Exercise:
-sides-of-square i j = {!   !}
+sides-of-square i j = {!!}
 ```
 
 How about a three dimensional example. Come up with a formula to
@@ -298,7 +299,7 @@ of the sides.
 ```
 exercise-shape : I → I → I → I
 -- Exercise:
-exercise-shape i j k = {!   !}
+exercise-shape i j k = {!!}
 ```
 
 
@@ -311,10 +312,10 @@ a whole element, since a whole element `p i : Bool` for `i : I` for
 which `p i0 = true` and `p i1 = false` would be a path `true ≡ false`
 --- and this would give us an element of the empty type!
 
-However, Agda bakes in some guarantees that a partial element can be
-extended. In short, Agda allows us to "close off open boxes" using an
-operation called `hcomp`{.Agda} (which stands for "homogeneous
-composition").
+However, Agda bakes in some guarantees that a partial element can be extended.
+In short, Agda allows us to "close off open boxes" using an operation called
+`hcomp`{.Agda} (which stands for "homogeneous composition"). An open box is a
+part of the cube which contains the entire bottom face.
 
 Aside: It's worth noting that we can't extend a partial element using
 `hcomp` in *any* type. The types for which `hcomp` works are called
@@ -403,8 +404,8 @@ when `i = i0` or `i = i1`.
 
 We can use a pattern-matching anonymous function to inline the
 definition of the sides of the box when doing an `hcomp`{.Agda}. This
-is the same as separately defining sides separately, just without
-giving it a name.
+is the same as defining the sides separately, just without
+giving them a name.
 
 ```
 doubleComp' : (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → w ≡ z
@@ -412,7 +413,7 @@ doubleComp' r p q i = hcomp (λ { j (i = i0) → (sym r) j
                                ; j (i = i1) → q j })
                             (p i)
 
--- Checkign this is identical to the previous definition:
+-- Checking this is identical to the previous definition:
 _ : (r : w ≡ x) (p : x ≡ y) (q : y ≡ z)
   → (r ∙∙ p ∙∙ q) ≡ (doubleComp' r p q)
 _ = λ r p q → refl
@@ -425,9 +426,10 @@ More formally we can see that `hcomp`{.Agda} takes in two arguments:
   q i : (j : I) → Partial (∂ i) A`, which is a path in `A` that is
   only defined when `i` is `i0` or `i1`.
 
-* A element of `A` representing the entire bottom of the box. This can
-  vary over interval variables in the context, and so doesn't have to
-  be a constant square.
+* A element of `A` giving a point in the bottom of the box. 
+
+The result `hcomp sides bottom` is the point sitting over `bottom` in the top of
+the box.
 
 We can produce a filler for the whole square using an additional
 function called `hfill`{.Agda}. As a picture, this is giving us the
@@ -481,7 +483,7 @@ when `i = i0` or `i = i1` --- the endpoints of our path --- we get a
 
 The actual path type isn't exactly the same thing as our
 `Path-ish`{.Agda} above, for the simple reason that, due to some Agda
-magic, path types *are* fibrant; we have `x ≡ y : Type`.
+magic, path types *are* fibrant; we have `x ≡ y : Type` rather than `SSet`.
 
 Now we can come to `inS`. This is the function that takes a full
 element `a : A` and gives us `inS a : A [ φ ↦ (λ _ → a) ]`. In other
@@ -494,10 +496,8 @@ Finally, we can understand the type of `hfill`. We have, roughly speaking,
           (a completely defined element of the base matching the bottom of the sides)
           (an element of the interval, "pointing up")
 
-For some inscrutable reason, the definition used in the Cubical
-library is actually diagonally flipped to this (which we can achieve
-by exchanging the two interval arguments.)
-
+For reasons that will become clear later, we will orient our `doubleCompPath-filler`{.Agda}
+in a diagonally flipped way. 
                q
           y - - - > z
           ^         ^
@@ -541,12 +541,12 @@ _∙∙_ : x ≡ y → y ≡ z → x ≡ z
 
 The problem here is that this also has to fill in the left side of the
 box, and when it does it gets `hcomp (λ ()) x` in the top left corner.
-This is not by definition `x`, so this fails to give us a path `x ≡ z`.
-This is similar to the fact that transporting over `refl`{.Agda}
+This is not by definition exactly the same as `x`, so this fails to give us a path `x ≡ z`.
+This is related to the fact that transporting over `refl`{.Agda}
 does not give us the identity function definitionally.
 
 We also have the filler for composition (which is also diagonally
-flipped in the library.)
+flipped for the same reason.)
 
                q
           y - - - > z
@@ -632,13 +632,13 @@ Now we have, in fact, seen all of these faces before.
 diamondFaces : {x y z : A} (p : x ≡ y) (q : y ≡ z)
   → (i : I) → (j : I) → I → Partial (∂ i ∨ ∂ j) A
 -- Exercise:
-diamondFaces p q i j k (i = i0) = {!   !}
-diamondFaces p q i j k (i = i1) = {!   !}
-diamondFaces p q i j k (j = i0) = {!   !}
-diamondFaces p q i j k (j = i1) = {!   !}
+diamondFaces p q i j k (i = i0) = {!!}
+diamondFaces p q i j k (i = i1) = {!!}
+diamondFaces p q i j k (j = i0) = {!!}
+diamondFaces p q i j k (j = i1) = {!!}
 
 -- Exercise:
-diamond p q i j = hcomp (diamondFaces p q i j) {!   !}
+diamond p q i j = hcomp (diamondFaces p q i j) {!!}
 ```
 
 This is not the only way to do it! The composition problems that
@@ -665,10 +665,10 @@ same `diamond` square, but using the following cube:
 ```
 diamondFacesAlt : {x y z : A} (p : x ≡ y) (q : y ≡ z) → (i : I) → (j : I) → I → Partial (∂ i ∨ ∂ j) A
 -- Exercise:
-diamondFacesAlt p q i j k (i = i0) = {!   !}
-diamondFacesAlt p q i j k (i = i1) = {!   !}
-diamondFacesAlt p q i j k (j = i0) = {!   !}
-diamondFacesAlt p q i j k (j = i1) = {!   !}
+diamondFacesAlt p q i j k (i = i0) = {!!}
+diamondFacesAlt p q i j k (i = i1) = {!!}
+diamondFacesAlt p q i j k (j = i0) = {!!}
+diamondFacesAlt p q i j k (j = i1) = {!!}
 
 diamondAlt : (p : x ≡ y) (q : y ≡ z) → Square p q p q
 diamondAlt {x = x} p q i j = hcomp (diamondFacesAlt p q i j) x
@@ -698,14 +698,14 @@ top face is the path-between-paths that we want.
 ```
 assoc-faces : {w x y z : A} (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → (i : I) → (j : I) → (k : I) → Partial (∂ i ∨ ∂ j) A
 -- Exercise:
-assoc-faces         r p q i j k (i = i0) = {!   !}
-assoc-faces         r p q i j k (i = i1) = {!   !}
-assoc-faces {w = w} r p q i j k (j = i0) = {!   !}
-assoc-faces         r p q i j k (j = i1) = {!   !}
+assoc-faces         r p q i j k (i = i0) = {!!}
+assoc-faces         r p q i j k (i = i1) = {!!}
+assoc-faces {w = w} r p q i j k (j = i0) = {!!}
+assoc-faces         r p q i j k (j = i1) = {!!}
 
 assoc-base : {w x y z : A} (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → Square (r ∙ p) (r ∙ p) refl refl
 -- Exercise:
-assoc-base r p q i j = {!   !}
+assoc-base r p q i j = {!!}
 
 assoc : (r : w ≡ x) (p : x ≡ y) (q : y ≡ z)
   → r ∙ (p ∙ q) ≡ (r ∙ p) ∙ q
@@ -727,6 +727,12 @@ one of the above filler squares.
 rUnit : (p : x ≡ y) → p ≡ p ∙ refl
 rUnit p i j = compPath-filler p refl i j
 ```
+
+Proving `rUnit`{.Agda} should make it clear why we oriented
+`compPath-filler`{.Agda} the way we did: when proving an identity involving
+paths, we are constructing a square whose top and bottom are refl. When the
+right hand side of the identity is a composite, it is useful to have our filler
+oriented so that the composite is also on the right hand side.
 
 To cancel on the left we have to build another cube.
 
@@ -750,28 +756,145 @@ The faces are straightforward to construct if you stare at the diagram.
 ```
 lUnit-faces : {x y : A} (p : x ≡ y) → (i : I) → (j : I) → (k : I) → Partial (~ i ∨ ∂ j) A
 -- Exercise:
-lUnit-faces         p i j k (i = i0) = {!   !} -- Constant in the `j` direction
-lUnit-faces {x = x} p i j k (j = i0) = {!   !} -- Completely constant
-lUnit-faces         p i j k (j = i1) = {!   !} -- Constructed from `p` using connections
+lUnit-faces         p i j k (i = i0) = {!!} -- Constant in the `j` direction
+lUnit-faces {x = x} p i j k (j = i0) = {!!} -- Completely constant
+lUnit-faces         p i j k (j = i1) = {!!} -- Constructed from `p` using connections
 
 lUnit-base : {x y : A} (p : x ≡ y) → Square p refl refl (sym p)
 -- Exercise:
-lUnit-base p i j = {!   !}
--- Hint: Constructed from `p` using connections in a different way
+lUnit-base p i j = {!!}
+Hint: Constructed from `p` using connections in a different way
 
 lUnit : (p : x ≡ y) → p ≡ refl ∙ p
 lUnit {x = x} p i j = hcomp (lUnit-faces p i j) (lUnit-base p i j)
 ```
 
-## Isos Revisited
+mvrnote: copied from the cubical library
+```
+rCancel-filler : ∀ {x y : A} (p : x ≡ y) → (k j i : I) → A
+rCancel-filler {x = x} p k j i =
+  hfill (λ k → λ { (i = i0) → x
+                  ; (i = i1) → p (~ k ∧ ~ j)
+               -- ; (j = i0) → compPath-filler p (p ⁻¹) k i
+                  ; (j = i1) → x
+                  }) (inS (p (i ∧ ~ j))) k
+
+rCancel : (p : x ≡ y) → p ∙ sym p ≡ refl
+rCancel {x = x} p j i = rCancel-filler p i1 j i
+
+rCancel-filler' : ∀ {ℓ} {A : Type ℓ} {x y : A} (p : x ≡ y) → (i j k : I) → A
+rCancel-filler' {x = x} {y} p i j k =
+  hfill
+    (λ i → λ
+      { (j = i1) → p (~ i ∧ k)
+      ; (k = i0) → x
+      ; (k = i1) → p (~ i)
+      })
+    (inS (p k))
+    (~ i)
+
+rCancel' : ∀ {ℓ} {A : Type ℓ} {x y : A} (p : x ≡ y) → p ∙ sym p ≡ refl
+rCancel' p j k = rCancel-filler' p i0 j k
+
+lCancel : (p : x ≡ y) → sym p ∙ p ≡ refl
+lCancel p = rCancel (sym p)
+```
+
+## Equivalences Revisited
+
+mvrnote: outdated prose
+
+```
+module _ (e : A ≃ B) where
+  private
+    f : A → B
+    f = equivFun e
+  
+    s : B → A
+    p : (b : B) → f (s b) ≡ b
+    s = fst (equivSec e)
+    p = snd (equivSec e)
+    
+    r : B → A
+    q : (a : A) → r (f a) ≡ a
+    r = fst (equivRet e)
+    q = snd (equivRet e)
+
+  equivSec≡Ret : (b : B) → s b ≡ r b
+  -- Exercise: mvrnote
+  
+  invEquiv : B ≃ A
+  -- Exercise: mvrnote
+```
+
+mvrnote: missing
+
+Isomorphisms compose like functions do, but we will prove this a
+little later (`compIso`{.Agda} in Lecture 2-4).
 
 As promised earlier, we can finally prove that isomorphisms compose.
 
 ```
-compIso : Iso A B → Iso B C → Iso A C
-compIso i j = iso fun inv rightInv leftInv
-  where fun = isoFun j ∘ isoFun i
-        inv = isoInv i ∘ isoInv j
-        rightInv = λ b → cong (isoFun j) (isoRightInv i (isoInv j b)) ∙ isoRightInv j b
-        leftInv  = λ a → cong (isoInv i) (isoLeftInv j  (isoFun i a)) ∙ isoLeftInv i a
+compEquiv : B ≃ C → A ≃ B → A ≃ C
+compEquiv (f₁ , (g₁ , s₁) , (g'₁ , r₁))
+        (f₂ , (g₂ , s₂) , (g'₂ , r₂)) =
+    f₁ ∘ f₂ , (g₂ ∘ g₁  , to-fro) , (g'₂ ∘ g'₁ , fro-to)
+  where to-fro : isSection (f₁ ∘ f₂) (g₂ ∘ g₁)
+        to-fro b = cong f₁ (s₂ (g₁ b)) ∙ s₁ b
+        fro-to : isRetract (f₁ ∘ f₂) (g'₂ ∘ g'₁)
+        fro-to a = cong g'₂ (r₁ (f₂ a)) ∙ r₂ a
 ```
+
+mvrnote: congPathIso could be another (extended) exercise, or put in extras?
+
+## Aside: Equational Reasoning
+
+mvrnote: move earlier, as soon as we have composition?
+
+We will sometimes produce a path by chaining together several simpler
+ones. There is a common pattern that is used to give this process some
+nice syntax.
+
+```
+infix  3 _∎
+infixr 2 step-≡ _≡⟨⟩_
+
+step-≡ : (x : A) → y ≡ z → x ≡ y → x ≡ z
+step-≡ _ p q = q ∙ p
+
+syntax step-≡ x y p = x ≡⟨ p ⟩ y
+
+_≡⟨⟩_ : (x : A) → x ≡ y → x ≡ y
+_ ≡⟨⟩ x≡y = x≡y
+
+_∎ : (x : A) → x ≡ x
+_ ∎ = refl
+```
+
+Here are some examples of how to use it. mvrnote: 1lab hides the paths, need to switch the default
+
+```
+private
+  example1 : (w x y z : A)
+    → (p : w ≡ x)
+    → (q : x ≡ y)
+    → (r : y ≡ z)
+    → w ≡ z
+  example1 w x y z p q r =
+    w ≡⟨ p ⟩
+    x ≡⟨ q ⟩
+    y ≡⟨ r ⟩
+    z ∎
+
+  example2 : (f : A → B) (g : B → A)
+           → (η : (x : A) → x ≡ g (f x))
+           → (ε : (y : B) → f (g y) ≡ y)
+           → (x : A) → f x ≡ f x
+  example2 f g η ε x =
+    f x         ≡⟨ cong f (η x) ⟩
+    f (g (f x)) ≡⟨ ε (f x) ⟩
+    f x         ∎
+```
+
+We encourage you to use this syntax when chaining paths together, it
+makes it a lot easier to see what's going on!

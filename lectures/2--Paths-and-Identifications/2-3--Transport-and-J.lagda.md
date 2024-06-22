@@ -9,6 +9,7 @@ module 2--Paths-and-Identifications.2-3--Transport-and-J where
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
+open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 open import 1--Type-Theory.1-3--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra
@@ -48,7 +49,7 @@ i1` along the path of types `A`.
 Agda axiomatizes this idea with a function called
 `transport`{.Agda}. (Well, actually, `transport`{.Agda} is defined via
 a slightly more general operation unhelpfully called `transp`{.Agda},
-which we will return to in Lecture 2-4.)
+which we will return to in Lecture 2-5.)
 
 ```
 transport : {A B : Type ℓ} → A ≡ B → A → B
@@ -99,7 +100,18 @@ Give it a try in the reverse:
 ```
 false≢true : ¬ false ≡ true
 -- Exercise:
-false≢true p = {!   !}
+false≢true p = {!!}
+```
+
+mvrnote: while we're here:
+
+```
+zero≢suc : {n : ℕ} → ¬ zero ≡ suc n
+-- Exercise:
+zero≢suc p = {!!}
+
+suc≢zero : {n : ℕ} → ¬ suc n ≡ zero
+suc≢zero p = zero≢suc (sym p)
 ```
 
 ## The J Rule
@@ -109,7 +121,7 @@ we can define a fundamental but not-so-well-known principle of
 identity: Martin-Löf's `J`{.Agda} rule.
 
 ```
-J : (P : ∀ y → x ≡ y → Type ℓ) (r : P x refl)
+J : (P : (y : A) → x ≡ y → Type ℓ) (r : P x refl)
     (p : x ≡ y) → P y p
 J P r p = transport (λ i → P (p i) (λ j → p (i ∧ j))) r
 ```
@@ -138,24 +150,38 @@ back exactly the corresponding input we used: `f true = x` and `f
 false = y` by definition. We can prove a similar fact for the `J`{.Agda} rule,
 but it is only a path and not a definitional equality.
 
-mvrnote: this definition is exactly `transport-refl`{.Agda}, explained in Lecture 2-4
 ```
 JRefl : (P : ∀ y → x ≡ y → Type ℓ) (r : P x refl)
       → J P r refl ≡ r
 JRefl P r i = transp (λ _ → P _ refl) i r
 ```
 
-mvrnote: examples
+Right now we don't have the tools to understand definitions like `JRefl`{.Agda}, but when we cover `transp` in Lecture 2.5, we will recognize the above definition as exactly `transport-refl`{.Agda}. 
 
+Note that `subst`{.Agda} can be seen as a special case of the `J`{.Agda} rule where the type family `P`.{Agda} is constant.
 ```
 substFromJ : (B : A → Type ℓ) → (p : x ≡ y) → B x → B y
-substFromJ {x = x} B p b = (J (λ y p → B x → B y) (idfun (B x)) p) b
+substFromJ B p b = J (λ y _ → B y) b p
 
-substFromJ' : (B : A → Type ℓ) → (p : x ≡ y) → B x → B y
-substFromJ' B p b = J (λ y _ → B y) b p
-
-_ : (B : A → Type ℓ) → (p : x ≡ y) → subst B p ≡ substFromJ' B p
+_ : (B : A → Type ℓ) → (p : x ≡ y) → substFromJ B p ≡ subst B p 
 _ = λ B p → refl
+```
+
+There's a very subtle point here that we would like to highlight --- in the above definition, we used `J`{.Agda} to define an element of `B y`{.Agda} given that we already had an element `b : B x`{.Agda}. But we could also have used `J`{.Agda} to define the function `B x → B y`{.Agda} in its entirety.
+```
+substFromJ' : (B : A → Type ℓ) → (p : x ≡ y) → (B x → B y)
+substFromJ' {x = x} B p = (J (λ y p → B x → B y) (idfun (B x)) p)
+```
+
+This not longer computes exactly to `subst`{.Agda}, but we can still prove them to be the same using `J`{.Agda} and `JRefl`{.Agda}
+djnote: this is actually kinda hard... maybe we should tease it and do it in 2.5?
+djnote: it also didn't work without bringing in the metavariables
+```
+substFromJ'-check : {ℓ : Level} {A : Type ℓ} (B : A → Type ℓ) {x y : A} → (p : x ≡ y) → substFromJ' B p ≡ subst B p
+-- Exercise (hard):
+-- substFromJ'-check {ℓ} {A} B {x} = {!!}
+substFromJ'-check {ℓ} {A} B {x} = J (λ _ p → substFromJ' B p ≡ subst B p)
+  λ i b → cong (transp (λ j → B x) i0) (JRefl {ℓ} {A} {x} (λ _ _ → B x) b) i
 ```
 
 ## Encode-Decode
@@ -172,8 +198,8 @@ candidate for what paths in `Bool`{.Agda} should be, that is,
 `Bool`{.Agda}.
 
 ```
-≡Iso≡Bool : (x y : Bool) → Iso (x ≡ y) (x ≡Bool y)
-≡Iso≡Bool x y = iso (encode x y) (decode x y) (sec x y) (ret x y)
+≡≃≡Bool : (x y : Bool) → (x ≡ y) ≃ (x ≡Bool y)
+≡≃≡Bool x y = equiv (encode x y) (decode x y) (to-fro x y) (fro-to x y)
   where
     code : Bool → Bool → Type
     code x y = x ≡Bool y
@@ -188,12 +214,12 @@ elements of `code`{.Agda} corresponding to reflexivity:
     encodeRefl false = tt
 ```
 
-And now `subst`{.Agda} allows us to extend this to all paths in
-`Bool`{.Agda}. mvrnote: or we could phrase it in terms of J?
+And now `J`{.Agda} allows us to extend this to all paths in
+`Bool`{.Agda}. We use `J`{.Agda} in the type family `code x`
 
 ```
     encode : (x y : Bool) → x ≡ y → code x y
-    encode x y p = subst (λ z → code x z) p (encodeRefl x)
+    encode x y = J (λ z _ → code x z) (encodeRefl x)
 ```
 
 A `decode`{.Agda} function is not too hard. Once we split `x` and `y`
@@ -213,9 +239,9 @@ y` is empty and we have a contradiction.
 That this is a section is similar, after splitting into cases:
 
 ```
-    sec : (x y : Bool) → section (encode x y) (decode x y)
+    to-fro : (x y : Bool) → isSection (encode x y) (decode x y)
     -- Exercise:
-    sec p = {!   !}
+    to-fro p = {!!}
 ```
 
 For the retract, we have another trick. The proof is easy if we are
@@ -232,11 +258,11 @@ And the `J`{.Agda} rule is exactly what is required to extend this to
 all paths.
 
 ```
-    ret : (x y : Bool) → retract (encode x y) (decode x y)
-    ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
+    fro-to : (x y : Bool) → isRetract (encode x y) (decode x y) 
+    fro-to x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
 ```
 
-This completes the isomorphism!
+This completes the equivalence!
 
 <!--
 ```
@@ -251,16 +277,17 @@ module EncodePattern
 -->
 
 Let's summarise what we did, noting what was unique to `Bool`{.Agda}
-and what we can re-use for an arbitrary type.
+and what we can re-use for an arbitrary type. 
 
 We start with a type `X` and we want to characterise paths `x ≡ y` in
-`X`. We make a guess at the answer as a type family `code : X → X →
-Type` with the idea that `code x y` is isomorphic to `x ≡ y`; choosing
-`code` will involve some creativity or uck. We should at least be able
-to define a function `encodeRefl : (x : X) → code x x` corresponding
-to reflexivity.
+`X`. The encode-decode method works well for inductive types --- types that we can define functions out of by pattern matching.
+We make a guess at the answer as a type family `code : X → X →
+Type` with the idea that `code x y` is isomorphic to `x ≡ y`. Choosing
+`code` will involve some creativity or luck, but can usually be intuited from the inductive definition of `X`. As a rule of thum, the path types of inductive types should also be describable as inductive types themselves; we want `code x y` to be an inductive type.
 
-Without knowing anything else, we can make the general definition
+For our guess to pass the smell test, we should at least be able
+to define a function `encodeRefl : (x : X) → code x x` corresponding
+to reflexivity. Without knowing anything else, we can make the general definition
 
 ```
   encode : (x y : X) → x ≡ y → code x y
@@ -274,7 +301,7 @@ be easy. The proof there is a `section`{.Agda} should be similarly
 easy, because it also involves mapping out of `code`{.Agda}.
 
 All that remains is to prove we have a `retract`{.Agda}, in this case,
-a we need a function with type `ret : (x y : X) → decode x y (encode x
+a we need a function with type `fro-to : (x y : X) → decode x y (encode x
 y p) ≡ p`. If `p` happens to be `refl`{.Agda} this is easy, because
 `encode`{.Agda} is defined in terms of `encodeRefl`{.Agda}, so suppose
 we have `retRefl : (x : X) → decode x x (encode x x refl) ≡ refl)`.
@@ -282,8 +309,8 @@ The `J`{.Agda} rule is exactly what we need to extend this to a
 general path.
 
 ```
-  ret : (x y : X) → retract (encode x y) (decode x y)
-  ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
+  fro-to : (x y : X) → isRetract (encode x y) (decode x y) 
+  fro-to x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
 ```
 
 Try characterising the paths in `⊤`{.Agda}. This should essentially be
@@ -291,103 +318,67 @@ the same as the proof for `Bool`{.Agda}, but with half of the cases
 deleted.
 
 ```
-≡Iso≡⊤ : (n m : ⊤) → Iso (n ≡ m) ⊤
-≡Iso≡⊤ n m = iso (encode n m) (decode n m) (sec n m) (ret n m)
+≡≃≡⊤ : (n m : ⊤) → (n ≡ m) ≃ ⊤
+≡≃≡⊤ n m = equiv (encode n m) (decode n m) (to-fro n m) (fro-to n m)
   where
     code : ⊤ → ⊤ → Type
     -- Exercise:
-    code x y = {!   !}
+    code x y = {!!}
 
     encodeRefl : (x : ⊤) → code x x
     -- Exercise:
-    encodeRefl x = {!   !}
+    encodeRefl x = {!!}
 
     encode : (x y : ⊤) → x ≡ y → code x y
     encode x y p = subst (λ z → code x z) p (encodeRefl x)
 
     decode : (x y : ⊤) → code x y → x ≡ y
     -- Exercise:
-    decode x y c = {!   !}
+    decode x y c = {!!}
 
-    sec : (x y : ⊤) → section (encode x y) (decode x y)
+    to-fro : (x y : ⊤) → isSection (encode x y) (decode x y)
     -- Exercise:
-    sec x y c = {!   !}
+    to-fro x y c = {!!}
 
     retRefl : (x : ⊤) → decode x x (encode x x refl) ≡ refl
     -- Exercise:
-    retRefl x = {!   !}
+    retRefl x = {!!}
 
-    ret : (x y : ⊤) → retract (encode x y) (decode x y)
-    ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
-```
-
-And try the same for `∅`{.Agda}. (There is also a much shorter way to
-prove this isomorphism!) mvrnote: this might be too silly to include
-
-```
-≡Iso≡∅ : (X : Type) (n m : ∅) → Iso (n ≡ m) X
--- Exercise:
-≡Iso≡∅ X m n = {!   !}
-≡Iso≡∅ X () -- lol baited
-
--- You can do it the long way of course
-≡Iso≡∅' : (X : Type) (n m : ∅) → Iso (n ≡ m) X
-≡Iso≡∅' X n m = iso (encode n m) (decode n m) (sec n m) (ret n m)
-  where
-    code : ∅ → ∅ → Type
-    code x y = X
-
-    encodeRefl : (x : ∅) → code x x
-    encodeRefl ()
-
-    encode : (x y : ∅) → x ≡ y → code x y
-    encode x y p = subst (λ z → code x z) p (encodeRefl x)
-
-    decode : (x y : ∅) → code x y → x ≡ y
-    decode ()
-
-    sec : (x y : ∅) → section (encode x y) (decode x y)
-    sec ()
-
-    retRefl : (x : ∅) → decode x x (encode x x refl) ≡ refl
-    retRefl ()
-
-    ret : (x y : ∅) → retract (encode x y) (decode x y)
-    ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
+    fro-to : (x y : ⊤) → isRetract (encode x y) (decode x y) 
+    fro-to x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
 ```
 
 For `ℕ`{.Agda}, we also already have a candidate for `code`, that is,
 `≡ℕ`{.Agda}.
 
 ```
-≡Iso≡ℕ : (n m : ℕ) → Iso (n ≡ m) (n ≡ℕ m)
-≡Iso≡ℕ n m = iso (encode n m) (decode n m) (sec n m) (ret n m)
+≡≃≡ℕ : (n m : ℕ) → (n ≡ m) ≃ (n ≡ℕ m)
+≡≃≡ℕ n m = equiv (encode n m) (decode n m) (to-fro n m) (fro-to n m)
   where
     code : ℕ → ℕ → Type
     code n m = n ≡ℕ m
 
     encodeRefl : (n : ℕ) → code n n
     -- Exercise:
-    encodeRefl n = {!   !}
+    encodeRefl n = {!!}
 
     encode : (n m : ℕ) → n ≡ m → code n m
     encode n m p = subst (λ z → code n z) p (encodeRefl n)
 
     decode : (n m : ℕ) → code n m → n ≡ m
     -- Exercise:
-    decode n m c = {!   !}
+    decode n m c = {!!}
 
-    sec : (x y : ℕ) → section (encode x y) (decode x y)
+    to-fro : (x y : ℕ) → isSection (encode x y) (decode x y)
     -- Exercise:
-    sec x y p = {!   !}
+    to-fro x y p = {!!}
 
     retRefl : (x : ℕ) → decode x x (encode x x refl) ≡ refl
     -- Exercise:
-    retRefl x = {!   !}
+    retRefl x = {!!}
 
-    ret : (x y : ℕ) → retract (encode x y) (decode x y)
-    -- Exercise:
-    ret x y p = {!   !}
+    fro-to : (x y : ℕ) → isRetract (encode x y) (decode x y) 
+    fro-to x y p = J (λ z q → decode x z (encode x z q) ≡ q) (retRefl x) p
 ```
 
 And one final application: disjoint unions. We haven't yet got a
@@ -395,8 +386,6 @@ candidate `≡⊎`{.Agda} for the paths to be equal to, but it's not hard
 to guess what it should be. After all, the two sides are supposed to
 be *disjoint*, and so there should be no paths between an `inl`{.Agda}
 and and `inr`{.Agda}.
-
-mvrnote: Adding universe levels means lifting `∅` unfortunately. should we just do it?
 
 ```
 _≡⊎_ : {A B : Type} (x y : A ⊎ B) → Type
@@ -406,53 +395,51 @@ inr b ≡⊎ inl a = ∅
 inr b1 ≡⊎ inr b2 = b1 ≡ b2
 ```
 
+djnote: (fold this paragraph)
+We have not defined `_≡⊎_`{.Agda} in the most general way possible: for `A`{.Agda} and `B`{.Agda} of two different universe levels. To do this right, we would have to land in `Type (ℓ-max ℓ ℓ')`{.Agda}, and `Lift`{.Agda} each of the appropriate types in the definition to that level. This doesn't change anything substantial about the proof, but we omit it here for clarity.
+
+
 For the proof, it is more convenient to define `encode` manually rather
 than via `subst`{.Agda}.
 
 ```
-≡Iso≡⊎ : {A B : Type} (x y : A ⊎ B) → Iso (x ≡ y) (x ≡⊎ y)
-≡Iso≡⊎ {A = A} {B = B} x y = iso (encode x y) (decode x y) (sec x y) (ret x y)
+≡≃≡⊎ : {A B : Type} (x y : A ⊎ B) → (x ≡ y) ≃ (x ≡⊎ y)
+≡≃≡⊎ {A = A} {B = B} x y = equiv (encode x y) (decode x y) (to-fro x y) (fro-to x y)
   where
     code : (x y : A ⊎ B) → Type
     code x y = x ≡⊎ y
 
     encodeRefl : (c : A ⊎ B) → code c c
 --  Exercise:
---  encodeRefl c = ?
-    encodeRefl (inl a) = refl
-    encodeRefl (inr b) = refl
+    encodeRefl c = {!!}
 
     encode : (x y : A ⊎ B) → x ≡ y → code x y
-    encode x y p = J (λ k _ → code x k) (encodeRefl x) p
+    encode x y = J (λ k _ → code x k) (encodeRefl x)
+```
+
+We will also find it useful to define an analogue for the `JRefl`{.Agda} to `encode`{.Agda}. Note that this takes exactly the same information as the rest of the encode-decode method.
+```
+    encodeOnRefl : (c : A ⊎ B)  → encode c c refl ≡ encodeRefl c
+    encodeOnRefl c = JRefl (λ k _ → code c k) (encodeRefl c)
 
     decode : (x y : A ⊎ B) → code x y → x ≡ y
 --  Exercise:
---  decode x y = ?
-    decode (inl _) (inl _) = cong inl
-    decode (inr _) (inr _) = cong inr
+    decode x y = {!!}
 
-    encodeOnRefl : (c : A ⊎ B)  → encode c c refl ≡ encodeRefl c
-    encodeOnRefl c = JRefl (λ c' _ → code c c') (encodeRefl c)
-
-    sec : (x y : A ⊎ B) → section (encode x y) (decode x y)
+    to-fro : (x y : A ⊎ B) → isSection (encode x y) (decode x y)
 --  Exercise:
---  sec x y = ?
-    sec (inl a) (inl _) = J (λ a' p → encode (inl a) (inl a') (cong inl p) ≡ p) (encodeOnRefl (inl a))
-    sec (inr b) (inr _) = J (λ b' p → encode (inr b) (inr b') (cong inr p) ≡ p) (encodeOnRefl (inr b))
+    to-fro x y = {!!}
 
     retRefl : (x : A ⊎ B) → decode x x (encode x x refl) ≡ refl
 --  Exercise:
---  retRefl x = ?
-    retRefl (inl x) = cong (cong inl) (encodeOnRefl (inl x))
-    retRefl (inr x) = cong (cong inr) (encodeOnRefl (inr x))
+    retRefl x = {!!}
 
-    ret : (x y : A ⊎ B) → retract (encode x y) (decode x y)
+    fro-to : (x y : A ⊎ B) → isRetract (encode x y) (decode x y) 
 --  Exercise:
---  ret x y = ?
-    ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
+    fro-to x y = {!!}
 ```
 
-mvrnote: an alternative that avoids `encodeOnRefl`. Which is better?
+We can also use a slightly different approach to computing the path types of coproducts by making use of a few helper lemmas that are useful in their own right.
 
 ```
 inl-inj : {x y : A} → inl {B = B} x ≡ inl y → x ≡ y
@@ -468,13 +455,18 @@ inr-inj {B = B} {x = x} path = cong f path where
   f (inr x) = x
 
 inl≠inr : {A : Type ℓ} {B : Type ℓ'} {x : A} {y : B} → ¬ inl x ≡ inr y
-inl≠inr path = subst (λ { (inl x) → ⊤ ; (inr x) → ∅ }) path tt
+-- Exercise:
+inl≠inr path = {!!}
 
 inr≠inl : {A : Type ℓ} {B : Type ℓ'} {x : A} {y : B} → ¬ inr x ≡ inl y
-inr≠inl path = inl≠inr (sym path)
+-- Exercise:
+inr≠inl path = {!!}
+```
 
-≡Iso≡⊎' : {A B : Type} (x y : A ⊎ B) → Iso (x ≡ y) (x ≡⊎ y)
-≡Iso≡⊎' {A = A} {B = B} x y = iso (encode x y) (decode x y) (sec x y) (ret x y)
+In this approach, we will define `encode`{.Agda} in a bespoke way, using the above lemmas. This lets us avoid using `encodeOnRefl`{.Agda}.
+```
+≡≃≡⊎' : {A B : Type} (x y : A ⊎ B) → (x ≡ y) ≃ (x ≡⊎ y)
+≡≃≡⊎' {A = A} {B = B} x y = equiv (encode x y) (decode x y) (to-fro x y) (fro-to x y)
   where
     code : (x y : A ⊎ B) → Type
     code x y = x ≡⊎ y
@@ -487,24 +479,17 @@ inr≠inl path = inl≠inr (sym path)
 
     decode : (x y : A ⊎ B) → code x y → x ≡ y
 --  Exercise:
---  decode x y = ?
-    decode (inl _) (inl _) = cong inl
-    decode (inr _) (inr _) = cong inr
+    decode x y = {!!}
 
-    sec : (x y : A ⊎ B) → section (encode x y) (decode x y)
+    to-fro : (x y : A ⊎ B) → isSection (encode x y) (decode x y)
 --  Exercise:
---  sec x y = ?
-    sec (inl x) (inl y) c = refl
-    sec (inr x) (inr y) c = refl
+    to-fro x y = {!!}
 
     retRefl : (x : A ⊎ B) → decode x x (encode x x refl) ≡ refl
 --  Exercise:
---  retRefl x = ?
-    retRefl (inl x) = refl
-    retRefl (inr x) = refl
+    retRefl x = {!!}
 
-    ret : (x y : A ⊎ B) → retract (encode x y) (decode x y)
+    fro-to : (x y : A ⊎ B) → isRetract (encode x y) (decode x y) 
 --  Exercise:
---  ret x y = ?
-    ret x y = J (λ c p → decode x c (encode x c p) ≡ p) (retRefl x)
+    fro-to x y = {!!}
 ```

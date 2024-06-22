@@ -4,8 +4,10 @@ import Library.Prelude
 import 1--Type-Theory.1-1--Types-and-Functions
 import 1--Type-Theory.1-2--Inductive-Types
 import Library.Literals -- In order to write elements of `ℕ` and `ℤ` as numerals
+import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 import 1--Type-Theory.1-2E--Extras
 import 1--Type-Theory.1-3--Propositions-as-Types
+import 1--Type-Theory.1-3E--Constructive-Logic
 
 import 2--Paths-and-Identifications.2-1--Paths
 import 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra

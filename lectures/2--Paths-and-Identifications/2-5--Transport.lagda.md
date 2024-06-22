@@ -9,6 +9,7 @@ module 2--Paths-and-Identifications.2-5--Transport where
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
+open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 open import 1--Type-Theory.1-3--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra
@@ -18,14 +19,14 @@ open import 2--Paths-and-Identifications.2-4--Composition-and-Filling
 private
   variable
     ℓ ℓ' : Level
-    A B C : Type ℓ
+    A A' B C : Type ℓ
 ```
 -->
 
-There is more to say about `transport`{.Agda} and the underlying
-operation `transp`{.Agda}. Here is the actual definition of
-`transport`{.Agda}, which we skipped when we first saw it in Lecture
-2-1.
+In this lecture, we will revisit `transport`{.Agda} and the underlying operation
+`transp`{.Agda}, equipped with our intuition for partial elements that we
+developed in the previous lecture. Here is the actual definition of
+`transport`{.Agda}, which we skipped when we first saw it in Lecture 2-1.
 
 ```
 transport' : {A B : Type ℓ} → A ≡ B → A → B
@@ -49,8 +50,15 @@ and the result is an element of the type at the other end of the path.
 As usual, to understand the purpose of `φ`, we need to imagine that we
 are in the context of some other cubical variables. The formula `φ`
 expresses *where the transport is constant*. So `transport p x =
-transp (λ i → p i) i0 x` is not constant anywhere, but `transport (λ _
+transp (λ i → p i) i0 x` is not constant anywhere, but `transp (λ _
 → A) i1 x` is constant everywhere and so definitionally equals `x`.
+```
+_ : {A : Type ℓ} (x : A)
+  → transp (λ _ → A) i1 x ≡ x
+_ = λ x → refl
+```
+
+
 Agda will stop you if you demand `transp`{.Agda} be constant in a way
 that doesn't make sense:
 
@@ -86,45 +94,26 @@ Try using `transp`{.Agda} to prove that that transporting an element
 transport-refl : ∀ {ℓ} {A : Type ℓ} (x : A)
                → transport (λ i → A) x ≡ x
 -- Exercise:
-transport-refl {A = A} x i = ?
+transport-refl {A = A} x i = {!!}
 ```
 
-Just using `trans` in different combinations, we have enough to show
-that `transport p` is an isomorphism. mvrnote: there must be a simpler
-way to set this up.
-
+We can also show that transporting along `sym p` and then transporting along `p` puts us right back where we were.
 ```
-transport-fillerExt : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                    → PathP (λ i → A → p i) (idfun A) (transport p)
-transport-fillerExt p i x = transport-filler p x i
+transport-cancel : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B) (b : B)
+                 → transport (λ i → p i) (transport (λ i → p (~ i)) b) ≡ b
+-- Exercise:
+Hint: The goal normalizes to transp (λ i → p i) i0 (transp (λ i → p ~ i) i0 b).
+         We want an expression also involving j which reduces to this when j = i0
+         and which reduces to b when j = i1.
+         (Remember also that `transp (λ _ → T) i1 x = x` by definition.)
+```
 
-transport⁻-fillerExt : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                     → PathP (λ i → p i → A) (idfun A) (transport (sym p))
-transport⁻-fillerExt p i x = transp (λ j → p (i ∧ ~ j)) (~ i) x
-
-transport-fillerExt⁻ : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                    → PathP (λ i → p i → B) (transport p) (idfun B)
-transport-fillerExt⁻ p = symP (transport⁻-fillerExt (sym p))
-
-transport⁻-fillerExt⁻ : ∀ {ℓ} {A B : Type ℓ} (p : A ≡ B)
-                     → PathP (λ i → B → p i) (transport (sym p)) (idfun B)
-transport⁻-fillerExt⁻ p = symP (transport-fillerExt (sym p))
-
-transport⁻Transport : ∀ {ℓ} {A B : Type ℓ} → (p : A ≡ B) → (a : A) →
-                          transport (sym p) (transport p a) ≡ a
-transport⁻Transport p a j = transport⁻-fillerExt p (~ j) (transport-fillerExt p (~ j) a)
-
-transportTransport⁻ : ∀ {ℓ} {A B : Type ℓ} → (p : A ≡ B) → (b : B) →
-                        transport p (transport (sym p) b) ≡ b
-transportTransport⁻ p b j = transport-fillerExt⁻ p j (transport⁻-fillerExt⁻ p j b)
-
-pathToIso : ∀ {ℓ} {A B : Type ℓ} → A ≡ B → Iso A B
-pathToIso p = iso fun inv rightInv leftInv
-  where
-    fun = transport p
-    inv = transport (sym p)
-    rightInv = transportTransport⁻ p
-    leftInv = transport⁻Transport p
+With `transport-cancel`{.Agda} in hand, we can show that
+`transport p` is an equivalence with inverse `transport (sym p)`.
+```
+pathToEquiv : ∀ {ℓ} {A B : Type ℓ} → A ≡ B → A ≃ B
+pathToEquiv {ℓ} p = equiv (transport p) (transport (sym p))
+                          (transport-cancel p) (transport-cancel (sym p))
 ```
 
 There is a second way that `PathP`{.Agda} and `transport`{.Agda}
@@ -170,11 +159,12 @@ fromPathP : {A : I → Type ℓ} {a1 : A i0} {a2 : A i1}
   → PathP A a1 a2
   → Path (A i1) (transport (λ j → A j) a1) a2
 fromPathP {ℓ} {A} p i = transp (λ j → A (i ∨ j)) i (p i)
+
 ```
 
 These two maps are inverses. Unfortunately, this is a real pain to
 show, involving some really gnarly `hcomp`s. So, we will cheat, and
-produce an isomorphism an entirely different way.
+produce an equivalence an entirely different way.
 
 ```
 PathP≡Path : ∀ (A : I → Type ℓ) (a1 : A i0) (a2 : A i1) →
@@ -182,13 +172,13 @@ PathP≡Path : ∀ (A : I → Type ℓ) (a1 : A i0) (a2 : A i1) →
 PathP≡Path A a1 a2 i =
   PathP (λ j → A (i ∨ j)) (transport-filler (λ j → A j) a1 i) a2
 
-PathP-iso-Path : ∀ (A : I → Type ℓ) (x : A i0) (y : A i1) → Iso (PathP A x y) (transport (λ i → A i) x ≡ y)
-PathP-iso-Path A x y = pathToIso (PathP≡Path A x y)
+PathP≃Path : ∀ (A : I → Type ℓ) (x : A i0) (y : A i1) → (PathP A x y) ≃ (transport (λ i → A i) x ≡ y)
+PathP≃Path A x y = pathToEquiv (PathP≡Path A x y)
 ```
 
-This gives an isomorphism, but the forward and backward maps are not
+This gives an equivalence, but the forward and backward maps are not
 the nice `toPathP`{.Agda} and `fromPathP`{.Agda} maps that we defined
-above. For our purposes, this simpler isomorphism is good enough.
+above. For our purposes, this simpler equivalence is good enough.
 
 ## Transport Computes
 
@@ -265,12 +255,10 @@ This is now a square entirely in the type `A i1`, and so the
 module _ {A : I → Type} {a : (i : I) → A i} {b : (i : I) → A i} where private
   _ : {p : a i0 ≡ b i0}
     → transport (λ i → a i ≡ b i) p
-    {- Exercise:
-    ≡ ?
-    -}
-    ≡ sym (fromPathP (λ i → a i)) ∙∙ cong (transport (λ i → A i)) p ∙∙ fromPathP (λ i → b i)
-  _ = refl
-
+    -- Exercise:
+    ≡ {!!}
+    -- Exercise:
+    ≡ {!!}
 ```
 
 `PathP`{.Agda} is similar, but we have to write the `hcomp`{.Agda} manually, becuase
@@ -323,11 +311,6 @@ Try it yourself:
         in transport (λ i → A i) (m (x' , y'))
       }
   {- Exercise:
-  _ : {m : A i0 × A i0 → A i0}
-    → transport (λ i → A i × A i → A i) m
-    ≡ ?
-  -}
-  _ = refl
 
   _ : {α : A i0 × B i0 → B i0}
     → transport (λ i → A i × B i → B i) α
@@ -338,11 +321,6 @@ Try it yourself:
         in transport (λ i → B i) (α (a' , b'))
       }
   {- Exercise:
-  _ : {α : A i0 × B i0 → B i0}
-    → transport (λ i → A i × B i → B i) α
-    ≡ ?
-  -}
-  _ = refl
 
   _ : {y : (A i0 → A i0) → A i0}
     → transport (λ i → (A i → A i) → A i) y
@@ -350,11 +328,6 @@ Try it yourself:
       let f' = λ a → transport (λ i → A (~ i)) (f (transport (λ i → A i) a))
       in transport (λ i → A i) (y f')
   {- Exercise:
-  _ : {y : (A i0 → A i0) → A i0}
-    → transport (λ i → (A i → A i) → A i) y
-    ≡ ?
-  -}
-  _ = refl
 ```
 
 ## Transport Computes, Dependently
@@ -368,10 +341,6 @@ module _ {A : I → Type} {B : (i : I) → A i → Type} where private
   _ : {x0 : A i0} {y0 : B i0 x0}
     → transport (λ i → Σ[ x ∈ A i ] B i x) (x0 , y0)
     {- Exercise:
-    ≡ let
-          -- This is just the same as in the non-dependent case
-          x1 : A i1
-          x1 = transport (λ i → A i) x0
 
           -- Here we need a path from `B i0 x0` to `B i1 x1`
           y1 = transport ? y0
@@ -391,10 +360,6 @@ module _ {A : I → Type} {B : (i : I) → A i → Type} where private
   _ : {f : (x0 : A i0) → B i0 x0}
     → transport (λ i → (x : A i) → B i x) f
     {- Exercise:
-    ≡ λ (x1 : A i1) →
-        let
-          x0 : A i0
-          x0 = transport (λ i → A (~ i)) x1
 
           fx1 : B i1 x1
           fx1 = transport ? (f x0)
@@ -414,3 +379,54 @@ module _ {A : I → Type} {B : (i : I) → A i → Type} where private
   _ = refl
 ```
 
+## Paths in Σ types
+
+mvrnote: fix prose
+
+First, `Σ`{.Agda} is functorial: mvrnote: surely this should go earlier
+
+```
+Σ-map : {B : A → Type ℓ} {B' : A' → Type ℓ'}
+       (f₁ : A → A')
+     → (f₂ : (a : A) → B a → B' (f₁ a))
+     → Σ[ a ∈ A ] B a → Σ[ a' ∈ A' ] B' a'
+Σ-map f₁ f₂ (a , b) = (f₁ a , f₂ a b)
+```
+
+In particular, if `A` is the same as `A'` and `f₂ a : B a → B' a` is
+always an equivalence, then `Σ-map (idfun A) f₂` is an equivalence. We
+can do this in a number of pieces.
+
+```
+module _ {B : A → Type ℓ} {B' : A → Type ℓ'} (f₂ : (x : A) → B x → B' x) where
+  Σ-map-snd-section : (s : (x : A) → sectionOf (f₂ x)) → sectionOf (Σ-map (idfun A) f₂)
+  Σ-map-snd-section s = g , s'
+    where g : Σ[ a ∈ A ] B' a → Σ[ a ∈ A ] B a
+          g = Σ-map (idfun A) (λ a b' → fst (s a) b')
+          s' : isSection (Σ-map (idfun A) f₂) g
+          s' (a , b') = ΣPathP→PathPΣ (refl , snd (s a) b')
+
+  Σ-map-snd-retract : (r : (x : A) → retractOf (f₂ x)) → retractOf (Σ-map (idfun A) f₂)
+  Σ-map-snd-retract r = g , r'
+    where g : Σ[ a ∈ A ] B' a → Σ[ a ∈ A ] B a
+          g (a , b') = a , fst (r a) b'
+          r' : isRetract (Σ-map (idfun A) f₂) g
+          r' (a , b') = ΣPathP→PathPΣ (refl , snd (r a) b')
+
+-- djnote: pretty this up... why can't we have it in one module
+module _ {B : A → Type ℓ} {B' : A → Type ℓ'} (f₂ : (x : A) → B x → B' x) where
+  Σ-map-snd-isEquiv : (e : (x : A) → isEquiv (f₂ x)) → isEquiv (Σ-map (idfun A) f₂)
+  Σ-map-snd-isEquiv e = (Σ-map-snd-section f₂ (λ x → fst (e x))) , (Σ-map-snd-retract f₂ (λ x → snd (e x)))
+
+Σ-map-snd-≃ : {B : A → Type ℓ} {B' : A → Type ℓ'}
+  (e₂ : (x : A) → B x ≃ B' x)
+  → (Σ[ a ∈ A ] B a) ≃ (Σ[ a ∈ A ] B' a)
+Σ-map-snd-≃ e₂ = Σ-map (idfun _) (λ a → equivFun (e₂ a)) , Σ-map-snd-isEquiv (λ x → fst (e₂ x)) (λ x → snd (e₂ x))
+```
+
+```
+Σ-path-≃ :
+  {A : Type ℓ} {B : A → Type ℓ'} (a b : Σ[ a ∈ A ] B a)
+  → (a ≡ b) ≃ (Σ[ p ∈ (fst a ≡ fst b) ] transport (λ i → B (p i)) (snd a) ≡ snd b)
+Σ-path-≃ {B = B} a b = compEquiv (Σ-map-snd-≃ (λ p → PathP≃Path (λ i → B (p i)) _ _)) (invEquiv ΣPath-PathΣ-≃)
+```

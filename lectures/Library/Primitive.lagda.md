@@ -16,14 +16,14 @@ in `Library.Prelude`. mvrnote: link when those work again
 {-# BUILTIN TYPE           Type      #-}
 {-# BUILTIN STRICTSET      SSet      #-}
 
-{-# BUILTIN PROPOMEGA      IrrPropω  #-}
+-- {-# BUILTIN PROPOMEGA      IrrPropω  #-}
 {-# BUILTIN SETOMEGA       Typeω     #-}
 {-# BUILTIN STRICTSETOMEGA SSetω     #-}
 
-{-# BUILTIN LEVELUNIV      LevelUniv #-}
+-- {-# BUILTIN LEVELUNIV      LevelUniv #-}
 
 postulate
-  Level : LevelUniv
+  Level : Type
   ℓ-zero : Level
   ℓ-suc  : (ℓ : Level) → Level
   ℓ-max  : (ℓ₁ ℓ₂ : Level) → Level

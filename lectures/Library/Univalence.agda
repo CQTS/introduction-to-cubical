@@ -20,9 +20,10 @@ flippedFiber-isContr ((a , p) , h) .snd (a₂ , p₂) i .snd = sym (snd (h (a₂
 
 equivProof : ∀ {la lt} (T : Type la) (A : Type lt) → (w : T ≃ A) → (a : A)
            → ∀ ψ (f : Partial ψ (flippedFiber (w .fst) a)) → flippedFiber (w .fst) a [ ψ ↦ f ]
-equivProof A B w a ψ fb =
+equivProof A B v a ψ fb =
   inS (contr' {A = flippedFiber (w .fst) a} (flippedFiber-isContr (w .snd a)) ψ fb)
   where
+    w = Equiv→Bijection v
     contr' : ∀ {ℓ} {A : Type ℓ} → isContr A → (φ : I) → (u : Partial φ A) → A
     contr' {A = A} (c , p) φ u = hcomp (λ i → λ { (φ = i1) → p (u 1=1) i
                                                 ; (φ = i0) → c }) c

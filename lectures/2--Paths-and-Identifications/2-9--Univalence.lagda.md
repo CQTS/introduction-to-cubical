@@ -173,8 +173,8 @@ ua-au = J (λ _ p → ua (au p) ≡ p) path
 au-ua : (e : A ≃ B) → au (ua e) ≡ e
 au-ua e = equivEq (funExt (uaβ e))
 
-univalenceIso : Iso (A ≡ B) (A ≃ B)
-univalenceIso = iso au ua au-ua ua-au
+univalenceEquiv : (A ≡ B) ≃ (A ≃ B)
+univalenceEquiv = equiv au ua au-ua ua-au
 ```
 
 ##
@@ -200,35 +200,36 @@ integer must be an equivalence.
 mvrnote: exercises
 ```
 sucℤ-Path : ℤ ≡ ℤ
-sucℤ-Path = ua (isoToEquiv sucℤ-Iso)
+sucℤ-Path = ua sucℤ-≃
 
 add-n-Path : ℕ → ℤ ≡ ℤ
 add-n-Path zero = refl
 add-n-Path (suc n) = add-n-Path n ∙ sucℤ-Path
 
 predℤ-Path : ℤ ≡ ℤ
-predℤ-Path = ua (isoToEquiv (invIso sucℤ-Iso))
+predℤ-Path = ua (invEquiv sucℤ-≃)
 
 sub-n-Path : ℕ → ℤ ≡ ℤ
 sub-n-Path zero = refl
 sub-n-Path (suc n) = sub-n-Path n ∙ predℤ-Path
 
-_+ℤ'_ : ℤ → ℤ → ℤ
-m +ℤ' pos n    = transport (add-n-Path n) m
-m +ℤ' negsuc n = transport (sub-n-Path (suc n)) m
+_+ℤ''_ : ℤ → ℤ → ℤ
+m +ℤ'' pos n    = transport (add-n-Path n) m
+m +ℤ'' negsuc n = transport (sub-n-Path (suc n)) m
 
 -- This agrees with regular addition defined by pattern-matching
-+ℤ'≡+ℤ : _+ℤ'_ ≡ _+ℤ_
++ℤ'≡+ℤ : _+ℤ''_ ≡ _+ℤ_
 +ℤ'≡+ℤ i m (pos zero) = m
 +ℤ'≡+ℤ i m (pos (suc n)) = sucℤ (+ℤ'≡+ℤ i m (pos n))
 +ℤ'≡+ℤ i m (negsuc zero) = predℤ m
 +ℤ'≡+ℤ i m (negsuc (suc n)) = predℤ (+ℤ'≡+ℤ i m (negsuc n))
 
--- So +ℤ' with a fixed element is an equivalence
-isEquivAddℤ' : (m : ℤ) → isEquiv (λ n → n +ℤ' m)
-isEquivAddℤ' (pos n)    = isEquivTransport (add-n-Path n)
-isEquivAddℤ' (negsuc n) = isEquivTransport (sub-n-Path (suc n))
+-- mvrnote: restore
+-- -- So +ℤ' with a fixed element is an equivalence
+-- isEquivAddℤ' : (m : ℤ) → isEquiv (λ n → n +ℤ' m)
+-- isEquivAddℤ' (pos n)    = isEquivTransport (add-n-Path n)
+-- isEquivAddℤ' (negsuc n) = isEquivTransport (sub-n-Path (suc n))
 
-isEquivAddℤ : (m : ℤ) → isEquiv (λ n → n +ℤ m)
-isEquivAddℤ = subst (λ add → (m : ℤ) → isEquiv (λ n → add n m)) +ℤ'≡+ℤ isEquivAddℤ'
+-- isEquivAddℤ : (m : ℤ) → isEquiv (λ n → n +ℤ m)
+-- isEquivAddℤ = subst (λ add → (m : ℤ) → isEquiv (λ n → add n m)) +ℤ'≡+ℤ isEquivAddℤ'
 ```

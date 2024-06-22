@@ -1,4 +1,3 @@
-
 ```
 module 2--Paths-and-Identifications.2-10--Higher-Types where
 ```
@@ -11,6 +10,7 @@ open import Library.Prelude
 open import Library.Literals
 open import Library.Univalence
 open import 1--Type-Theory.1-2--Inductive-Types
+open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 open import 1--Type-Theory.1-3--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra
@@ -30,7 +30,7 @@ that `Type`{.Agda} itself is not a set.
 
 ```
 not-Path : Bool ≡ Bool
-not-Path = ua (isoToEquiv not-Iso)
+not-Path = ua not-≃
 
 ¬isSet-Type : ¬ isSet Type
 ¬isSet-Type s = true≢false (λ i → transport (bad-Path i) true)
@@ -38,84 +38,13 @@ not-Path = ua (isoToEquiv not-Iso)
         bad-Path = s Bool Bool refl not-Path
 ```
 
-As an aside, univalence allows us to prove that the type of
-propositions is a set.
+## The Circle Revisited
 
-```
--- mvrnote: Bit annoying
--- isContrEquivOfContr : isContr P → isContr Q → isContr (P ≃ Q)
--- isContrEquivOfContr pP pQ = {!!}
-
--- mvrnote: turn parts of this into exercise
-isPropEquivOfProp : ∀ {ℓ} → (X Y : Prop ℓ) → isProp (fst X ≃ fst Y)
-isPropEquivOfProp (X , pX) (Y , pY) e f = equivEq (isProp→ pY _ _)
-
-isPropProp≡ : ∀ {ℓ} → (X Y : Prop ℓ) → isProp (fst X ≡ fst Y)
-isPropProp≡ (X , pX) (Y , pY) = isPropIso univalenceIso (isPropEquivOfProp (X , pX) (Y , pY))
-
-isSetProp : ∀ {ℓ} → isSet (Prop ℓ)
-isSetProp (X , pX) (Y , pY)
-  = isPropIso
-      (invIso (Σ≡PropIso (∀isProp→isPred λ _ → isPropIsProp) (X , pX) (Y , pY)))
-      (isPropProp≡ (X , pX) (Y , pY))
-```
-
-## The Circle
-
-We can also define inductive types which are not sets. This type
-is called the *circle* `S¹`, since it contains a point `base`{.Agda}
-and a path `loop`{.Agda} which goes from `base`{.Agda} to
-`base`{.Agda}, forming a circle.
-
-```
-data S¹ : Type where
-  base : S¹
-  loop : base ≡ base
-```
-
-mvrnote: prose
-```
-S¹-rec : ∀ {ℓ} {A : Type ℓ} (a : A) (l : a ≡ a)
-       → S¹ → A
-S¹-rec a l base = a
-S¹-rec a l (loop i) = l i
-
-S¹-ind : ∀ {ℓ} {A : S¹ → Type ℓ} (a : A base) (l : PathP (λ i → A (loop i)) a a)
-       → (s : S¹) → A s
-S¹-ind a l base = a
-S¹-ind a l (loop i) = l i
-```
-
-mvrnote: prose
-```
-loopⁿ : ℤ → base ≡ base
-loopⁿ (pos zero) = refl
-loopⁿ (pos (suc n)) = loopⁿ (pos n) ∙ loop
-loopⁿ (negsuc zero) = sym loop
-loopⁿ (negsuc (suc n)) = loopⁿ (negsuc n) ∙ sym loop
-```
-
-mvrnote: prose
-```
-rotLoop : (a : S¹) → a ≡ a
-rotLoop base       = loop
-rotLoop (loop i) j =
-  hcomp (λ k → λ { (i = i0) → loop (j ∨ ~ k)
-                 ; (i = i1) → loop (j ∧ k)
-                 ; (j = i0) → loop (i ∨ ~ k)
-                 ; (j = i1) → loop (i ∧ k)}) base
-
-_·S¹_ : S¹ → S¹ → S¹
-base     ·S¹ x = x
-(loop i) ·S¹ x = rotLoop x i
-
-infixl 30 _·S¹_
-```
-
-To show that `S¹`{.Agda} is not a set, we can define its "double
-cover" --- a type family with two elements over the base point, but
-for which `transport`{.Agda}ing along the `loop`{.Agda} flips those
-two points. Use this to show that `S¹`{.Agda} is also not a set.
+Intuitively, `S¹`{.Agda} should not be a set since we have the non-trivial path
+`loop`{.Agda} right there. To show that `S¹`{.Agda} is not a set, we can define
+its "double cover" --- a type family with two elements over the base point, but
+for which `transport`{.Agda}ing along the `loop`{.Agda} flips those two points.
+Use this to show that `S¹`{.Agda} is also not a set.
 
 mvrnote: rip picture from hott game?
 
@@ -133,46 +62,26 @@ refl≢loop = {!!}
 ¬isSet-S¹ isSet = {!!}
 ```
 
-             line1
-         pt  - - - > pt
-          ^           ^
-    line2 |           | line2    ^
-          |           |        j |
-         pt  — — — > pt          ∙ — >
-             line1                 i
+mvrnote: Double cover is equivalent to the circle, looks tricky!
+https://favonia.org/courses/hdtt2020/agda/agda-0430-setquot.agda
+
+Thinking geometrically, to add on mvrnote: todo
 
 ```
-data Torus : Type where
-  point : Torus
-  line1 : point ≡ point
-  line2 : point ≡ point
-  square : Square line2 line2 line1 line1
-```
 
-```
-t2c : Torus → S¹ × S¹
-t2c point        = ( base , base )
-t2c (line1 i)    = ( loop i , base )
-t2c (line2 j)    = ( base , loop j )
-t2c (square i j) = ( loop i , loop j )
+rotLoop : (a : S¹) → a ≡ a
+rotLoop base       = loop
+rotLoop (loop i) j =
+  hcomp (λ k → λ { (i = i0) → loop (j ∨ ~ k)
+                 ; (i = i1) → loop (j ∧ k)
+                 ; (j = i0) → loop (i ∨ ~ k)
+                 ; (j = i1) → loop (i ∧ k)}) base
 
-c2t : S¹ × S¹ → Torus
-c2t (base   , base)   = point
-c2t (loop i , base)   = line1 i
-c2t (base   , loop j) = line2 j
-c2t (loop i , loop j) = square i j
+_·S¹_ : S¹ → S¹ → S¹
+base     ·S¹ x = x
+(loop i) ·S¹ x = rotLoop x i
 
-c2t-t2c : (t : Torus) → c2t (t2c t) ≡ t
-c2t-t2c point        = refl
-c2t-t2c (line1 _)    = refl
-c2t-t2c (line2 _)    = refl
-c2t-t2c (square _ _) = refl
-
-t2c-c2t : (p : S¹ × S¹) → t2c (c2t p) ≡ p
-t2c-c2t (base   , base)   = refl
-t2c-c2t (base   , loop _) = refl
-t2c-c2t (loop _ , base)   = refl
-t2c-c2t (loop _ , loop _) = refl
+infixl 30 _·S¹_
 ```
 
 ## Suspensions
@@ -185,33 +94,35 @@ data Susp {ℓ} (A : Type ℓ) : Type ℓ where
   south : Susp A
   merid : (a : A) → north ≡ south
 
-Susp-func : {ℓ : Level} {X Y : Type ℓ} → (f : X → Y) → Susp X → Susp Y
-Susp-func f north = north
-Susp-func f south = south
-Susp-func f (merid a i) = merid (f a) i
+Susp-map : {ℓ : Level} {X Y : Type ℓ} → (f : X → Y) → Susp X → Susp Y
+Susp-map f north = north
+Susp-map f south = south
+Susp-map f (merid a i) = merid (f a) i
 ```
 
 The simplest example is when we feed `Susp`{.Agda} the empty type
-`∅`{.Agda}.
+`∅`{.Agda}. You can use an absurd pattern in the `merid`{.Agda} case.
 
 ```
-Susp∅≅Bool : Iso (Susp ∅) Bool
+Susp∅≅Bool : Susp ∅ ≃ Bool
 -- Exercise (trivial):
 -- Susp∅≅Interval = {!!}
-Susp∅≅Bool = iso fun inv rightInv leftInv
+Susp∅≅Bool = equiv fun inv to-fro fro-to
   where
     fun : Susp ∅ → Bool
     fun north = true
     fun south = false
+    fun (merid () i)
     inv : Bool → Susp ∅
     inv true = north
     inv false = south
-    rightInv : section fun inv
-    rightInv true = refl
-    rightInv false = refl
-    leftInv : retract fun inv
-    leftInv north = refl
-    leftInv south = refl
+    to-fro : isSection fun inv
+    to-fro true = refl
+    to-fro false = refl
+    fro-to : isRetract fun inv
+    fro-to north = refl
+    fro-to south = refl
+    fro-to (merid () i)
 ```
 
 Next simplest is the unit type `⊤`{.Agda} the reuslt looks like the
@@ -223,10 +134,10 @@ data Interval : Type where
   one  : Interval
   seg  : zero ≡ one
 
-Susp⊤≅Interval : Iso (Susp ⊤) Interval
+Susp⊤≅Interval : Susp ⊤ ≃ Interval
 -- Exercise (also trivial):
 -- Susp⊤≅Interval = {!!}
-Susp⊤≅Interval = iso fun inv rightInv leftInv
+Susp⊤≅Interval = equiv fun inv to-fro fro-to
   where
     fun : Susp ⊤ → Interval
     fun north = zero
@@ -236,14 +147,14 @@ Susp⊤≅Interval = iso fun inv rightInv leftInv
     inv zero = north
     inv one = south
     inv (seg i) = merid tt i
-    rightInv : section fun inv
-    rightInv zero = refl
-    rightInv one = refl
-    rightInv (seg i) = refl
-    leftInv : retract fun inv
-    leftInv north = refl
-    leftInv south = refl
-    leftInv (merid tt i) = refl
+    to-fro : isSection fun inv
+    to-fro zero = refl
+    to-fro one = refl
+    to-fro (seg i) = refl
+    fro-to : isRetract fun inv
+    fro-to north = refl
+    fro-to south = refl
+    fro-to (merid tt i) = refl
 ```
 
 This `Interval`{.Agda} is an ordinary type, in contrast to the
@@ -267,7 +178,7 @@ Finally something interesting happens once we try `Bool`{.Agda}.
 
 mvrnote: will this need hints?
 ```
-SuspBool≅S¹ : Iso (Susp Bool) S¹
+SuspBool≅S¹ : Susp Bool ≃ S¹
 -- Exercise:
 SuspBool≅S¹ = {!!}
 ```
@@ -275,6 +186,22 @@ SuspBool≅S¹ = {!!}
 mvrnote: Some exercises: Suspension of isContr isContr, Suspension of isProp isSet
 
 ## The fundamental group of the circle
+
+Since the path `loop`{.Agda} starts and ends a the same point `base`{.Agda}, we
+can compose it with itself as many times as we like. Thinking of composition of
+paths as a form of multiplication, composing `loop`{.Agda} with itself over and
+over is a form of exponentiation. We can therefore define the exponent
+`loopⁿ`{.Agda} for any natural number `n`. But if we remember that
+exponentiating by -1 is the same as taking the multiplicative inverse, we can
+extend `loopⁿ`{.Agda} to take in any integer `n`. 
+
+```
+loopⁿ : ℤ → base ≡ base
+loopⁿ (pos zero) = refl
+loopⁿ (pos (suc n)) = loopⁿ (pos n) ∙ loop
+loopⁿ (negsuc zero) = sym loop
+loopⁿ (negsuc (suc n)) = loopⁿ (negsuc n) ∙ sym loop
+```
 
 ```
 helix : S¹ → Type
@@ -299,6 +226,7 @@ vertices are all `base`{.Agda}.)
     loopⁿ y |           | loopⁿ y         ^
             |           |               j |
             * — — — - > *                 ∙ — >
+
                 refl                        i
 
 mvrnote: crappy justification:
@@ -350,9 +278,9 @@ The `(i = i0)` face is more slightly more interesting, here it is written flat:
             * — — — - - > *                   ∙ — >
          loopⁿ (predℤ (suzℤ y))                 j
 
-For this we can combine `loopⁿ` with `sucℤ-Iso`{.Agda} in the first argument.
+For this we can combine `loopⁿ` with `sucℤ-≃`{.Agda} in the first argument.
 ```
-S¹-decode-faces i y j k (i = i0) = loopⁿ (isoLeftInv sucℤ-Iso y k) j
+S¹-decode-faces i y j k (i = i0) = loopⁿ (snd (snd (snd sucℤ-≃)) y k) j
 ```
 
 All that remains is to construct the base square, and for this we have
@@ -425,6 +353,8 @@ S¹-decode-base (negsuc n) i j = compPath-filler (loopⁿ (negsuc n)) (sym loop)
 ```
 
 Finally, we perform the actual `hcomp`.
+
+djnote: we should explain what the `unglue` is doing here.
 ```
 S¹-decode base = loopⁿ
 S¹-decode (loop i) y j =
@@ -453,14 +383,14 @@ S¹-encodeDecode (negsuc (suc n)) = cong predℤ (S¹-encodeDecode (negsuc n))
 
 And we're done!
 ```
-ΩS¹Isoℤ : Iso (base ≡ base) ℤ
-ΩS¹Isoℤ = iso (S¹-encode base) (S¹-decode base) S¹-encodeDecode S¹-decodeEncode
+ΩS¹≃ℤ : (base ≡ base) ≃ ℤ
+ΩS¹≃ℤ = equiv (S¹-encode base) (S¹-decode base) S¹-encodeDecode S¹-decodeEncode
 ```
 
 mvrnote: yet another way of implementing `+ℤ`{.Agda}
 ```
-_+ℤ''_ : ℤ → ℤ → ℤ
-x +ℤ'' y = isoFun ΩS¹Isoℤ (λ i → (isoInv ΩS¹Isoℤ x i) ·S¹ (isoInv ΩS¹Isoℤ y i))
+_+ℤ'''_ : ℤ → ℤ → ℤ
+x +ℤ''' y = equivFun ΩS¹≃ℤ (λ i → (fst (equivSec ΩS¹≃ℤ) x i) ·S¹ (fst (equivSec ΩS¹≃ℤ) y i))
 ```
 
 
@@ -502,7 +432,7 @@ mvrnote: exercises
 
 ```
 -- degree : (f : S¹ → S¹) → (f base ≡ base) → ℤ
--- degree f = ?
+-- degree f = {!!}
 
 -- S¹-auto : Iso (S¹ ≃ S¹) (S¹ ⊎ S¹)
 -- Iso.fun S¹-auto x = {!!}
@@ -519,8 +449,8 @@ data S∞ : Type where
   ssouth : S∞
   smerid : S∞ → snorth ≡ ssouth
 
-S∞SelfSusp : Iso S∞ (Susp S∞)
-S∞SelfSusp = iso to fro sec ret
+S∞SelfSusp : S∞ ≃ Susp S∞
+S∞SelfSusp = equiv to fro to-fro fro-to
   where
     to : S∞ → Susp S∞
     to snorth = north
@@ -530,14 +460,14 @@ S∞SelfSusp = iso to fro sec ret
     fro north = snorth
     fro south = ssouth
     fro (merid a i) = smerid a i
-    sec : section to fro
-    sec north = refl
-    sec south = refl
-    sec (merid a i) = refl
-    ret : retract to fro
-    ret snorth = refl
-    ret ssouth = refl
-    ret (smerid a i) = refl
+    to-fro : isSection to fro
+    to-fro north = refl
+    to-fro south = refl
+    to-fro (merid a i) = refl
+    fro-to : isRetract to fro
+    fro-to snorth = refl
+    fro-to ssouth = refl
+    fro-to (smerid a i) = refl
 
 isContrS∞ : isContr S∞
 fst isContrS∞ = snorth

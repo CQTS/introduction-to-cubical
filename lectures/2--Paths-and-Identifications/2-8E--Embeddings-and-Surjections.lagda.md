@@ -50,16 +50,16 @@ isInjective→isEmbedding
   : isSet B → (f : A → B) → isInjective f
   → isEmbedding f
 isInjective→isEmbedding bset f inj x (f*x , p) (f*x' , q) =
-  isoFun (Σ≡PropIso (∀isProp→isPred (λ a → bset x (f a))) (f*x , p) (f*x' , q)) (inj (sym p ∙ q))
+  equivFun (≡InSubtype (∀isProp→isPred (λ a → bset x (f a))) (f*x , p) (f*x' , q)) (inj (sym p ∙ q))
 
-isEquiv→isEmbedding : isEquiv f → isEmbedding f
-isEquiv→isEmbedding e x = isContr→isProp (e x)
+-- isEquiv→isEmbedding : isEquiv f → isEmbedding f
+-- isEquiv→isEmbedding e x = isContr→isProp (e x)
 
-isFaithful→isInjective
-  : {f : A → B}
-  → isFaithful f
-  → isInjective f
-isFaithful→isInjective emb p = emb _ _ p .fst .fst
+-- isFaithful→isInjective
+--   : {f : A → B}
+--   → isFaithful f
+--   → isInjective f
+-- isFaithful→isInjective emb p = emb _ _ p .fst .fst
 
 -- -- mvrnote todo
 -- private
@@ -101,9 +101,9 @@ embedding-lemma {f = f} cffx y (x , p) q = isContr→isProp (subst isContr (cong
 
 ```
 isSurjection : (A → B) → Type _
-isSurjection f = ∀ b → ∥ fiber f b ∥
+isSurjection f = ∀ b → ∃ fiber f b 
 
-section→isSurjection : {f : A → B} {g : B → A} → section f g → isSurjection f
+section→isSurjection : {f : A → B} {g : B → A} → isSection f g → isSurjection f
 section→isSurjection {g = g} s b = ∣ g b , sym (s b) ∣
 
 -- isEquiv→isEmbedding×isSurjection : isEquiv f → isEmbedding f × isSurjection f

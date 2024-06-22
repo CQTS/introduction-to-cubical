@@ -6,6 +6,7 @@ module 1--Type-Theory.1-2E--Extras where
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
+open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
 ```
 -->
 
@@ -34,21 +35,23 @@ of `Bool-ind`{.Agda}.
 
 ```
 -- Bool×-family : {ℓ : Level} (A B : Type ℓ) → Bool → Type ℓ
--- Bool×-family A B = Bool-ind A B
+-- Bool×-family A B = Bool-rec A B
 
 -- Bool×-to : {ℓ : Level} {A B : Type ℓ}
 --   → ((x : Bool) → Bool×-family A B x) → A × B
 -- -- Exercise:
-Bool×-to f = {!!}
+-- Bool×-to f = {!!}
 Bool×-to f = f true , f false
 
 -- -- You are building a function out of `Bool` here, so use `Bool-ind`.
 -- Bool×-fro : {ℓ : Level} {A B : Type ℓ}
 --   → A × B → ((x : Bool) → Bool×-family A B x)
 -- -- Exercise:
-Bool×-fro f = {!!}
+-- Bool×-fro f = {!!}
 Bool×-fro (a , b) = Bool-ind a b
 ```
+
+mvrnote: Also do it as an inductive type, discuss the difference?
 
 ## Finite Types
 
@@ -99,7 +102,7 @@ Use `fold`{.Agda} to write a function that sums a list of numbers.
 
 ```
 sumℕ : List ℕ → ℕ
-sumℕ = fold zero _+_
+sumℕ = fold zero _+ℕ_
 ```
 
 To test that you did it right, try normalizing the following.
@@ -114,7 +117,7 @@ Now do the product:
 
 ```
 prodℕ : List ℕ → ℕ
-prodℕ = fold (suc zero) _·_
+prodℕ = fold (suc zero) _·ℕ_
 
 test-prod : ℕ
 test-prod = prodℕ testList
@@ -161,13 +164,30 @@ reverse-test : List ℕ
 reverse-test = reverse testList
 ```
 
-## Losts
+data _∈_ {A : Set}(x : A) : List A → Set where
+  first : {xs : List A} → x ∈ x :: xs
+  later : {y : A}{xs : List A} → x ∈ xs → x ∈ y :: xs
 
-mvrnote: Show that Lost is equivalent to ∅. Could also use Nit (with only sacc)
+infix 4 _∈_
+
+_!_ : ∀{A : Set} → List A → ℕ → Maybe A
+[] ! _           = nothing
+x :: xs ! zero    = just x
+x :: xs ! (suc n) = xs ! n
+
+infix 5 _!_
+
+lookup : ∀ {A}{x : A}(xs : List A) → x ∈ xs → Σ ℕ (λ n → xs ! n ≡ just x)
+
+or similar
+
+## Nits
+
+Could also use Nit (with only sacc)
 ```
-data Lost (A : Type) : Type where
-  conz : A → Lost A → Lost A
+data Nit : Type where
+  sac : Nit → Nit
 
-imp : {A : Type} → Lost A → ∅
-imp (conz x l) = imp l
+imp : Nit → ∅
+imp (sac l) = imp l
 ```
