@@ -54,6 +54,23 @@ function `isPositive`{.Agda}, because `isPositive (Bool→ℕ b) ≡ b`.
 
 ```
 isPositive-represents-Bool : (b : Bool) → isPositive (Bool→ℕ b) ≡ b
+```
+
+How do we prove this? Unfortunately we can't simply use the
+reflexivity path for each `b`, like so
+
+```
+-- isPositive-represents-Bool b = refl
+```
+
+because Agda does not automatically check both cases for us. But all
+we have to do is case-split on `b` ourselves: once Agda knows that `b
+= true`, then it can use the definitions of the functions to compute
+that `isPositive (Bool→ℕ true) = isPositive (suc zero) = true`. So for
+the `true`{.Agda} case, we can use reflexivity, and the same is true
+for the `false`{.Agda} case.
+
+```
 isPositive-represents-Bool true = refl
 isPositive-represents-Bool false = refl
 ```
@@ -175,11 +192,17 @@ constructing and destructing these `Equiv`s.
 equivFun : A ≃ B → (A → B)
 equivFun e = fst e
 
-equivSec : (e : A ≃ B) → sectionOf (equivFun e)
-equivSec e = fst (snd e)
+equivSec : (e : A ≃ B) → B → A
+equivSec e = fst (fst (snd e))
 
-equivRet : (e : A ≃ B) → retractOf (equivFun e)
-equivRet e = snd (snd e)
+equivIsSec : (e : A ≃ B) → isSection (equivFun e) (equivSec e)
+equivIsSec e = snd (fst (snd e))
+
+equivRet : (e : A ≃ B) → B → A
+equivRet e = fst (snd (snd e))
+
+equivIsRet : (e : A ≃ B) → isRetract (equivFun e) (equivRet e)
+equivIsRet e = snd (snd (snd e))
 ```
 
 It is very common that the section of `f` and retract of `f` are the
@@ -204,11 +227,11 @@ every isomorphism gives rise to an equivalence (the function
 isomorphism, the type of equivalences and the type of isomorphisms
 between two types are not in general the same!
 
-It will turn out that equivalence as we've defined it here is the
-better notion, because the type `isEquiv f` is a *proposition* about
-the function `f`, whereas being an *isomorphism* sneaks in extra data.
-We can happily forget about the term "isomorphism" now and stick with
-equivalence.
+It will turn out that "equivalence" as we've defined it here is the
+better notion because the type `isEquiv f` is a *proposition* about
+the function `f`, whereas being an "isomorphism" sneaks in extra data.
+We will happily forget about the term "isomorphism" from this point on
+and stick with equivalence.
 :::
 
 At the very least, we can show that the identity function on any type
@@ -298,34 +321,33 @@ funExt-≃ : {f g : A → B} → ((x : A) → f x ≡ g x) ≃ (f ≡ g)
 funExt-≃ = equiv funExt funExt⁻ (λ _ → refl) (λ _ → refl)
 
 -- mvrnote: is orienting these the other direction more natural?
-×Path-Path×-≃ : {x y : A × B} →
+×Path≃Path× : {x y : A × B} →
   (fst x ≡ fst y) × (snd x ≡ snd y)
   ≃ (x ≡ y)
-×Path-Path×-≃ = equiv ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
+×Path≃Path× = equiv ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
 
 -- The same is true when everything is maximally dependent
-ΣPath-PathΣ-≃ : {A : I → Type ℓ}
+ΣPath≃PathΣ : {A : I → Type ℓ}
                   {B : (i : I) → (a : A i) → Type ℓ'}
                   {x : Σ[ a ∈ A i0 ] B i0 a}
                   {y : Σ[ a ∈ A i1 ] B i1 a} →
   (Σ[ p ∈ PathP A (fst x) (fst y) ]
     (PathP (λ i → B i (p i)) (snd x) (snd y)))
   ≃ (PathP (λ i → Σ[ a ∈ A i ] B i a) x y)
-ΣPath-PathΣ-≃ = equiv ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
+ΣPath≃PathΣ = equiv ΣPathP→PathPΣ PathPΣ→ΣPathP (λ _ → refl) (λ _ → refl)
 ```
 
-We will not always be so lucky. In the following equivalence, we
-cannot simply supply `refl`{.Agda} for an arbitrary argument `x`
-because Agda does not know which cases of `Bool→⊤⊎⊤`{.Agda} and
-`⊤⊎⊤→Bool`{.Agda} should be used for that `x`. But: if we split into
-cases for `x`, then the functions do compute and we can again supply
-`refl`{.Agda} in each case. If this doesn't work, go back and check
+We will not always be so lucky, and have definitional inverses to our
+functions. For the following you will have to split into cases, like
+we did for the function `isPositive-represents-Bool`{.Agda}.
+
+If the next equivalence doesn't work doesn't work, go back and check
 that the definitions of `Bool→⊤⊎⊤`{.Agda} and `⊤⊎⊤→Bool`{.Agda} you
 gave are actually inverses!
 
 ```
-Bool-⊤⊎⊤-≃ : Bool ≃ (⊤ ⊎ ⊤)
-Bool-⊤⊎⊤-≃ = equiv Bool→⊤⊎⊤ ⊤⊎⊤→Bool to-fro fro-to
+Bool≃⊤⊎⊤ : Bool ≃ (⊤ ⊎ ⊤)
+Bool≃⊤⊎⊤ = equiv Bool→⊤⊎⊤ ⊤⊎⊤→Bool to-fro fro-to
   where
     to-fro : isSection Bool→⊤⊎⊤ ⊤⊎⊤→Bool
 --  Exercise:
@@ -339,8 +361,8 @@ Bool-⊤⊎⊤-≃ = equiv Bool→⊤⊎⊤ ⊤⊎⊤→Bool to-fro fro-to
 The next few are similar.
 
 ```
-ℤ-ℕ⊎ℕ-≃ : ℤ ≃ (ℕ ⊎ ℕ)
-ℤ-ℕ⊎ℕ-≃ = equiv ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ to-fro fro-to
+ℤ≃ℕ⊎ℕ : ℤ ≃ (ℕ ⊎ ℕ)
+ℤ≃ℕ⊎ℕ = equiv ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ to-fro fro-to
   where
     to-fro : isSection ℤ→ℕ⊎ℕ ℕ⊎ℕ→ℤ
 --  Exercise:
@@ -361,8 +383,8 @@ The next few are similar.
 --  Exercise:
     fro-to x = {!!}
 
-∅×-≃ : (A : Type) → (∅ × A) ≃ ∅
-∅×-≃ A = equiv (∅×-to A) (∅×-fro A) to-fro fro-to
+∅×≃∅ : (A : Type) → (∅ × A) ≃ ∅
+∅×≃∅ A = equiv (∅×-to A) (∅×-fro A) to-fro fro-to
   where
     to-fro : isSection (∅×-to A) (∅×-fro A)
 --  Exercise:
@@ -371,6 +393,17 @@ The next few are similar.
     fro-to : isRetract (∅×-to A) (∅×-fro A)
 --  Exercise:
     fro-to x = {!!}
+
+Torus≃S¹×S¹ : Torus ≃ S¹ × S¹
+Torus≃S¹×S¹ = equiv Torus→S¹×S¹ S¹×S¹→Torus to-fro fro-to
+  where
+    to-fro : isSection Torus→S¹×S¹ S¹×S¹→Torus
+--  Exercise:
+    to-fro c = {!!}
+
+    fro-to : isRetract Torus→S¹×S¹ S¹×S¹→Torus
+--  Exercise:
+    fro-to t = {!!}
 ```
 
 Equivalences do not necessarily go between different types. A type can
@@ -390,15 +423,8 @@ not-≃ = equiv not not to-fro fro-to
     fro-to x = {!!}
 
 sucℤ-≃ : ℤ ≃ ℤ
-sucℤ-≃ = equiv sucℤ predℤ to-fro fro-to
-  where
-    to-fro : isSection sucℤ predℤ
---  Exercise:
-    to-fro x = {!!}
-
-    fro-to : isRetract sucℤ predℤ
---  Exercise:
-    fro-to x = {!!}
+-- Exercise:
+sucℤ-≃ = equiv sucℤ {!!} {!!} {!!}
 ```
 
 And not all equivalences will be simply proven by
@@ -406,8 +432,8 @@ case-split-then-`refl`{.Agda}. The section and retract here need to be
 constructed recursively:
 
 ```
-ℕ-List⊤-≃ : ℕ ≃ (List ⊤)
-ℕ-List⊤-≃ = equiv ℕ→List⊤ length to-fro fro-to
+ℕ≃List⊤ : ℕ ≃ (List ⊤)
+ℕ≃List⊤ = equiv ℕ→List⊤ length to-fro fro-to
   where
     to-fro : isSection ℕ→List⊤ length
 --  Exercise:
@@ -663,14 +689,17 @@ equivalence. You will need to use a connection in the case for
     fro-to z = {!!}
 ```
 
-## Equivalent notions of Equivalence
+
+## Equivalent Notions of Equivalence
 
 mvrnote: out of date
-There are many different, but equivalent, ways to define the notion of
-equivalence in homotopy type theory. Above we defined equivalences using what we
-could more precisely call a "bi-sectional equivalence": an equivalence is a
-function which has section that itself has a section. We can also define
-equivalences using `bi-invertible equivalences`: an equivalence is a function
-with a section and a *retract*. Let's see this definition now.
 
-mvrnote possible exercise: x ≤ y if and only if Σ z ꞉ ℕ , x + z ≡ y
+There are many different but equivalent, ways to define the notion of
+equivalence in homotopy type theory. Above we defined equivalences as
+what we could more precisely call "bi-invertible maps": a function
+which has both a left-inverse and right-inverse.
+
+We can also define equivalences using `bi-invertible equivalences`: an
+equivalence is a function with a section and a *retract*. Let's see
+this definition now.
+

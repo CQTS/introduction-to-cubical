@@ -174,7 +174,7 @@ module _ {f : A → B} (isI : isEquiv f) where
       lemEquiv i .snd = λ j → sq1 i j
 
   isEquiv→secIsBijection : isBijection g
-  isEquiv→secIsBijection y = isProp→with-point-isContr (λ (x0 , p0) (x1 , p1) → lemEquiv y x0 x1 p0 p1) (f y , sym (t y) ∙ sym (equivSec≡Ret (f , isI) (f y)))
+  isEquiv→secIsBijection y = isProp→with-point-isContr (λ (x0 , p0) (x1 , p1) → lemEquiv y x0 x1 p0 p1) (f y , sym (t y) ∙ sym (sec≡ret (f , isI) (f y)))
 
 Equiv→Bijection : A ≃ B → Bijection A B
 Equiv→Bijection (f , isE) = (f , isEquiv→secIsBijection (snd (invEquiv (f , isE))))

@@ -428,5 +428,5 @@ module _ {B : A → Type ℓ} {B' : A → Type ℓ'} (f₂ : (x : A) → B x →
 Σ-path-≃ :
   {A : Type ℓ} {B : A → Type ℓ'} (a b : Σ[ a ∈ A ] B a)
   → (a ≡ b) ≃ (Σ[ p ∈ (fst a ≡ fst b) ] transport (λ i → B (p i)) (snd a) ≡ snd b)
-Σ-path-≃ {B = B} a b = compEquiv (Σ-map-snd-≃ (λ p → PathP≃Path (λ i → B (p i)) _ _)) (invEquiv ΣPath-PathΣ-≃)
+Σ-path-≃ {B = B} a b = compEquiv (Σ-map-snd-≃ (λ p → PathP≃Path (λ i → B (p i)) _ _)) (invEquiv ΣPath≃PathΣ)
 ```

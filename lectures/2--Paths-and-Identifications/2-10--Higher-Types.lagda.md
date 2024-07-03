@@ -261,7 +261,7 @@ to fill, with the desired square sitting on the top.
 
 Three of the sides are easy, just constant in one of the dimensions.
 ```
-S¹-decode-faces : (i : I) → (y : sucℤ-Path i) → (j : I) → I → Partial (i ∨ ~ i ∨ j ∨ ~ j) S¹
+S¹-decode-faces : (i : I) → (y : sucℤ-Path i) → (j : I) → I → Partial (∂ i ∨ ∂ j) S¹
 
 S¹-decode-faces i y j k (i = i1) = loopⁿ y j
 S¹-decode-faces i y j k (j = i0) = base
@@ -390,7 +390,7 @@ And we're done!
 mvrnote: yet another way of implementing `+ℤ`{.Agda}
 ```
 _+ℤ'''_ : ℤ → ℤ → ℤ
-x +ℤ''' y = equivFun ΩS¹≃ℤ (λ i → (fst (equivSec ΩS¹≃ℤ) x i) ·S¹ (fst (equivSec ΩS¹≃ℤ) y i))
+x +ℤ''' y = equivFun ΩS¹≃ℤ (λ i → (equivSec ΩS¹≃ℤ x i) ·S¹ (equivSec ΩS¹≃ℤ y i))
 ```
 
 

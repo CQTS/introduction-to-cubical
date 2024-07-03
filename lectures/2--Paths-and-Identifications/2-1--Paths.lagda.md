@@ -228,28 +228,50 @@ Types of paths are types like any other, so we can define functions
 that accept paths as arguments and produce paths as results.
 
 ```
-congNonDep : (f : A → B)
+congE : (f : A → B)
   → x ≡ y
   → f x ≡ f y
-congNonDep f p i = f (p i)
+congE f p i = f (p i)
 ```
 
 This is the principle that says that doing the same thing to both
 sides of an equation gives an equal result --- very useful!
 
 ```
-cong-bin : (f : A → B → C) {a a' : A} {b b' : B}
+congE-bin : (f : A → B → C) {a a' : A} {b b' : B}
          → a ≡ a'
          → b ≡ b'
          → (f a b) ≡ (f a' b')
 -- Exercise:
-cong-bin f p q = {!!}
+congE-bin f p q = {!!}
 
-cong-∘ : (f : A → B) (g : B → C)
+congE-∘ : (f : A → B) (g : B → C)
   → (p : x ≡ y)
-  → congNonDep (g ∘ f) p ≡ congNonDep g (congNonDep f p)
+  → congE (g ∘ f) p ≡ congE g (congE f p)
 -- Exercise:
-cong-∘ f g p = {!!}
+congE-∘ f g p = {!!}
+```
+
+`congE`{.Agda} is simple but on its own already has some useful
+applications! Namely: the constructors for inductive types are
+injective, so if the same constructor is used on both ends of the
+path, we can peel them off.
+
+```
+suc-inj : {x y : ℕ} → suc x ≡ suc y → x ≡ y
+-- Exercise: (Hint: use `predℕ`!)
+suc-inj p = {!!}
+
+inl-inj : {x y : A} → Path (A ⊎ B) (inl x) (inl y) → x ≡ y
+inl-inj {A = A} {x = x} p = congE uninl p
+  where
+    uninl : A ⊎ B → A
+    uninl (inl a) = a
+    uninl (inr _) = x
+
+inr-inj : {x y : B} → Path (A ⊎ B) (inr x) (inr y) → x ≡ y
+-- Exercise:
+inr-inj {B = B} {x = x} p = {!!}
 ```
 
 
@@ -336,14 +358,14 @@ data S¹ : Type where
 ```
 
 There's not a huge amount we can do with `S¹`{.Agda} without
-technology from later sections, but we can at least describe its
+technology from later lectures, but we can at least describe its
 recursion principle. The recursion principle for the circle states
 that to produce a function `S¹ → A` for any type `A`, we need to
 specify a point `a : A`, and a loop `l : a ≡ a` starting and ending at
 that point. In other words, we need to draw a circle in the type `A`.
 
 ```
-S¹-rec : {ℓ : Level} {A : Type ℓ} (a : A) (l : a ≡ a)
+S¹-rec : {A : Type ℓ} (a : A) (l : a ≡ a)
        → S¹ → A
 S¹-rec a l base = a
 S¹-rec a l (loop i) = l i
@@ -460,7 +482,7 @@ depFunExt : {B : A → I → Type}
 depFunExt p i x = p x i
 ```
 
-Similarly, we can upgrade `congNonDep`{.Agda} to appy to dependent
+Similarly, we can upgrade `congE`{.Agda} to appy to dependent
 functions:
 
 ```
@@ -502,6 +524,7 @@ module _ {A : Type ℓ} {B : A → Type ℓ₂}
             → Σ[ p ∈ (fst x ≡ fst y) ] PathP {!!} {!!} {!!}
 
   PathPΣ→ΣPathP' eq = (λ i → fst (eq i)) , (λ i → snd (eq i))
+
 ```
 
 There is a second possible notion of dependency: it could be that the
@@ -527,9 +550,17 @@ module _ {A : I → Type ℓ} {B : (i : I) → A i → Type ℓ₂}
   PathPΣ→ΣPathP eq = (λ i → fst (eq i)) , (λ i → snd (eq i))
 ```
 
-mvrnote: text
+Path-overs are also what is required to describe the induction
+principle of the circle; the upgraded version of `S¹-rec`{.Agda} for
+dependent functions. If we have a type family over the circle rather
+than just a single type, the provided point must be an element of the
+type family at `base`{.Agda}, and the loop is a path from that point
+to itself, lying over the path of types `A ∘ loop`.
+
 ```
-S¹-ind : {ℓ : Level} {A : S¹ → Type ℓ} (a : A base) (l : PathP (λ i → A (loop i)) a a)
+S¹-ind : {A : S¹ → Type ℓ}
+       → (a : A base)
+       → (l : PathP (λ i → A (loop i)) a a)
        → (s : S¹) → A s
 S¹-ind a l base = a
 S¹-ind a l (loop i) = l i
@@ -674,7 +705,10 @@ flipSquareP :
 flipSquareP A a₀- a₁- a-₀ a-₁ s = {!!}
 ```
 
-mvrnote: text
+Agda also provides us the ability to define inductive types that
+contain path-of-path constructors. Here's a nice example: the torus,
+which consists a basepoint, two circles connected to that basepoint,
+and a square region with sides as follows:
 
              line1
          pt  - - - > pt
@@ -684,37 +718,25 @@ mvrnote: text
          pt  — — — > pt          ∙ — >
              line1                 i
 
+mvrnote: this will really need some pictures
+
 ```
 data Torus : Type where
-  point : Torus
-  line1 : point ≡ point
-  line2 : point ≡ point
+  point  : Torus
+  line1  : point ≡ point
+  line2  : point ≡ point
   square : Square line2 line2 line1 line1
 ```
 
+Topologically, the torus is equal to the cartesian product of two
+circles. We can prove this directly! mvrnote: refer to the picture
+
 ```
-t2c : Torus → S¹ × S¹
-t2c point        = ( base , base )
-t2c (line1 i)    = ( loop i , base )
-t2c (line2 j)    = ( base , loop j )
-t2c (square i j) = ( loop i , loop j )
+Torus→S¹×S¹ : Torus → S¹ × S¹
+-- Exercise:
+Torus→S¹×S¹ t = {!!}
 
-c2t : S¹ × S¹ → Torus
-c2t (base   , base)   = point
-c2t (loop i , base)   = line1 i
-c2t (base   , loop j) = line2 j
-c2t (loop i , loop j) = square i j
-
-c2t-t2c : (t : Torus) → c2t (t2c t) ≡ t
-c2t-t2c point        = refl
-c2t-t2c (line1 _)    = refl
-c2t-t2c (line2 _)    = refl
-c2t-t2c (square _ _) = refl
-
-t2c-c2t : (p : S¹ × S¹) → t2c (c2t p) ≡ p
-t2c-c2t (base   , base)   = refl
-t2c-c2t (base   , loop _) = refl
-t2c-c2t (loop _ , base)   = refl
-t2c-c2t (loop _ , loop _) = refl
+S¹×S¹→Torus : S¹ × S¹ → Torus
+-- Exercise:
+S¹×S¹→Torus c = {!!}
 ```
-

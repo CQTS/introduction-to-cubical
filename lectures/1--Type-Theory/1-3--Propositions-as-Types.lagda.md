@@ -403,8 +403,8 @@ equality.
 +-≡ℕ n1 n2 m1 m2 p q = {!!}
 ```
 
-Finally, show that addition is unital (that is, has an identity
-element), and is associative. These are all very easy by recursion.
+Next, we can show that addition is unital (that is, has an identity
+element), and associative. These are all very easy by recursion.
 Remember that you don't *have* to case split on an argument just
 because you can, `≡ℕ-assoc`{.Agda} is much simpler if you don't!
 

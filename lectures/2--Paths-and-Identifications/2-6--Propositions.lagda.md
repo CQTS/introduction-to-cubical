@@ -160,7 +160,7 @@ extracting some of the data of an equivalence.
 
 ```
 equivRetracts : {A : Type ℓ} {B : Type ℓ'} → A ≃ B → B retractsOnto A
-equivRetracts e = fst (equivRet e) , equivFun e , snd (equivRet e)
+equivRetracts e = equivRet e , equivFun e , equivIsRet e
 ```
 
 Now we can show that if `⊤`{.Agda} retracts onto `A`, then `A` is
@@ -436,7 +436,7 @@ isProp¬ : isProp (¬ A)
 isProp¬ = isProp→ isProp∅
 ```
 
-The "and" of two proposition `A` and `B` is the type of pairs `A × B`.
+The "and" of two propositions `A` and `B` is the type of pairs `A × B`.
 ```
 isProp× : isProp A → isProp B → isProp (A × B)
 -- Exercise:
@@ -595,9 +595,10 @@ isPred→∀isProp p = {!!}
 
 ∀isProp→isPred : {A : Type ℓ} {B : A → Type ℓ'}
                → (∀ a → isProp (B a)) → isPred B
--- Exercise:
+-- mvrnote: get rid of let
 -- Hint: You need to end in a PathP, so try toPathP,
 --       then work backwards (you may need to transport)
+-- Exercise:
 ∀isProp→isPred p = {!!}
 ```
 
@@ -791,6 +792,20 @@ mvrnote: prose
 -- Exercise: Hint: use `propExt`
 ¬¬∃≃¬¬ = {!!}
 ```
+
+
+Challenge exercises:
+```
+-- ∃-Idem-×-L : (∃ (∃ A) × B) ≃ (∃ (A × B))
+-- ∃-Idem-×-L = {!!}
+
+-- ∃-Idem-×-R : (∃ A × (∃ B)) ≃ (∃ (A × B))
+-- ∃-Idem-×-R = {!!}
+
+-- ∃-× : ((∃ A) × (∃ B)) ≃ (∃ (A × B))
+-- ∃-× = {!!}
+```
+
 
 ```
 isProp-Dec : {ℓ : Level} {A : Type ℓ} → isProp A → isProp (Dec A)
