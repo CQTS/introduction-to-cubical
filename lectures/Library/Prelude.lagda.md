@@ -2,7 +2,14 @@
 module Library.Prelude where
 ```
 
+
 # Prelude
+
+The vast majority of the code that we use is defined in the lectures,
+but we do define some of the basics behind the scenes here.
+
+First, we import all the primitive, built-in operations that Agda
+provides, giving them more readable names.
 
 ```
 open import Library.Primitive public
@@ -16,56 +23,73 @@ open import Library.Primitive public
             Sub to _[_↦_];
             primSubOut to outS
   )
-
--- Homogeneous filling
-hfill : ∀ {ℓ} {A : Type ℓ} {φ : I}
-          (u : ∀ i → Partial φ A)
-          (u0 : A [ φ ↦ u i0 ]) (i : I) → A
-hfill {φ = φ} u u0 i =
-  hcomp (λ j → \ { (φ = i1) → u (i ∧ j) 1=1
-                 ; (i = i0) → outS u0 })
-        (outS u0)
-
--- Heterogeneous filling defined using comp
-fill : ∀ {ℓ : I → Level} (A : ∀ i → Type (ℓ i)) {φ : I}
-         (u : ∀ i → Partial φ (A i))
-         (u0 : A i0 [ φ ↦ u i0 ]) →
-         ∀ i →  A i
-fill A {φ = φ} u u0 i =
-  comp (λ j → A (i ∧ j))
-       (λ j → \ { (φ = i1) → u (i ∧ j) 1=1
-                ; (i = i0) → outS u0 })
-       (outS {φ = φ} u0)
 ```
 
-## Sigma Types
+## Σ-Types
+
+Although in the text we treat Σ-types as a built-in type constructor,
+we in fact define them manually as a "record" type. We do not discuss
+record types in these lecture notes.
 
 ```
-record Σ {a b} (A : Type a) (B : A → Type b) : Type (ℓ-max a b) where
+record Σ {ℓ ℓ' : Level} (A : Type ℓ) (B : A → Type ℓ') : Type (ℓ-max ℓ ℓ') where
   constructor _,_
   field
     fst : A
     snd : B fst
 
-open Σ public
-
 infixr 4 _,_
 
 {-# BUILTIN SIGMA Σ #-}
 
--- Σ-types
+open Σ public -- This allows us to use the `fst` and `snd` projections
+              -- unqualified.
+```
+
+The following lines enable the `Σ[ x ∈ A ] B x` syntax, whereas
+normally we would not be able to bind a new variable `x` in this way.
+
+```
 infix 2 Σ-syntax
 
-Σ-syntax : ∀ {ℓ ℓ'} (A : Type ℓ) (B : A → Type ℓ') → Type (ℓ-max ℓ ℓ')
+Σ-syntax : {ℓ ℓ' : Level} (A : Type ℓ) (B : A → Type ℓ') → Type (ℓ-max ℓ ℓ')
 Σ-syntax = Σ
 
 syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
-
-_×_ : ∀ {ℓ ℓ'} (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
-A × B = Σ A (λ _ → B)
 ```
 
-## Functions
+The `×`{.Agda}-types are the instance so Σ-types where the second
+component does not actually depend on the first.
+
+```
+_×_ : {ℓ ℓ' : Level} (A : Type ℓ) (B : Type ℓ') → Type (ℓ-max ℓ ℓ')
+A × B = Σ[ a ∈ A ] B
+```
+
+
+## Path Types
+
+`PathP`{.Agda} is the primitive notion, but we give some convenient
+syntax for non-dependent paths.
+
+```
+Path : {ℓ : Level} (A : Type ℓ) → A → A → Type ℓ
+Path A = PathP (λ i → A)
+
+infix 4 _≡_
+
+_≡_ : {ℓ : Level} {A : Type ℓ} → A → A → Type ℓ
+_≡_ {A = A} = Path A
+
+{-# BUILTIN PATH _≡_ #-}
+```
+
+
+## The Natural Numbers
+
+We define the natural numbers and a couple of example functions here,
+so that we can use them in examples in Lecture 1-1. They are properly
+discussed in Lecture 1-2.
 
 ```
 data ℕ : Type where

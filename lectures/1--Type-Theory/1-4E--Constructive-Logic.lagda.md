@@ -1,13 +1,13 @@
 ```
-module 1--Type-Theory.1-3E--Constructive-Logic where
+module 1--Type-Theory.1-4E--Constructive-Logic where
 ```
 
-# Lecture 1-3 Extra: Constructive Logic
+# Lecture 1-4 Extra: Constructive Logic
 
 ```
 open import Library.Prelude
-open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
-open import 1--Type-Theory.1-3--Propositions-as-Types
+open import 1--Type-Theory.1-3--Universe-Levels-and-More-Inductive-Types
+open import 1--Type-Theory.1-4--Propositions-as-Types
 ```
 
 Lots of properties stay the same from ordinary logic, here's a
@@ -34,7 +34,7 @@ later, so you can comment them out if you get stuck.
 
 Some classical facts *almost* hold, in that we can prove them once
 they are surrounded by `¬ ¬`. For both of these, you will need to use
-`∅-rec`{.Agda} once you have proven a contradiction.
+``∅-rec`` once you have proven a contradiction.
 
 mvrnote: mention double negation translation?
 
@@ -49,7 +49,7 @@ mvrnote: mention double negation translation?
 ```
 
 The proof of the following works on a similar principle to the proof
-of `¬¬LEM`{.Agda}: suppose you have one side and then use it to prove
+of ``¬¬LEM``: suppose you have one side and then use it to prove
 the other.
 
 ```

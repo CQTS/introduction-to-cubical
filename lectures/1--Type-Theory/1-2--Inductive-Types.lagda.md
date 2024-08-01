@@ -26,14 +26,14 @@ data Bool : Type where
 ```
 
 This definition says, intuitively, that to construct a Boolean we
-either construct it out of `true`{.Agda} or out of `false`{.Agda} ---
-that is, a Boolean is either `true`{.Agda} or `false`{.Agda}.
+either construct it out of ``true`` or out of ``false`` ---
+that is, a Boolean is either ``true`` or ``false``.
 
 What makes a data type "inductive" is its "induction principle": to
 define a function out of an inductive type, it suffices to define the
 behavior of the function on all the constructors. For example, we may
-define the logical `not`{.Agda} by saying what it does to
-`true`{.Agda} and to `false`{.Agda}:
+define the logical ``not`` by saying what it does to
+``true`` and to ``false``:
 
 ```
 not : Bool → Bool
@@ -43,7 +43,7 @@ not false = true
 
 Induction may seem like an odd name if you are used to "proof by
 induction" from your discrete math course, but we will see below that
-the induction principle for `ℕ`{.Agda} is basically the mathematical
+the induction principle for ``ℕ`` is basically the mathematical
 induction you are used to.
 
 The method of writing functions where we describe what they do on
@@ -56,11 +56,11 @@ a "case split". To have Agda do this for you, place your cursor in a
 hole and press `C-c C-c`. You will be prompted for the list of
 variables separated by spaces that you want to apply case-splitting to.
 
-Try this below: press `C-c C-c` in the hole for `and`{.Agda} below and
+Try this below: press `C-c C-c` in the hole for ``and`` below and
 enter `x y`, to have Agda split this definition into all the cases you
 need to handle. (Recall that the logical "and" of two Booleans `x` and `y` is
-`true`{.Agda} exactly when both `x` and `y` are `true`{.Agda} and
-`false`{.Agda} otherwise.)
+``true`` exactly when both `x` and `y` are ``true`` and
+``false`` otherwise.)
 
 ```
 _and_ : Bool → Bool → Bool
@@ -70,9 +70,9 @@ x and y = {!!}
 
 You don't have to split on all variables at once. Give a definition of
 the logical "or" by case splitting only on the variable `x`. (Recall
-that the logical "or" of two Booleans `x` and `y` is `true`{.Agda} if
-either of `x` or `y` are `true`{.Agda} and `false`{.Agda} if they are
-both `false`{.Agda}.)
+that the logical "or" of two Booleans `x` and `y` is ``true`` if
+either of `x` or `y` are ``true`` and ``false`` if they are
+both ``false``.)
 
 ```
 _or_ : Bool → Bool → Bool
@@ -82,7 +82,7 @@ x or y = {!!}
 
 Here is the definition of logical implication. There is a strange
 feature of this definition which has a fancy Latin name: "ex falso
-quodlibet" --- `false`{.Agda} implies anything. Over the course of
+quodlibet" --- ``false`` implies anything. Over the course of
 this and the next lecture, we'll see why this is a useful principle to
 take, even if it seems unintuitive.
 
@@ -105,8 +105,8 @@ in a later lecture.
 The recursion principle for a type packs together the data that is
 necessary to produce a non-dependent function out of it. To construct
 a function `Bool → A`, we just need two elements of `A` to serve as
-the images of `true`{.Agda} and `false`{.Agda}. We can write out the
-recursion principle for `Bool`{.Agda} as follows:
+the images of ``true`` and ``false``. We can write out the
+recursion principle for ``Bool`` as follows:
 
 ```
 Bool-rec : {A : Type}
@@ -117,9 +117,9 @@ Bool-rec a1 a2 true = a1
 Bool-rec a1 a2 false = a2
 ```
 
-The `Bool`{.Agda} type is so simple that the name "recursion" feels
+The ``Bool`` type is so simple that the name "recursion" feels
 inappropriate: the principle doesn't actually do a recursive call of
-any kind! The name will make more sense when we get to `ℕ`{.Agda}.
+any kind! The name will make more sense when we get to ``ℕ``.
 
 The recursion principle for Booleans is known under a more familiar
 name: the "if-then-else" pattern familiar from almost every
@@ -142,10 +142,10 @@ to tell Agda where the function arguments go. Writing the application
 much.)
 :::
 
-We won't usually need ot use the recursion principle `Bool-rec`{.Agda}
+We won't usually need ot use the recursion principle ``Bool-rec``
 by name: instead, we can just do a pattern match on an argument of
-type `Bool`{.Agda} ourselves as we did above for the Boolean
-operations `not`{.Agda}, `and`{.Agda}, and so on. But, for some
+type ``Bool`` ourselves as we did above for the Boolean
+operations ``not``, ``and``, and so on. But, for some
 practice, try using `Bool-rec`{.Adga} to re-implement these:
 
 ```
@@ -159,7 +159,7 @@ or-fromRec : Bool → Bool → Bool
 or-fromRec x y = {!!}
 ```
 
-There is nothing special about `Bool`{.Agda} having two constructors
+There is nothing special about ``Bool`` having two constructors
 here, we can equally well define a type for the days of the week:
 
 ```
@@ -194,9 +194,9 @@ nextDay c = {!!}
 
 ## The Unit Type
 
-`Bool`{.Agda} is a simple data type, but it isn't the simplest. We can
+``Bool`` is a simple data type, but it isn't the simplest. We can
 use even fewer constructors. With one constructor, we have the unit
-type `⊤`{.Agda}, with its unique element `tt`{.Agda}:
+type ``⊤``, with its unique element ``tt``:
 
 ```
 data ⊤ : Type where
@@ -204,7 +204,7 @@ data ⊤ : Type where
 ```
 
 To define a function `⊤ → A`, we just have to say what it does on the
-constructor `tt`{.Agda}. This is so simple that it is difficult to
+constructor ``tt``. This is so simple that it is difficult to
 come up with interesting examples.
 
 ```
@@ -214,7 +214,7 @@ pick-true tt = true
 
 This idea can be packaged up into another recursion principle, which
 says that to define a function `⊤ → A`, it suffices to give an element
-`a : A` (which is to be the image of the unique element `tt`{.Agda}).
+`a : A` (which is to be the image of the unique element ``tt``).
 
 ```
 ⊤-rec : {A : Type}
@@ -223,7 +223,7 @@ says that to define a function `⊤ → A`, it suffices to give an element
 ⊤-rec a tt = a
 ```
 
-There is a sense in which `⊤`{.Agda} contains no information, so that
+There is a sense in which ``⊤`` contains no information, so that
 pairing it with another type gives back that type again. We can read
 the following two execises as showing that "one times `A` equals `A`".
 
@@ -247,7 +247,7 @@ constructor `suc : ℕ → ℕ`, which says that if `n` is already a natural
 number then `suc n` (the "successor" of `n`, i.e. `1 + n`) is also a
 natural number.
 
-We actually defined `ℕ`{.Agda} behind the scenes so that we could use
+We actually defined ``ℕ`` behind the scenes so that we could use
 it in the previous lecture. Its definition, copy-pasted, is:
 
 ```
@@ -259,9 +259,9 @@ it in the previous lecture. Its definition, copy-pasted, is:
 (But we leave it commented out, so that Agda doesn't complain about
 defining a new type with the same name as an existing one.)
 
-Defining functions out of `ℕ`{.Agda} is similar to defining functions
-out of `Bool`{.Agda}, we just have to give cases for the two
-constructors. The difference is that the `suc`{.Agda} constructor
+Defining functions out of ``ℕ`` is similar to defining functions
+out of ``Bool``, we just have to give cases for the two
+constructors. The difference is that the ``suc`` constructor
 tells us which (other) natural number the provided argument is the
 successor of.
 
@@ -273,7 +273,7 @@ isZero zero = true
 isZero (suc n) = false
 ```
 
-So, `isZero`{.Agda} is `true`{.Agda} for zero, and `false`{.Agda} for
+So, ``isZero`` is ``true`` for zero, and ``false`` for
 any successor. In this case, we didn't need to use the variable `n`,
 but to do anything interesting we will. For example:
 
@@ -285,8 +285,8 @@ double (suc n) = suc (suc (double n))
 
 Thinking mathematically, $2 × 0 = 0$, covering the first case. For the
 second case, $2 × (1 + n) = 2 + (2 × n)$. To achieve the $2 +$ part,
-we use `suc`{.Agda} twice, and to achieve the $2 × n$ part, we use the
-`double`{.Agda} function we are currently defining!
+we use ``suc`` twice, and to achieve the $2 × n$ part, we use the
+``double`` function we are currently defining!
 
 Agda allows this kind of recursion so long as it is convinced that the
 argument that you provide to the recursive call is smaller than the
@@ -355,7 +355,7 @@ Make sure to test these using `C-c C-n`!
 
 We can also define a "predecessor" operation, which partially undoes
 the successor `suc : ℕ → ℕ`. Of course, it can't fully undo it, since
-`zero`{.Agda} has nowhere to go except `zero`{.Agda} again.
+``zero`` has nowhere to go except ``zero`` again.
 
 ```
 predℕ : ℕ → ℕ
@@ -379,7 +379,7 @@ the usual definition of a function by recursion:
 So: we have a base case `a`, which is used for `zero`, and a recursive
 case, which is used for `suc n` and handed the result for `n`.
 
-Try re-implementing `double`{.Agda} using `ℕ-rec`{.Agda}:
+Try re-implementing ``double`` using ``ℕ-rec``:
 
 ```
 double' : ℕ → ℕ
@@ -387,12 +387,12 @@ double' : ℕ → ℕ
 double' = ℕ-rec {!!} {!!}
 ```
 
-When pattern matching, in the `suc`{.Agda} case we are allowed access
+When pattern matching, in the ``suc`` case we are allowed access
 to access to the previous `n`: without this, functions like
-`predℕ`{.Agda} are a bit irritating to write. We can define an
-improved version of `ℕ-rec`{.Agda} that provides access to this `n`.
+``predℕ`` are a bit irritating to write. We can define an
+improved version of ``ℕ-rec`` that provides access to this `n`.
 For an extra challenge, try defineing this only in terms of
-`ℕ-rec`{.Agda}!
+``ℕ-rec``!
 
 ```
 ℕ-rec' : {A : Type}
@@ -416,14 +416,14 @@ data List (A : Type) : Type where
   _::_  : A → List A → List A   -- The list with a head item and a tail remainder list
 ```
 
-That is, a list is either the empty list `[]`{.Agda}, or the list `a
+That is, a list is either the empty list ``[]``, or the list `a
 :: l` which has `a` at the head and `l` as the remainder of th list.
 We use some reasonably common symbols as the names of the two
 constructors. Other functional languages might call these `nil` and
 `cons`.
 
 A list that we would typically write as `[1, 2, 3]` can be constructed
-by stringing together the `::`{.Agda} constructor:
+by stringing together the ``::`` constructor:
 
 ```
 shortList : List ℕ
@@ -444,7 +444,7 @@ and when concatenating a list with a head to another list, the result
 has the same head, and the remainder is the concatenation with the
 remainder.
 
-Compare this to the definition of addition on `ℕ`{.Agda}, the
+Compare this to the definition of addition on ``ℕ``, the
 structure is *exactly* the same (if we rewrite the second case as
 `_::_ x l` rather than using the constructor infix). All that is
 different is keeping track of the element of `A`.
@@ -486,7 +486,7 @@ data ℤ : Type where
   negsuc : (n : ℕ) → ℤ
 ```
 
-The `negsuc`{.Agda} constructor represents the negative of the
+The ``negsuc`` constructor represents the negative of the
 successor of a natural number, so `negsuc n` represents $-(n + 1)$.
 
 We can define the various arithmetic operations of the integers.
@@ -515,8 +515,8 @@ predℤ z = {!!}
 
 Now for addition of integers. Since the integers are a disjoint union
 of the natural numbers and the negative numbers, it helps to handle
-these two cases separately. You will have to use `sucℤ`{.Agda} and
-`predℤ`{.Agda} in these definitions.
+these two cases separately. You will have to use ``sucℤ`` and
+``predℤ`` in these definitions.
 
 ```
 -- This should correspond to $z + n$, where $n$ is a natural number
@@ -557,7 +557,7 @@ n ·ℤ m = {!!}
 ```
 
 Make sure to test this one via `C-c C-n`, especially the
-`negsuc`{.Agda} cases! They are easy to get wrong.
+``negsuc`` cases! They are easy to get wrong.
 
 Soon we will have the tools to write some test-cases and have Agda
 check them, so we don't have to use the "normalise" command by hand.

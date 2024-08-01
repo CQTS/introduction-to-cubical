@@ -5,12 +5,12 @@ module 2--Paths-and-Identifications.2-4E--More-with-hcomps where
 
 open import Library.Prelude
 open import 1--Type-Theory.1-2--Inductive-Types
-open import 1--Type-Theory.1-3--Propositions-as-Types
+open import 1--Type-Theory.1-4--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
-open import 2--Paths-and-Identifications.2-2--Isomorphisms-and-Path-Algebra
+open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 open import 2--Paths-and-Identifications.2-4--Composition-and-Filling
 open import 2--Paths-and-Identifications.2-5--Transport
-open import 2--Paths-and-Identifications.2-6--Propositions
+open import 2--Paths-and-Identifications.2-7--Propositions
 
 private
   variable

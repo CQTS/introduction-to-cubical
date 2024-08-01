@@ -1,17 +1,17 @@
 ```
-module 1--Type-Theory.1-2E--Extras where
+module 1--Type-Theory.1-3E--Extras where
 ```
 <!--
 ```
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
-open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
+open import 1--Type-Theory.1-3--Universe-Levels-and-More-Inductive-Types
 ```
 -->
 
 
-# Lecture 1-E: Extras
+# Lecture 1-3E: Extras
 
 This is a file of extra exercises.
 
@@ -22,8 +22,8 @@ Here's a basic example. We can think of a dependent function type as a
 generalised cartesian product. In a function with type `(x : A) → C
 x`, the `x : A` acts like an index, so for each index `x` we have an
 element of the corresponding `C x`. This is especially clear when we
-pick domain is `Bool`{.Agda}. When `A` is `Bool`{.Agda}, the domain
-has exactly the two elements `true`{.Agda} and `false`{.Agda}, so
+pick domain is ``Bool``. When `A` is ``Bool``, the domain
+has exactly the two elements ``true`` and ``false``, so
 `(x : Bool) → C x` is the binary cartesian product of `C true` and `C
 false`. Going the other way, we can easily extract the elements of `C
 true` and `C false` from such a function.
@@ -31,7 +31,7 @@ true` and `C false` from such a function.
 The fact that the two types come from the same type family `C` makes
 it feel like they have to be somehow related, but we can construct a
 type family out of any two types `A` and `B` at all, via another use
-of `Bool-ind`{.Agda}.
+of ``Bool-ind``.
 
 ```
 -- Bool×-family : {ℓ : Level} (A B : Type ℓ) → Bool → Type ℓ
@@ -85,9 +85,9 @@ testList : List ℕ
 testList = 1 :: 0 :: 3 :: 2 :: 0 :: 8 :: []
 ```
 
-Before we start, the recursion principle for `List`{.Agda}s has a
+Before we start, the recursion principle for ``List``s has a
 special name that you may have seen used in other programming
-languages: `fold`{.Agda}.
+languages: ``fold``.
 
 ```
 fold : {A B : Type}
@@ -98,7 +98,7 @@ fold start acc [] = start
 fold start acc (x :: L) = acc x (fold start acc L)
 ```
 
-Use `fold`{.Agda} to write a function that sums a list of numbers.
+Use ``fold`` to write a function that sums a list of numbers.
 
 ```
 sumℕ : List ℕ → ℕ
@@ -106,7 +106,7 @@ sumℕ = fold zero _+ℕ_
 ```
 
 To test that you did it right, try normalizing the following.
-To normalize, use `C-c C-n`, then type in `test-sum`{.Agda}.
+To normalize, use `C-c C-n`, then type in ``test-sum``.
 
 ```
 test-sum : ℕ

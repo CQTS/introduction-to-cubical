@@ -1,15 +1,15 @@
 ```
-module 1--Type-Theory.1-3--Propositions-as-Types where
+module 1--Type-Theory.1-4--Propositions-as-Types where
 ```
 
-# Lecture 1-3: Propositions as Types
+# Lecture 1-4: Propositions as Types
 
 <!--
 ```
 open import Library.Prelude hiding (_+_; _·_)
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
-open import 1--Type-Theory.1-X--Universe-Levels-and-More-Inductive-Types
+open import 1--Type-Theory.1-3--Universe-Levels-and-More-Inductive-Types
 ```
 -->
 
@@ -28,8 +28,8 @@ In this lecture, we will give a first pass at a type theoretic
 formalization of the notion of propositions.
 
 One way to formalize a proposition is as a function to the Booleans.
-We've already seen several of these, like `isEven`{.Agda},
-`isLeft`{.Agda}, and so on. If `P : A → Bool` is one of these
+We've already seen several of these, like ``isEven``,
+``isLeft``, and so on. If `P : A → Bool` is one of these
 functions, then we think of it as describing the proposition that "the
 Boolean value `P a` equals `true`".
 
@@ -44,7 +44,7 @@ types as themselves expressing propositions.
 The core of the idea is that a proposition will be encoded as a type
 type, and to prove the proposition is to give an element of that type.
 
-First, have type versions of `true`{.Agda} and `false`{.Agda}.
+First, have type versions of ``true`` and ``false``.
 
 ```
 TrueP : Type
@@ -54,11 +54,11 @@ FalseP : Type
 FalseP = ∅
 ```
 
-The type `⊤`{.Agda} has an element `tt`{.Agda}; under the
+The type ``⊤`` has an element ``tt``; under the
 interpretation that proofs of propositions are the elements of the
 types representing those propositions, this means we can prove that
-`TrueP`{.Agda} holds. On the other hand, `∅`{.Agda} has no elements by
-definition. Therefore, we can't prove that `FalseP`{.Agda} holds ---
+``TrueP`` holds. On the other hand, ``∅`` has no elements by
+definition. Therefore, we can't prove that ``FalseP`` holds ---
 at least, not without assuming some contradictory hypotheses.
 
 We can turn each Boolean value into its corresponding type:
@@ -102,9 +102,9 @@ P iffP Q = (P → Q) × (Q → P)
 ```
 
 We can prove that these operations on types correspond correctly with
-the operations on Booleans, via `IsTrue`{.Agda}. Prove the following
+the operations on Booleans, via ``IsTrue``. Prove the following
 by case splitting on the arguments and filling in both sides of the
-logical equivalence. On the left of the `iffP`{.Agda} we use the
+logical equivalence. On the left of the ``iffP`` we use the
 ordinary operation on Booleans, and on the right we use the
 corresponding operation on propositions-as-types.
 
@@ -144,12 +144,12 @@ This gives us an opportunity to introduce another useful Agda hotkey.
 If you place your cursor in the below hole and press `C-c C-,`, Agda
 will tell you that the goal has type `¬ Q → ¬ P`. This is certainly
 true, but the path forwards is a little obscured. It helps if we
-*unfold* the definition of `¬`{.Agda} in the goal, which we can ask
+*unfold* the definition of ``¬`` in the goal, which we can ask
 Agda to do by pressing `C-u C-u C-c C-,` in Emacs, or `C-y C-,` in
 VSCode.
 
 It is revealed that the goal has type `(Q → ∅) → P → ∅`. This makes it
-clear that `¬contra`{.Agda} should take two arguments, one with type
+clear that ``¬contra`` should take two arguments, one with type
 `Q → ∅`, and the other with type `P`.
 
 ```
@@ -213,8 +213,8 @@ you unfold the definitions.
 ## Or
 
 This pattern of relating logical operations to type operations
-continues with `or`{.Agda}, but runs into a subtle hiccup. Our attempt
-at a type avatar of `or`{.Agda} is `⊎`{.Agda}, the disjoint union.
+continues with ``or``, but runs into a subtle hiccup. Our attempt
+at a type avatar of ``or`` is ``⊎``, the disjoint union.
 This makes some sense: to prove `P or Q` should consist of either a
 proof of `P` or a proof of `Q`.
 
@@ -231,7 +231,7 @@ or→Type-to a b p = {!!}
 ```
 
 What this shows is that `IsTrue (a or b)` and `(IsTrue a) ⊎ (IsTrue b)`
-are logically equivalent, that is, one `iffP`{.Agda} the other. But
+are logically equivalent, that is, one ``iffP`` the other. But
 now: define the map backwards again, but making the opposite choice in
 the case `or→Type-to' true true`.
 
@@ -248,11 +248,11 @@ still makes a choice between the two sides. So, the type no longer
 merely expresses the truth of a proposition.
 
 What we ought to learn from this is that not *every* type should be
-thought of as a proposition. Some types, like `ℕ`{.Agda}, say, are
+thought of as a proposition. Some types, like ``ℕ``, say, are
 better thought of as sets that have many different elements. What we
-are noticing with `or`{.Agda} is that the disjoint union of two
+are noticing with ``or`` is that the disjoint union of two
 propositions can be a non-trivial data type. We actually saw this
-earlier, when we proved that `Bool`{.Agda} is bijective with `⊤ ⊎ ⊤`.
+earlier, when we proved that ``Bool`` is bijective with `⊤ ⊎ ⊤`.
 
 In a later lecture (mvrnote: link) we will make a definition that
 exactly picks out which types are the ones we should think of as
@@ -261,11 +261,11 @@ element, if it exists at all, is thought of as "the fact that the
 proposition is true". At that point we will also properly define the
 operation which corresponds to the proposition `P or Q`.
 
-Nevertheless, `⊎`{.Agda} is close enough to `or`{.Agda} for our
+Nevertheless, ``⊎`` is close enough to ``or`` for our
 current purposes. Try proving De Morgan's laws, which may be
 familiar from ordinary propositional logic. For the last one, we get
 stuck in a similar way to `impossible-¬¬implies` above. In that case,
-how are we suppoesd to know which of `inl`{.Agda} or `inr`{.Agda} to
+how are we suppoesd to know which of ``inl`` or ``inr`` to
 pick?
 
 ```
@@ -280,7 +280,7 @@ DeMorgan-law-3 : {P Q : Type} → (¬ P) ⊎ (¬ Q) → ¬ (P × Q)
 DeMorgan-law-3 (inl np) (p , q) = np p
 DeMorgan-law-3 (inr nq) (p , q) = nq q
 
--- Uncomment to try if you want!
+-- Uncomment to see where you get stuck if you want!
 -- impossible-DeMorgan-law-4 : {P Q : Type} → ¬ (P × Q) → (¬ P) ⊎ (¬ Q)
 -- impossible-DeMorgan-law-4 npq = {!!}
 ```
@@ -304,7 +304,7 @@ That is, there is a unique proof that `true ≡Bool true`, no proofs
 that `true ≡Bool false`, and so on. This kind of equality defined by
 pattern-matching is often called "observational equality".
 
-Now how do we prove an equality of `Bool`{.Agda}s? We just inhabit the
+Now how do we prove an equality of ``Bool``s? We just inhabit the
 relevant type:
 
 ```
@@ -337,6 +337,7 @@ reflexive, symmetric, and transitive relation on Booleans.
   → b ≡Bool c
   → a ≡Bool c
 -- Exercise:
+≡Bool-trans a b c p q = {!!}
 ```
 
 We can also show that all of our logical operations preserve the
@@ -368,7 +369,7 @@ n ≡ℕ m = ?
 ```
 
 And show that it is a reflexive, symmetric, and transitive relation.
-The difference in the proofs is that, because `ℕ`{.Agda} is a
+The difference in the proofs is that, because ``ℕ`` is a
 recursive datatype, some cases in our proofs will need to be recursive
 too.
 
@@ -406,7 +407,7 @@ equality.
 Next, we can show that addition is unital (that is, has an identity
 element), and associative. These are all very easy by recursion.
 Remember that you don't *have* to case split on an argument just
-because you can, `≡ℕ-assoc`{.Agda} is much simpler if you don't!
+because you can, ``≡ℕ-assoc`` is much simpler if you don't!
 
 ```
 ≡ℕ-unitl : (n : ℕ) → n ≡ℕ (zero +ℕ n)
@@ -487,11 +488,11 @@ suc n ≤ℕ suc m = n ≤ℕ m
 In the above we proofs we were secretly using an upgraded form of
 recursion principles known as "induction principles". The difference
 is that where recursion principles allowed us to define ordinary
-functions out of `Bool`{.Agda}, `ℕ`{.Agda}, etc., induction principles
+functions out of ``Bool``, ``ℕ``, etc., induction principles
 allow us to define *dependent* functions out of these types, into a
 type family of our choice.
 
-`Bool`{.Agda} is the easiest. Here a type family `C : Bool → Type ℓ`,
+``Bool`` is the easiest. Here a type family `C : Bool → Type ℓ`,
 simply picks out two (possibly different) types, `C true` and `C false`.
 Now, we just upgrade the recursion principle so that we use one element of
 each of these types, rather than two elements of the same type:
@@ -509,8 +510,8 @@ The recursion principle for `A ⊎ B` is upgraded to an induction
 principle in a similar way. For the recursion principle, the inputs
 were maps `A → C` and `B → C`. If `C` is now a type dependent on `A ⊎
 B`, these maps have to land in `C x`, where `x : A ⊎ B`. Luckily,
-there are obvious candidates for `x` in both cases: take the `inl` or
-`inr` of the input `a : A` or `b : B` respectively.
+there are obvious candidates for `x` in both cases: take the ``inl`` or
+``inr`` of the input `a : A` or `b : B` respectively.
 
 ```
 ⊎-ind : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {B : Type ℓ'} {C : A ⊎ B → Type ℓ''}
@@ -521,12 +522,12 @@ there are obvious candidates for `x` in both cases: take the `inl` or
 ⊎-ind cinl cinr x = {!!}
 ```
 
-`ℕ`{.Agda} is a little trickier. It is best to think of ordinary
+``ℕ`` is a little trickier. It is best to think of ordinary
 mathematical induction, and consider `C` to be some property of the
 natural numbers we are trying to check. Then the two inputs make
 sense: we first have the base case of type `C zero`, claiming that the
-property `C` holds for `zero`{.Agda}. Then we have the inductive step
-for `suc`{.Agda}: saying that, for any `n : ℕ`, if we can prove `C`
+property `C` holds for ``zero``. Then we have the inductive step
+for ``suc``: saying that, for any `n : ℕ`, if we can prove `C`
 holds for `n` then it also holds for `suc n`.
 
 If we can provide both of those things, then we get a function from
@@ -541,8 +542,8 @@ If we can provide both of those things, then we get a function from
 ℕ-ind z r n = ?
 ```
 
-As before, we don't often need to use `Bool-ind`{.Agda},
-`⊎-ind`{.Agda} or `ℕ-ind`{.Agda}; we can instead use the
+As before, we don't often need to use ``Bool-ind``,
+``⊎-ind`` or ``ℕ-ind``; we can instead use the
 pattern-matching features of Agda directly.
 
 
@@ -555,7 +556,7 @@ consider any type family `A → Type` as expressing a predicate on
 elements of `A`.
 
 For example, the predicate on natural numbers that identifies when the
-natural number is `zero`{.Agda}.
+natural number is ``zero``.
 
 ```
 isZeroP : ℕ → Type
@@ -563,8 +564,8 @@ isZeroP zero = ⊤
 isZeroP (suc n) = ∅
 ```
 
-In cases like this where we already have a map into `Bool`{.Agda}, we
-can turn it into a predicate by applying `IsTrue`{.Agda}.
+In cases like this where we already have a map into ``Bool``, we
+can turn it into a predicate by applying ``IsTrue``.
 
 ```
 isEvenP : ℕ → Type
@@ -618,8 +619,8 @@ can use to inhabit the above type, and so the type represents more
 information than the mere proposition that an even number exists: it
 comes with a choice of one. Again we will fix this in Part 2.
 
-For the following two, you should remember that `¬`{.Agda} is simply
-functions into `∅`{.Agda}. Once you unfold that definition, the below
+For the following two, you should remember that ``¬`` is simply
+functions into ``∅``. Once you unfold that definition, the below
 exercises are *exactly* two functions that we have seen before.
 
 ```
@@ -680,8 +681,9 @@ always have an element of `P ⊎ ¬ P` telling us whether a proposition
 is true.
 
 For some specific types though, we can show that `P ⊎ ¬ P`: we call
-such types "decidable". The following type is equivalent to `P ⊎ ¬ P`
-but with more meaningful constructor names.
+such types "decidable". The following type is essentally identical to
+the type `P ⊎ ¬ P` but, we define a new type so we can give it more
+meaningful constructor names.
 
 ```
 data Dec {ℓ : Level} (P : Type ℓ) : Type ℓ where
@@ -701,7 +703,7 @@ Dec∅ = {!!}
 ```
 
 Predicates defined on data types are often decidable, because we built
-them out of `⊤`{.Agda} and `∅`{.Agda}.
+them out of ``⊤`` and ``∅``.
 
 ```
 Dec-isEvenP : (n : ℕ) → Dec (isEvenP n)
