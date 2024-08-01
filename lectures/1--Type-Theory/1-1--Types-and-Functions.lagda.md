@@ -251,7 +251,7 @@ flipℕ₁ f x y = {!!}
 flipℕ₂ : (ℕ → ℕ → ℕ)
        → (ℕ → ℕ → ℕ)
 -- Exercise:
-flip₂ f = {!!}
+flipℕ₂ f = {!!}
 ```
 
 In the future, you should feel free to add arguments to the left of

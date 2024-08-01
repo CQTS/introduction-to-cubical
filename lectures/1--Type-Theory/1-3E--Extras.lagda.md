@@ -39,16 +39,12 @@ of ``Bool-ind``.
 
 -- Bool×-to : {ℓ : Level} {A B : Type ℓ}
 --   → ((x : Bool) → Bool×-family A B x) → A × B
--- -- Exercise:
--- Bool×-to f = {!!}
-Bool×-to f = f true , f false
+-- Bool×-to f = f true , f false
 
 -- -- You are building a function out of `Bool` here, so use `Bool-ind`.
 -- Bool×-fro : {ℓ : Level} {A B : Type ℓ}
 --   → A × B → ((x : Bool) → Bool×-family A B x)
--- -- Exercise:
--- Bool×-fro f = {!!}
-Bool×-fro (a , b) = Bool-ind a b
+-- Bool×-fro (a , b) = Bool-ind a b
 ```
 
 mvrnote: Also do it as an inductive type, discuss the difference?

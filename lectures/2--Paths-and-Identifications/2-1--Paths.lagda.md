@@ -489,10 +489,6 @@ cong : {B : A → Type ℓ₂} {x y : A}
         → (p : x ≡ y)
         → PathP {!!} {!!} {!!}
 
-cong : {B : A → Type ℓ₂} {x y : A}
-       (f : (a : A) → B a)
-     → (p : x ≡ y)
-     → PathP (λ i → B (p i)) (f x) (f y)
 cong f p i = f (p i)
 ```
 
@@ -541,7 +537,7 @@ module _ {A : I → Type ℓ} {B : (i : I) → A i → Type ℓ₂}
   ΣPathP→PathPΣ eq i = fst eq i , snd eq i
 
   -- Exercise:
-  ΣPathP→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
+  PathPΣ→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
          → Σ[ p ∈ PathP {!!} {!!} {!!} ] PathP {!!} {!!} {!!}
 
   PathPΣ→ΣPathP eq = (λ i → fst (eq i)) , (λ i → snd (eq i))
