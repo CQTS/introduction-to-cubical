@@ -1,16 +1,11 @@
-```
-module 2--Paths-and-Identifications.2-10--Higher-Types where
-```
-
-# Lecture 2-10: Higher Types
-
 <!--
 ```
+module 2--Paths-and-Identifications.2-10--Higher-Types where
+
 open import Library.Prelude
-open import Library.Literals
 open import Library.Univalence
 open import 1--Type-Theory.1-2--Inductive-Types
-open import 1--Type-Theory.1-3--Universe-Levels-and-More-Inductive-Types
+open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
 open import 1--Type-Theory.1-4--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
@@ -24,12 +19,14 @@ open import 2--Paths-and-Identifications.2-9--Contractible-Maps
 -->
 
 
+# Lecture 2-10: Higher Types
+
 ## Suspensions
 
 mvrnote: where should this go? all the suspension examples work fine once we have composition
 
 ```
-data Susp {ℓ} (A : Type ℓ) : Type ℓ where
+data Susp {ℓ : Level} (A : Type ℓ) : Type ℓ where
   north : Susp A
   south : Susp A
   merid : (a : A) → north ≡ south
@@ -47,7 +44,7 @@ The simplest example is when we feed ``Susp`` the empty type
 Susp∅≅Bool : Susp ∅ ≃ Bool
 -- Exercise (trivial):
 -- Susp∅≅Interval = {!!}
-Susp∅≅Bool = equiv fun inv to-fro fro-to
+Susp∅≅Bool = inv→equiv fun inv to-fro fro-to
   where
     fun : Susp ∅ → Bool
     fun north = true
@@ -72,7 +69,7 @@ the following:
 Susp⊤≅Interval : Susp ⊤ ≃ Interval
 -- Exercise (also trivial):
 -- Susp⊤≅Interval = {!!}
-Susp⊤≅Interval = equiv fun inv to-fro fro-to
+Susp⊤≅Interval = inv→equiv fun inv to-fro fro-to
   where
     fun : Susp ⊤ → Interval
     fun north = zero
@@ -110,7 +107,7 @@ data S∞ : Type where
   smerid : S∞ → snorth ≡ ssouth
 
 S∞SelfSusp : S∞ ≃ Susp S∞
-S∞SelfSusp = equiv to fro to-fro fro-to
+S∞SelfSusp = inv→equiv to fro to-fro fro-to
   where
     to : S∞ → Susp S∞
     to snorth = north
@@ -130,12 +127,12 @@ S∞SelfSusp = equiv to fro to-fro fro-to
     fro-to (smerid a i) = refl
 
 isContrS∞ : isContr S∞
-fst isContrS∞ = snorth
-snd isContrS∞ = go
+center isContrS∞ = snorth
+contraction isContrS∞ = go
   where go : (y : S∞) → snorth ≡ y
         go snorth = refl ∙ refl
         go ssouth = smerid snorth ∙ refl
-        go (smerid s i) = connection∧ (smerid snorth) i ∙ cong (λ t → smerid t i) (go s)
+        go (smerid s i) = connection∧ (smerid snorth) i ∙ ap (λ t → smerid t i) (go s)
 
 ```
 
@@ -194,13 +191,14 @@ From Favonia's homeworks
 {- Task 1 -}
 ------------------------------------------------------------------------------------
 
+
 -- loop spaces
 Ω² : ∀ (A : Type) → A → Type
 Ω² A x = (refl {x = x}) ≡ refl
 
 {- Task 1.1: prove this lemma -}
 ap-id : ∀ {A : Type} {x y : A} (p : x ≡ y) → ap (λ x → x) p ≡ p
-ap-id = magic
+ap-id p = refl
 
 -- binary version of ap
 ap2 : ∀ {A B C : Type} (f : A → B → C) {x y : A} → x ≡ y → {z w : B} → z ≡ w → f x z ≡ f y w
@@ -208,44 +206,45 @@ ap2 f {x} {y} p {z} {w} q = ap (λ a → f a z) p ∙ ap (λ b → f y b) q
 
 {- Task 1.2: find another way to implement ap2 that is "symmetric" to the above ap2 -}
 ap2' : ∀ {A B C : Type} (f : A → B → C) {x y : A} → x ≡ y → {z w : B} → z ≡ w → f x z ≡ f y w
-ap2' = magic
+ap2' = {!!}
 
--- You might find this useful in Tasks 1.3 and 1.4
-lemma₀ : ∀ {A : Type} {x : A} (p : Ω² A x) → ap (λ x → x ∙ refl) p ≡ p
-lemma₀ {x = x} p = lemma₀' p ∙ ∙-unit-r p where
-  lemma₀' : ∀ {l : x ≡ x} (p : refl ≡ l) → ap (λ x → x ∙ refl) p ≡ p ∙ ! (∙-unit-r l)
-  lemma₀' refl = refl
+-- -- You might find this useful in Tasks 1.3 and 1.4
+-- lemma₀ : ∀ {A : Type} {x : A} (p : Ω² A x) → ap (λ x → x ∙ refl) p ≡ p
+-- lemma₀ {x = x} p = lemma₀' p ∙ ∙-idr p where
+--   lemma₀' : ∀ {l : x ≡ x} (p : refl ≡ l) → ap (λ x → x ∙ refl) p ≡ p ∙ sym (∙-idr l)
+--   lemma₀' refl = refl
 
 {- Task 1.3: check the definition of `ap2` and prove this lemma -}
-task1-3 : ∀ {A : Type} {x : A} (p q : Ω² A x) → ap2 (λ x y → x ∙ y) p q ≡ p ∙ q
-task1-3 = magic
+task1-3 : ∀ {A : Type} {x : A} (p q : Ω² A x) → PathP {!!} (ap2 (λ x y → x ∙ y) p q) (p ∙ q)
+task1-3 = {!!}
 {- Hints:
    1. What are the implicit arguments x, y, z, and w when applying ap2?
    2. What's the relation between λ x → x and λ x → refl ∙ x? -}
 
 {- Task 1.4: prove this lemma -}
 task1-4 : ∀ {A : Type} {x : A} (p q : Ω² A x) → ap2' (λ x y → x ∙ y) p q ≡ q ∙ p
-task1-4 = magic
+task1-4 = ?
 
 {- Task 1.5: prove that ap2 f p q ≡ ap2' f p q -}
 task1-5 : ∀ {A B C : Type} (f : A → B → C) {x y : A} (p : x ≡ y) {z w : B} (q : z ≡ w) → ap2 f p q ≡ ap2' f p q
-task1-5 = magic
+task1-5 = ?
 
 {- Task 1.6: the final theorem -}
 eckmann-hilton : ∀ {A : Type} {x : A} (p q : Ω² A x) → p ∙ q ≡ q ∙ p
-eckmann-hilton = magic
+eckmann-hilton = ?
+
 
 Cubical proof, from library
 
-EH-base : ∀ {ℓ} {A : Type ℓ} {x : A} → (α β : refl {x = x} ≡ refl)
+EH-base : {ℓ : Level} {A : Type ℓ} {x : A} → (α β : refl {x = x} ≡ refl)
          → (λ i → α i ∙ refl) ∙ (λ i → refl ∙ β i)
           ≡ (λ i → refl ∙ β i) ∙ (λ i → α i ∙ refl)
 EH-base α β i = (λ j → α (~ i ∧ j) ∙ β (i ∧ j)) ∙ λ j → α (~ i ∨ j) ∙ β (i ∨ j)
 
-EH : ∀ {ℓ} {A : Type ℓ} {x : A} → (α β : refl {x = x} ≡ refl) → α ∙ β ≡ β ∙ α
+EH : {ℓ : Level} {A : Type ℓ} {x : A} → (α β : refl {x = x} ≡ refl) → α ∙ β ≡ β ∙ α
 EH {A = A} α β i j z =
-  hcomp (λ k → λ { (i = i0) → ((cong (λ x → rUnit x (~ k)) α) ∙ (cong (λ x → lUnit x (~ k)) β)) j
-                 ; (i = i1) → ((cong (λ x → lUnit x (~ k)) β) ∙ (cong (λ x → rUnit x (~ k)) α)) j
-                 ; (j = i0) → rUnit refl (~ k)
-                 ; (j = i1) → rUnit refl (~ k)})
+  hcomp (λ k → λ { (i = i0) → ((ap (λ x → ∙-idr x (~ k)) α) ∙ (ap (λ x → ∙-idl x (~ k)) β)) j
+                 ; (i = i1) → ((ap (λ x → ∙-idl x (~ k)) β) ∙ (ap (λ x → ∙-idr x (~ k)) α)) j
+                 ; (j = i0) → ∙-idr refl (~ k)
+                 ; (j = i1) → ∙-idr refl (~ k)})
   (EH-base α β i j) z

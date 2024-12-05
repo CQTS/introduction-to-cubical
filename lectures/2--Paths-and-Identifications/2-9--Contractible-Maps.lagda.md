@@ -1,16 +1,11 @@
-```
-module 2--Paths-and-Identifications.2-9--Contractible-Maps where
-```
-
-
-# Lecture 2-9: Contractible Maps
-
 <!--
 ```
+module 2--Paths-and-Identifications.2-9--Contractible-Maps where
+
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
-open import 1--Type-Theory.1-3--Universe-Levels-and-More-Inductive-Types
+open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
 open import 1--Type-Theory.1-4--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
@@ -29,55 +24,83 @@ private
 -->
 
 
-In this Lecture we prove two crucial facts about equivalences:
+# Lecture 2-9: Contractible Maps
+
+In this Lecture we prove four crucial facts about equivalences:
 
 * Being an equivalence is a *proposition* about a map, rather than
   extra structure. That is:
 
 ```
-isPropIsEquiv : (f : A → B) → isProp (isEquiv f)
+isProp-isEquiv : (f : A → B) → isProp (isEquiv f)
 ```
 
-* The formation of Σ-types respects equivalences. That is,
+* As an easy consequence, ``path→equiv`` is an equivalence,
+  completing the proof of univalence we started in Lecture 2-X:
 
 ```
-Σ-map-≃ : {B : A → Type ℓ} {B' : A' → Type ℓ'}
-          → (e₁ : A ≃ A')
-          → (e₂ : (x : A) → (B x) ≃ (B' (equivFun e₁ x)))
-          → (Σ[ a ∈ A ] B a) ≃ (Σ[ a' ∈ A' ] B' a')
+univalence : (A ≡ B) ≃ (A ≃ B)
 ```
 
-To prove both of these facts, it turns out to be easiest to detour
-through an alternative definition of equivalences: contractible maps.
+* Forming Σ-types respects equivalences. That is, if the inputs to
+  ``Σ-map`` are equivalences then the resulting function is an
+  equivalence.
+
+```
+Σ-map-≃ : {B : A → Type ℓ'} {B' : A' → Type ℓ'}
+        → (e₁ : A ≃ A')
+        → (e₂ : (a : A) → (B a) ≃ (B' (e₁ .map a)))
+        → (Σ[ a ∈ A ] B a) ≃ (Σ[ a' ∈ A' ] B' a')
+```
+
+  We showed this fact for the non-dependent ``×`` way back in
+  ``×-map-≃``, the dependent version is surprisingly difficult!
+
+* A partial converse to the previous: if `Σ-map idfun f₂ : (Σ[ a ∈ A ]
+  B a) → (Σ[ a ∈ A ] B' a)` is an equivalence for a family of maps `f₂
+  : (a : A) → B a → B a'`, then each of the `f₂ a : B a → B' a` must
+  be an equivalence.
+
+To prove each of these facts, it turns out to be easiest to detour
+through an alternative definition of equivalences: the notion of
+"contractible map".
+
+mvrnote: This lecture is unfortunately a bit technical and fiddly. Is
+there anything we can do about that? Are there slicker proofs of some
+of the things here?
 
 
 ## Contractible Maps
 
-In set theory, a bijection between sets $A$ and $B$ is defined to be a
-function $f : A → B$ where for every $b ∈ B$, there is a unique $a ∈
-A$ such that $f(a) = b$. We can turn this definition directly into
-type theory:
+In set theory, a bijection between sets $A$ and $B$ is a function $f :
+A → B$ where for every $b ∈ B$, there exists a unique $a ∈ A$ so that
+$f(a) = b$. We can translate this definition directly into type
+theory:
 
 ```
 isBijection : {A : Type ℓ} {B : Type ℓ'} (f : A → B) → Type (ℓ-max ℓ ℓ')
-isBijection {A = A} {B = B} f = (b : B) → ∃! (Σ[ a ∈ A ] (b ≡ f a))
+isBijection {A = A} {B = B} f = (b : B) → isContr (Σ[ a ∈ A ] (b ≡ f a))
 ```
 
-The type inside the `∃!` comes up a lot, so it is given a name. The
-``fiber`` of a function $f : A → B$ over an element $y : B$ is
-its inverse image of that element. In homotopy theory, this would be
-called the "homotopy fiber".
+That type inside ``∃!`` comes up a lot, so it is given a name. The
+``fiber`` of a function $f : A → B$ over an element $b : B$ is the
+inverse image of that element, so all elements of $A$ that are mapped
+to $b$ by $f$. In homotopy theory, this would be called the "homotopy
+fiber".
 
 ```
-fiber : {A : Type ℓ} {B : Type ℓ'} (f : A → B) (y : B) → Type (ℓ-max ℓ ℓ')
-fiber {A = A} f y = Σ[ x ∈ A ] (y ≡ f x)
+fiber : {A : Type ℓ} {B : Type ℓ'}
+  → (f : A → B) → (y : B) → Type (ℓ-max ℓ ℓ')
+fiber {A = A} f b = Σ[ a ∈ A ] (b ≡ f a)
 ```
 
-Then, a bijection is exactly a map that has contractible fibers.
+Then, a bijection is exactly a map that has contractible fibers (just
+unfolding the definitions).
 
 ```
-isBijection≡isContrFibers : {A B : Type ℓ} (f : A → B) → isBijection f ≡ ((y : B) → isContr (fiber f y))
-isBijection≡isContrFibers f = refl
+_ : {A B : Type ℓ} → (f : A → B)
+  → isBijection f ≡ ((y : B) → isContr (fiber f y))
+_ = λ f → refl
 ```
 
 This shape of definition comes up fairly often where we have a
@@ -88,6 +111,7 @@ rename the property of a map being a bijection to being
 *contractible*.
 
 ```
+-- mvrnote: make record
 isContractibleMap : {A : Type ℓ} {B : Type ℓ'} (f : A → B) → Type (ℓ-max ℓ ℓ')
 isContractibleMap = isBijection
 
@@ -102,11 +126,7 @@ contractible is also a proposition.
 isPropIsContractibleMap : (f : A → B) → isProp (isContractibleMap f)
 -- Exercise:
 isPropIsContractibleMap f = {!!}
-
--- ContractibleMapEq : {e f : ContractibleMap A B} → (h : e .fst ≡ f .fst) → e ≡ f
--- ContractibleMapEq {e = e} {f = f} h = λ i → (h i) , isProp→PathP (λ i → isPropIsContractibleMap (h i)) (e .snd) (f .snd) i
 ```
-mvrnote: compare this to ``Σ≡PropIso``?
 
 
 ## Equivalences are Contractible Maps
@@ -117,55 +137,63 @@ can use these to define a function `B → A`.
 
 ```
 isContractibleMap→isEquiv : {f : A → B} → isContractibleMap f → isEquiv f
-isContractibleMap→isEquiv {A = A} {B = B} {f = f} isc = (inv , to-fro) , (inv , fro-to)
+isContractibleMap→isEquiv {A = A} {B = B} {f = f} isc = packIsEquiv inv to-fro inv fro-to
   where
     inv : B → A
 --  Exercise:
     inv b = {!!}
 
     to-fro : isSection f inv
---  Exercise:
+--  Exercise: (Hint: Use the path provided by the ``fiber``.)
     to-fro = {!!}
 
     fro-to : isRetract f inv
---  Exercise:
+--  Exercise: (Hint: Use the path provided by ``isContr``.)
     fro-to = {!!}
 ```
 
-Going the other way, we can show that any equivalence is a
-contractible map but the process is more involved.
+We can also show that any equivalence is a contractible map, but the
+process is more involved.
 
 Here's the setup: starting with an equivalence `e : A ≃ B`, we are
 going to show that the provided *section* of `e` is a contractible
 map. Then at the end, we'll use this to show that `e` itself is a
 contractible map.
 
-Here's the main Lemma that we're going to prove: the fiber of
-`equivSec e` over any point `y : A` point is a proposition.
+The crucial step that we're going to prove first is that the fiber of
+`equivSec e` over any point `y : A` is a proposition.
 
-So we begin by supposing we have `y : A`, and two elements of the
-fiber over it `(x0, p0)` and `(x1 , p1)`:
+So begin by supposing we have `y : A`, and two elements of the
+fiber over it, `(x₀, p₀)` and `(x₁ , p₁)`:
 
 ```
-private module _ (e : A ≃ B) (y : A) (x₀ : B) (p₀ : y ≡ equivSec e x₀) (x₁ : B) (p₁ : y ≡ equivSec e x₁) where
+private module _ (e : A ≃ B) (y : A) (x₀ : B) (p₀ : y ≡ e .proof .section .map x₀) (x₁ : B) (p₁ : y ≡ e .proof .section .map x₁) where
 ```
 
-And our goal is to show they are equal. First, we give shorter names
-to the components of the equivalence `e`.
+Our goal is to show that `(x₀, p₀)` and `(x₁ , p₁)` are equal. Let's
+give shorter names to the components of the equivalence `e`.
 
 ```
   private
-    f = equivFun e
-    g = equivSec e
+    f : A → B
+    f = e .map
+
+    g : B → A
+    g = e .proof .section .map
+
     s : isSection f g
-    s = equivIsSec e
-    g' = equivRet e
-    r : isSection g' f
-    r = equivIsRet e
+    s = e .proof .section .proof
+
+    g' : B → A
+    g' = e .proof .retract .map
+
+    r : isRetract f g'
+    r = e .proof .retract .proof
 ```
 
-Our immediate goal is to produce a path `x₀ ≡ x₁`. This is easy enough
-using the fact that `g` is a section of `f`.
+First we need to produce a path `x₀ ≡ x₁` to use in the first
+component. This is easy enough, using the fact that `g` is a section of
+`f`.
 
 ```
   path₀ : f y ≡ x₀
@@ -181,64 +209,63 @@ using the fact that `g` is a section of `f`.
   path₂ = {!!} ∙∙ refl ∙∙ {!!}
 ```
 
-You'll see immediately why defining `path₂` in that symmetrical way is
-benificial.
+You'll see very shortly why defining `path₂` in this symmetrical way
+is beneficial.
 
 Now, a path between the points `x₀` and `x₁` in `B` is not enough, we
-also need a path-over between the paths `p₀` and `p₁` proving that
-`x₀` and `x₁` are in the fiber over `y`, over the path we `x₀ ≡ x₁` we
-just constructed. That is, we need a square
+also need a path-over showing that the paths `p₀` and `p₁` are equal.
+That is, we need a square
 
 ```
-  square : Square refl (cong g path) p₀ p₁
+  square : Square refl (ap g path) p₀ p₁
 ```
 
 We'll do this in two steps. First, we'll compose the following cube:
 
                         f p₁
-               f y  - - - - - - > f g x₁
+               f y  — — — — — — > f g x₁
               / ^                 / ^
             /   |               /   |
           /     | f p₀        /     |
-       f y  - - - - - - > f g x₀    | s x₁
+       f y  — — — — — — > f g x₀    | s x₁
         ^       |           ^       |                    ^   j
         |       |           |       |                  k | /
         |       |           | s x₀  |                    ∙ — >
         |       |           |       |                      i
-        |      f y  - - - - | - - > x₁
+        |      f y  — — — — | — — > x₁
         |     /       path₁ |     /
         |   /               |   / path
         | /                 | /
-       f y  - - - - - - - > x₀
+       f y  — — — — — — — > x₀
                 path₀
 
 The left square and right square are easy: constantly `f y` on the
 left, and using the fact that `g` is a section on the right. For the
 front, back, and bottom squares, observe that `path₀`, `path₁` and
-`path` are defined as compositions, so we can use `∙-filler` and
-`∙∙-filler` for the filled squares as appropriate.
+`path` are defined as compositions, so we can use ``∙-filler`` and
+``∙∙-filler`` for the filled squares as appropriate.
 
 ```
-  square-f-faces : (i : I) → (j : I) → (k : I) → Partial (∂ i ∨ ∂ j) B
+  square-f-faces : (i j k : I) → Partial (∂ i ∨ ∂ j ∨ ~ k) B
   -- Exercise:
   square-f-faces i j k (i = i0) = {!!}
   square-f-faces i j k (i = i1) = {!!}
   square-f-faces i j k (j = i0) = {!!}
   square-f-faces i j k (j = i1) = {!!}
 
-  square-f : Square (cong f refl) (cong f (cong g path)) (cong f p₀) (cong f p₁)
+  square-f : Square (ap f refl) (ap f (ap g path)) (ap f p₀) (ap f p₁)
   -- Exercise:
   square-f i j = hcomp (square-f-faces i j) {!!}
 ```
 
 This square is very nearly what we want: we just need to kill the
-extra `cong f` on all the sides. For this, we use the fact that `g'`
-is a retract of `f`: add an extra `g'`, then use `r` to cancel both
-`g'` and `f` out. (There are multiple ways to do this, via
+extra `ap f` on all the sides. For this, we use the fact that `g'`
+is a retract of `f`: we'll add an extra `g'`, then use `r` to cancel
+both `g'` and `f` out. (There are multiple ways to do this, via
 ``transport`` or filling another cube.)
 
 ```
-  -- square : Square refl (cong g path) p₀ p₁ (Given above.)
+  -- square : Square refl (ap g path) p₀ p₁ (Given above.)
   -- Exercise:
   square i j = {!!}
 ```
@@ -254,12 +281,12 @@ that we wanted.
 
 Now the hard work is done: every fiber of `equivSec e` is a
 proposition. And we can easily find a point of every fiber, so in fact
-every fiber is contractible, via ``isProp→with-point-isContr``.
+every fiber is contractible, via ``isProp-with-point→isContr``.
 
 ```
-isEquiv→secIsContractibleMap : (e : A ≃ B) → isContractibleMap (equivSec e)
+isEquiv→secIsContractibleMap : (e : A ≃ B) → isContractibleMap (e .proof .section .map)
 -- Exercise:
-isEquiv→secIsContractibleMap e y = isProp→with-point-isContr {!!} {!!}
+isEquiv→secIsContractibleMap e y = isProp-with-point→isContr {!!} {!!}
 ```
 
 Now, we usually want to know that the actual function underlying an
@@ -269,20 +296,20 @@ inverse is exactly the original map!
 
 ```
 isEquiv→isContractibleMap : {f : A → B} → isEquiv f → isContractibleMap f
-isEquiv→isContractibleMap isE = isEquiv→secIsContractibleMap (invEquiv (_ , isE))
+isEquiv→isContractibleMap isE = isEquiv→secIsContractibleMap (invEquiv (equiv _ isE))
 
 Equiv→ContractibleMap : A ≃ B → ContractibleMap A B
-Equiv→ContractibleMap (f , isE) = (f , isEquiv→isContractibleMap isE)
+Equiv→ContractibleMap (equiv f isE) = (f , isEquiv→isContractibleMap isE)
 ```
 
 
-## Being an Equivalence is a Proposition
+## Fact 1: Being an Equivalence is a Proposition
 
 We now turn to the first of the goals that we listed up at the top:
 showing that `isEquiv f` is always a proposition. We'll do this by
 showing that if we do have an element of `isEquiv f`, then in fact
 `isEquiv f` is contractible. Our definition of ``isEquiv`` is as
-the pair of a section and a retraction, so this will mean showing that
+the pair of a section and a retract, so this will mean showing that
 those two pieces are contractible separately.
 
 First, some generalities about equivalences. These can both be proven
@@ -291,12 +318,9 @@ by defining an equivalence directly.
 ```
 isEquiv→isEquivPostComp : {f : A → B} → isEquiv f → isEquiv (λ (d : C → A) → f ∘ d)
 -- Exercise:
-fst (fst (isEquiv→isEquivPostComp ((g , s) , g' , r))) = {!!}
-snd (fst (isEquiv→isEquivPostComp ((g , s) , g' , r))) = {!!}
-fst (snd (isEquiv→isEquivPostComp ((g , s) , g' , r))) = {!!}
-snd (snd (isEquiv→isEquivPostComp ((g , s) , g' , r))) = {!!}
+isEquiv→isEquivPostComp e = {!!}
 
-sectionOf≃fiber : (f : A → B) → (sectionOf f) ≃ (fiber (λ (d : B → A) → f ∘ d) (idfun _))
+sectionOf≃fiber : (f : A → B) → (SectionOf f) ≃ (fiber (λ (d : B → A) → f ∘ d) idfun)
 -- Exercise:
 sectionOf≃fiber f = {!!}
 ```
@@ -307,27 +331,24 @@ contractible map, that fiber is contractible. You should be able to
 put it together:
 
 ```
-isEquiv→isContrSectionOf : {f : A → B} → isEquiv f → isContr (sectionOf f)
+isEquiv→isContrSectionOf : {f : A → B} → isEquiv f → isContr (SectionOf f)
 -- Exercise:
 isEquiv→isContrSectionOf {f = f} isE = {!!}
 ```
 
-A symmetrical argument works for the retraction, feel free to
+A symmetrical argument works for the retract, feel free to
 copy and paste as necessary.
 
 ```
 isEquiv→isEquivPreComp  : {f : A → B} → isEquiv f → isEquiv (λ (d : B → C) → d ∘ f)
 -- Exercise:
-fst (fst (isEquiv→isEquivPreComp ((g , s) , g' , r))) d = {!!}
-snd (fst (isEquiv→isEquivPreComp ((g , s) , g' , r))) d = {!!}
-fst (snd (isEquiv→isEquivPreComp ((g , s) , g' , r))) d = {!!}
-snd (snd (isEquiv→isEquivPreComp ((g , s) , g' , r))) d = {!!}
+isEquiv→isEquivPreComp e = {!!}
 
-retractOf≃fiber : (f : A → B) → (retractOf f) ≃ (fiber (λ (d : B → A) → d ∘ f) (idfun _))
+retractOf≃fiber : (f : A → B) → (RetractOf f) ≃ (fiber (λ (d : B → A) → d ∘ f) idfun)
 -- Exercise:
 retractOf≃fiber f = {!!}
 
-isEquiv→isContrRetractOf : {f : A → B} → isEquiv f → isContr (retractOf f)
+isEquiv→isContrRetractOf : {f : A → B} → isEquiv f → isContr (RetractOf f)
 -- Exercise:
 isEquiv→isContrRetractOf {f = f} isE = {!!}
 ```
@@ -335,8 +356,16 @@ isEquiv→isContrRetractOf {f = f} isE = {!!}
 Now just glue them together!
 
 ```
+-- mvrnote: move earlier
+isEquiv≃× : (f : A → B) → isEquiv f ≃ (SectionOf f × RetractOf f)
+isEquiv≃× f .map (isEquivData s r) = s , r
+isEquiv≃× f .proof .section .map (s , r) = isEquivData s r
+isEquiv≃× f .proof .section .proof (s , r) = refl
+isEquiv≃× f .proof .retract .map (s , r) = isEquivData s r
+isEquiv≃× f .proof .retract .proof (isEquivData s r) = refl
+
 -- Exercise:
-isPropIsEquiv f = with-point-isContr→isProp {!!}
+isProp-isEquiv f = with-point-isContr→isProp {!!}
 ```
 
 As we showed in `≡Subtype` at the end of Lecture 2-X, paths in subtypes
@@ -346,36 +375,69 @@ just showed `isEquiv f` is a proposition), we can compute paths
 between equivalences on their underlying functions.
 
 ```
-equivEq : {e f : A ≃ B} → (h : e .fst ≡ f .fst) → e ≡ f
+Equiv≃Σ : (A ≃ B) ≃ (Σ[ f ∈ (A → B)] isEquiv f)
+Equiv≃Σ .map (equiv f e) = f , e
+Equiv≃Σ .proof .section .map (f , e) = equiv f e
+Equiv≃Σ .proof .section .proof (f , e) = refl
+Equiv≃Σ .proof .retract .map (f , e) = equiv f e
+Equiv≃Σ .proof .retract .proof (equiv f e) = refl
+
+equivEq : {e f : A ≃ B} → (h : e .map ≡ f .map) → e ≡ f
 -- Exercise:
 equivEq {e = e} {f = f} h = {!!}
 ```
 
-We knew already that univalence ``ua`` has a retraction
+We knew already that univalence ``ua`` has a retract
 ``au``. But we can now use ``equivEq`` to easily show that
-``ua`` is an equivalence.
+``au`` is also a section, and so ``ua`` is an equivalence.
 
 ```
 au-ua : (e : A ≃ B) → au (ua e) ≡ e
--- Exercise: (Hint: `uaβ`)
+-- Exercise: (Hint: ``ua-comp``)
 au-ua e = {!!}
 ```
 
-And state univalence in all its glory:
+And prove univalence in all its glory:
 
 ```
-univalence : (A ≡ B) ≃ (A ≃ B)
-univalence = equiv au ua au-ua ua-au
+-- univalence : (A ≡ B) ≃ (A ≃ B)
+univalence = inv→equiv au ua au-ua ua-au
 ```
 
 
-## Isomorphism is a Bad Definition
-
-``isPropIsEquiv`` justifies our use of equivalences over
-"isomorphisms", maps with a map going the other way that is *both* a
-section and a retract.
+## Equivalence Induction
+mvrnote:
 
 ```
+isContr-singlEquiv : (A : Type ℓ) → isContr ( Σ[ T ∈ Type ℓ ] (A ≃ T) )
+isContr-singlEquiv A .center = (A , idEquiv A)
+isContr-singlEquiv A .contraction (B , e) i .fst = ua e i
+isContr-singlEquiv A .contraction (B , e) i .snd .map a = Path→ua-PathP e {x = a} refl i
+isContr-singlEquiv A .contraction (B , e) i .snd .proof = isProp→PathP (λ j → isProp-isEquiv (isContr-singlEquiv A .contraction (B , e) j .snd .map)) isEquiv-idfun (e .proof) i
+
+EquivJ : {A : Type ℓ}
+       → (P : (B : Type ℓ) → A ≃ B → Type ℓ')
+       → P A (idEquiv A)
+       → {B : Type ℓ} (e : A ≃ B)
+       → P B e
+EquivJ P p e = subst (λ e → P (e .fst) (e .snd)) (isContr-singlEquiv _ .contraction (_ , e)) p
+
+ap-isEquiv : {A B : Type ℓ} (e : A ≃ B) → {a₁ a₂ : A} → isEquiv (ap {x = a₁} {a₂} (e .map) )
+ap-isEquiv e {a₁} {a₂} = EquivJ (λ B e → isEquiv (ap {x = a₁} {a₂} (e .map))) isEquiv-idfun e
+
+ap-≃ : {A B : Type ℓ} (e : A ≃ B) → {a₁ a₂ : A} → (a₁ ≡ a₂) ≃ (e .map a₁ ≡ e .map a₂)
+ap-≃ e .map = ap (e .map)
+ap-≃ e .proof = ap-isEquiv e
+```
+
+## Being an Isomorphism is a Not Propositional
+
+``isProp-isEquiv`` justifies our use of "equivalences" over
+"isomorphisms". Recall that an isomorphism is a map with a single map going
+the other way that is *both* a section and a retract.
+
+```
+-- mvrnote make record
 isIso : {A : Type ℓ} → {B : Type ℓ'} → (A → B) → Type (ℓ-max ℓ ℓ')
 isIso f = Σ[ g ∈ _ ] isSection f g × isRetract f g
 ```
@@ -384,30 +446,31 @@ Sadly, this type is *not* always a proposition. This feels strange,
 because in ordinary set-based mathematics, this defect is impossible
 to see:
 
-mvrnote: exercise?
+mvrnote: exercises?
 ```
 isoInvUnique : {f : A → B} → (i₁ i₂ : isIso f) → (b : B) → fst i₁ b ≡ fst i₂ b
-isoInvUnique {f = f} (g₁ , s₁ , r₁) (g₂ , s₂ , r₂) b =
-                   g₁ b          ≡⟨ sym (r₂ (g₁ b)) ⟩
-                   g₂ (f (g₁ b)) ≡⟨ cong g₂ (s₁ b) ⟩
-                   g₂ b ∎
+isoInvUnique {f = f} (g₁ , s₁ , r₁) (g₂ , s₂ , r₂) b
+  = g₁ b          ≡⟨ sym (r₂ (g₁ b)) ⟩
+    g₂ (f (g₁ b)) ≡⟨ ap g₂ (s₁ b) ⟩
+    g₂ b ∎
 
-isSet→isPropIsIso : (f : A → B) → isSet A → isSet B → isProp (isIso f)
-fst (isSet→isPropIsIso f isA isB iso₁ iso₂ i) b = isoInvUnique iso₁ iso₂ b i
-fst (snd (isSet→isPropIsIso f isA isB iso₁ iso₂ i)) b
+isSet→isProp-isIso : (f : A → B)
+  → isSet A → isSet B → isProp (isIso f)
+isSet→isProp-isIso f isA isB iso₁ iso₂ i .fst b = isoInvUnique iso₁ iso₂ b i
+isSet→isProp-isIso f isA isB iso₁ iso₂ i .snd .fst b
   = isB _ _
-    (transport-filler  (λ j → f (isoInvUnique iso₁ iso₂ b j) ≡ b) (fst (snd iso₁) b) i)
-    (transport-filler' (λ j → f (isoInvUnique iso₁ iso₂ b j) ≡ b) (fst (snd iso₂) b) i)
+    (transport-filler  (λ j → f (isoInvUnique iso₁ iso₂ b j) ≡ b) (iso₁ .snd .fst b) i)
+    (transport-filler' (λ j → f (isoInvUnique iso₁ iso₂ b j) ≡ b) (iso₂ .snd .fst b) i)
     i
-snd (snd (isSet→isPropIsIso f isA isB iso₁ iso₂ i)) a
+isSet→isProp-isIso f isA isB iso₁ iso₂ i .snd .snd a
   = isA _ _
-    (transport-filler  (λ j → isoInvUnique iso₁ iso₂ (f a) j ≡ a) (snd (snd iso₁) a) i)
-    (transport-filler' (λ j → isoInvUnique iso₁ iso₂ (f a) j ≡ a) (snd (snd iso₂) a) i)
+    (transport-filler  (λ j → isoInvUnique iso₁ iso₂ (f a) j ≡ a) (iso₁ .snd .snd a) i)
+    (transport-filler' (λ j → isoInvUnique iso₁ iso₂ (f a) j ≡ a) (iso₂ .snd .snd a) i)
     i
 ```
 
 In the world of homotopy type theory, however, the paths in
-`isSection` and `isRetract` could hold extra data.
+``isSection`` and ``isRetract`` could hold extra data.
 
 Consider the type of ways to show that the identity function `X → X`
 is an isomorphism: that is, the type of functions `f : X → X` such
@@ -415,12 +478,12 @@ that `s : (x : X) → f x ≡ x` and `r : (x : X) → f x ≡ x`. By gluing
 these together, we can get a path `x ≡ x` for any `x : X`.
 
 ```
-isIso→center : isIso (idfun A) → (x : A) → (x ≡ x)
+isIso→center : isIso idfun → (x : A) → (x ≡ x)
 isIso→center (g , s , r) x = sym (s x) ∙ r x
 ```
 
-For sets this poses no problem, but if `X` is a higher type, then
-there may be lots of non-equal elements of that type `(x : A) → (x ≡
+For sets this poses no problem, but if `X` is a higher-dimensional type then
+there may be lots of non-equal elements of `(x : A) → (x ≡
 x)`. Indeed, we already encounter the problem when looking at the
 simplest higher type, the circle ``S¹``.
 
@@ -434,69 +497,86 @@ But now, here are two ways of showing that the identity on ``S¹``
 is an isomorphism.
 
 ```
-refl-iso : isIso (idfun S¹)
-fst refl-iso = idfun S¹
-fst (snd refl-iso) = λ _ → refl
-snd (snd refl-iso) = λ _ → refl
+S¹-refl-iso : isIso (idfun {A = S¹})
+S¹-refl-iso .fst = idfun
+S¹-refl-iso .snd .fst = λ _ → refl
+S¹-refl-iso .snd .snd = λ _ → refl
 
-rotate-loop-iso : isIso (idfun S¹)
-fst rotate-loop-iso = idfun S¹
-fst (snd rotate-loop-iso) = λ _ → refl
-snd (snd rotate-loop-iso) = rotate-loop
+S¹-rotate-loop-iso : isIso (idfun {A = S¹})
+S¹-rotate-loop-iso .fst = idfun
+S¹-rotate-loop-iso .snd .fst = λ _ → refl
+S¹-rotate-loop-iso .snd .snd = rotate-loop
 ```
 
-If `isIso (idfun S¹)` were a proposition, then these would have to be
+If `isIso idfun` were a proposition, then these would have to be
 equal. This would imply that `(λ _ → refl) ≡ rotate-loop`, which we've
 just shown cannot be.
 
 ```
-¬isPropisIso : ¬ isProp (isIso (idfun S¹))
+¬isProp-isIso : ¬ isProp (isIso (idfun {A = S¹}))
 -- Exercise:
-¬isPropisIso p = {!!}
+¬isProp-isIso p = {!!}
 ```
 
 
-## Σ-types Respect Equivalence
+## Fact 2: Σ-types Respect Equivalence
 
 The second goal of this Lecture is to prove that an equivalence of the
 components of a Σ-type extends to an equivalence of the entire Σ-type.
 
-Dealing withthe second component is easier and only involves
-rearranging some data, so let's do that first. The claim to prove is
-that if we have a family of functions `(f₂ : (a : A) → B a → B' a)` so
-that every `f₂ a` is an equivalence, then the map `(Σ[ a ∈ A ] B a) →
-(Σ[ a ∈ A ] B' a)` is also an equivalence.
+Dealing with the second component is easier and only involves
+rearranging some data, so let's do that first.
 
-Proving this will involve a couple of lemmas about sections and
-retractions, but at this point we trust you can put those together
-yourself.
+The claim to prove is that if we have a "fiberwise equivalence", a map
+`(f₂ : (a : A) → B a → B' a)` so that every `f₂ a` is an equivalence,
+then the map `(Σ[ a ∈ A ] B a) → (Σ[ a ∈ A ] B' a)` that applies `f₂`
+to each fiber is also an equivalence.
+
+mvrnote: adjust prose
 
 ```
-module _ {B : A → Type ℓ} {B' : A → Type ℓ'} (f₂ : (a : A) → B a → B' a) where
-  Σ-map-snd : Σ[ a ∈ A ] B a → Σ[ a ∈ A ] B' a
-  Σ-map-snd = Σ-map (idfun _) f₂
+Σ-map-fst : {B : A' → Type ℓ}
+  → (f₁ : A → A')
+  → Σ[ a ∈ A ] B (f₁ a) → Σ[ a' ∈ A' ] B a'
+Σ-map-fst f₁ = Σ-map f₁ (λ _ → idfun)
 
-  Σ-map-snd-isEquiv : ((a : A) → isEquiv (f₂ a)) → isEquiv Σ-map-snd
-  -- Exercise:
-  Σ-map-snd-isEquiv e = {!!}
+Σ-map-snd : {B : A → Type ℓ} {B' : A → Type ℓ}
+  → (f₂ : (a : A) → B a → B' a)
+  → Σ[ a ∈ A ] B a → Σ[ a ∈ A ] B' a
+Σ-map-snd f₂ = Σ-map idfun f₂
 
-Σ-map-snd-≃ : {B : A → Type ℓ} {B' : A → Type ℓ'}
-  (e₂ : (x : A) → B x ≃ B' x)
-  → (Σ[ a ∈ A ] B a) ≃ (Σ[ a ∈ A ] B' a)
-Σ-map-snd-≃ e₂ = Σ-map-snd (equivFun ∘ e₂) , Σ-map-snd-isEquiv (fst ∘ e₂) (snd ∘ e₂)
+module _ {A A' : Type ℓ} {B : A' → Type ℓ'} (e₁ : A ≃ A') where
+  isEquiv-Σ-map-fst : isEquiv (Σ-map-fst {B = B} (e₁ .map))
+  isEquiv-Σ-map-fst = EquivJ (λ A'' e → (B : A'' → Type ℓ') → isEquiv (Σ-map-fst {B = B} (e .map))) 
+                             (λ _ → isEquiv-idfun) e₁ B
+
+  Σ-map-fst-≃-ua : (Σ[ a ∈ A ] B (e₁ .map a)) ≃ (Σ[ a' ∈ A' ] B a')
+  Σ-map-fst-≃-ua .map = Σ-map-fst (e₁ .map)
+  Σ-map-fst-≃-ua .proof = isEquiv-Σ-map-fst
+
+module _ {B : A → Type ℓ} {B' : A → Type ℓ} (e₂ : (x : A) → B x ≃ B' x) where
+  Σ-map-snd-ua : (Σ[ a ∈ A ] B a) ≃ (Σ[ a ∈ A ] B' a)
+  Σ-map-snd-ua = au λ i → Σ[ a ∈ A ] ua (e₂ a) i
+
+  Σ-map-snd-ua-underlying : Σ-map-snd-ua .map ≡ Σ-map-snd (λ a → e₂ a .map)
+  Σ-map-snd-ua-underlying i (a , b) .fst = ua-comp (idEquiv _) a i
+  Σ-map-snd-ua-underlying i (a , b) .snd = transport-filler' (λ j → B' (transport-refl a j)) (e₂ a .map b) i
+
+  Σ-map-snd-≃ : (Σ[ a ∈ A ] B a) ≃ (Σ[ a ∈ A ] B' a)
+  Σ-map-snd-≃ .map = Σ-map-snd (λ a → e₂ a .map)
+  Σ-map-snd-≃ .proof = subst isEquiv Σ-map-snd-ua-underlying (Σ-map-snd-ua .proof)
 ```
 
-Now, a similar fact for the first component: if `f₁ : A → A'` is an
-equivalence, then the induced map
-`(Σ[ a ∈ A ] B (f₁ a)) → (Σ[ a' ∈ A' ] B a')` is also an equivalene.
+
+Now we handle the first component: we want to show that if `f₁ : A →
+A'` is an equivalence, then the induced map `(Σ[ a ∈ A ] B (f₁ a)) →
+(Σ[ a' ∈ A' ] B a')`
 
 ```
 module _ {B : A' → Type ℓ} (f₁ : A → A') where
-  Σ-map-fst : Σ[ a ∈ A ] B (f₁ a) → Σ[ a' ∈ A' ] B a'
-  Σ-map-fst = Σ-map f₁ (λ x → idfun _)
-
-  Σ-map-fst-isEquiv : isEquiv f₁ → isEquiv Σ-map-fst
 ```
+
+is also an equivalence.
 
 This one is surprisingly difficult for such a simple statement. Here's
 the key fact, and what makes the connection to contractible maps. You
@@ -504,15 +584,15 @@ will have to use the technology from Lecture 2-X on ``transport``
 and ``transport-filler``.
 
 ```
-  Σ-map-fst-fib-equiv : (t : Σ[ a' ∈ A' ] B a') → fiber Σ-map-fst t ≃ fiber f₁ (fst t)
-  Σ-map-fst-fib-equiv (a' , b') = equiv to fro to-fro fro-to
+  Σ-map-fst-fib-≃ : (t : Σ[ a' ∈ A' ] B a') → fiber (Σ-map-fst f₁) t ≃ fiber f₁ (fst t)
+  Σ-map-fst-fib-≃ (a' , b') = inv→equiv to fro to-fro fro-to
     where
-      to : fiber Σ-map-fst (a' , b') → fiber f₁ a'
+      to : fiber (Σ-map-fst f₁) (a' , b') → fiber f₁ a'
       -- Exercise:
       fst (to ((a , b) , p)) = {!!}
       snd (to ((a , b) , p)) = {!!}
 
-      fro : fiber f₁ a' → fiber Σ-map-fst (a' , b')
+      fro : fiber f₁ a' → fiber (Σ-map-fst f₁) (a' , b')
       -- Exercise:
       fst (fst (fro (a , p))) = {!!}
       snd (fst (fro (a , p))) = {!!}
@@ -520,186 +600,106 @@ and ``transport-filler``.
       snd (snd (fro (a , p)) i) = {!!}
 
       to-fro : isSection to fro
-      to-fro (a , p) = refl 
+      to-fro (a , p) = refl
 
       fro-to : isRetract to fro
       -- Exercise:
       fst (fst (fro-to ((a , b) , p) i)) = {!!}
       snd (fst (fro-to ((a , b) , p) i)) = {!!}
       fst (snd (fro-to ((a , b) , p) i) j) = {!!}
-      snd (snd (fro-to ((a , b) , p) i) j) = {!!} -- This should can be done by a single, tricky use of `transp`
+      snd (snd (fro-to ((a , b) , p) i) j) = {!!} -- This can be done by a single, tricky use of `transport-fixing`. mvrnote: break this down
 ```
+
+mvrnote: this could alternatively be done by using J everywhere
 
 Now, we know that `fiber Σ-map-fst t` is contractible whenever `fiber
 f₁ (fst t)` is. Use ``isContractibleMap→isEquiv`` and
 ``isEquiv→isContractibleMap`` to complete the proof.
 
 ```
+  Σ-map-fst-isEquiv : isEquiv f₁ → isEquiv (Σ-map-fst f₁)
   -- Exercise:
   Σ-map-fst-isEquiv e = {!!}
 
 Σ-map-fst-≃ : {B : A' → Type ℓ}
   → (e₁ : A ≃ A')
-  → (Σ[ a ∈ A ] B (fst e₁ a)) ≃ (Σ[ a' ∈ A' ] B a')
-Σ-map-fst-≃ e₁ = Σ-map-fst (equivFun e₁) , Σ-map-fst-isEquiv (fst e₁) (snd e₁)
+  → (Σ[ a ∈ A ] B (e₁ .map a)) ≃ (Σ[ a' ∈ A' ] B a')
+Σ-map-fst-≃ e₁ = equiv (Σ-map-fst (e₁ .map)) (Σ-map-fst-isEquiv (e₁ .map) (e₁ .proof))
 ```
 
 Finally, combine ``Σ-map-fst-≃`` with ``Σ-map-snd-≃`` to prove the
 original result were looking for.
 
 ```
-Σ-map-≃ e₁ e₂ = compEquiv (Σ-map-fst-≃ e₁) (Σ-map-snd-≃ e₂)
-```
-
-## mvrnote: to be sorted
-
-Knowing what equivalences are in ``Σ`` types, we can
-prove that `Σ[ a ∈ A ] B a` is a set whenever `A` is a set and `B a`
-is a set for any `a : A`.
-
-```
--- mvrnote: only place this is used
-Σ-path-≃ :
-  {A : Type ℓ} {B : A → Type ℓ'} (a b : Σ[ a ∈ A ] B a)
-  → (a ≡ b) ≃ (Σ[ p ∈ (fst a ≡ fst b) ] transport (λ i → B (p i)) (snd a) ≡ snd b)
-Σ-path-≃ {B = B} a b = compEquiv (Σ-map-snd-≃ (λ p → PathP≃Path (λ i → B (p i)) _ _)) (invEquiv ΣPath≃PathΣ)
-```
-
-compare `isSet×`
-
-```
-isSetΣ : {B : A → Type ℓ'}
-  → isSet A
-  → ((a : A) → isSet (B a))
-  → isSet (Σ[ a ∈ A ] B a)
-isSetΣ {A = A} {B = B} setA setB a b = isPropEquiv (Σ-path-≃ a b) isProp-ΣPathTransport
-  where
-    isProp-ΣPathTransport : isProp (Σ[ p ∈ (fst a ≡ fst b) ] transport (λ i → B (p i)) (snd a) ≡ snd b)
-    isProp-ΣPathTransport = isPropΣ (setA (fst a) (fst b))
-                                    (λ p → setB (p i1) (transport (λ i → B (p i)) (snd a)) (snd b))
+Σ-map-≃ {A = A} {A' = A'} {B = B} {B' = B'} e₁ e₂ =
+  Σ[ a  ∈ A ]  B  a           ≃⟨ Σ-map-snd-≃ e₂ ⟩
+  Σ[ a  ∈ A ]  B' (e₁ .map a) ≃⟨ Σ-map-fst-≃ e₁ ⟩
+  Σ[ a' ∈ A' ] B' a'          ∎e
 ```
 
 
-mvrnote: Exercise from the HoTT book:
+## Fact 3: Fiberwise Equivalences
+
+mvrnote: In fact, the converse of this is true: if `Σ-map-snd f₂` is an
+equivalence, then `f₂` must have been a fiberwise equivalence to begin with.
+
 
 ```
--- table : (Bool → Bool) → Bool × Bool
--- table f = f true , f false
+-- Σ-map-snd-fib-≃ : {B : A → Type ℓ} {B' : A → Type ℓ'} (f₂ : (a : A) → B a → B' a) → (t : Σ[ a ∈ A ] B' a) → fiber (Σ-map-snd f₂) t ≃ fiber (f₂ (fst t)) (snd t)
+-- Σ-map-snd-fib-≃ {A = A} {B = B} {B' = B'} f₂ t = inv→equiv to fro to-fro fro-to
+--   where
+--     to : {(a , b') : Σ[ a ∈ A ] B' a} → fiber (Σ-map-snd f₂) (a , b') → fiber (f₂ a) b'
+--     to ((x , v) , p) = transport (λ i → fiber (f₂ (fst (p (~ i)))) (snd (p (~ i)))) (v , refl)
 
--- table-equiv : (f : Bool → Bool) → isEquiv f → (table f ≡ (true , false)) ⊎ (table f ≡ (false , true))
--- table-equiv = {!!}
+--     fro : {(a , b') : Σ[ a ∈ A ] B' a} → fiber (f₂ a) b' → fiber (Σ-map-snd f₂) (a , b')
+--     fro (b , p) = (_ , b) , (λ i → _ , (p i))
 
--- test : (Bool ≃ Bool) ≃ Bool
--- test = equiv to fro to-fro fro-to
---   where to : (Bool ≃ Bool) → Bool
---         to e = equivFun e true
---         fro : Bool → (Bool ≃ Bool)
---         fro true = idEquiv Bool
---         fro false = not-≃
---         to-fro : isSection to fro
---         to-fro true = refl
---         to-fro false = refl
+--     to-fro-refl : {(a , b) : Σ[ a ∈ A ] B a} → to (fro (b , refl)) ≡ (b , refl)
+--     to-fro-refl {a , b} = transport-refl (b , refl)
 
---         fro-to' : (f : Bool → Bool) → (e : isEquiv f) → (table f ≡ (true , false)) ⊎ (table f ≡ (false , true)) → fst (fro (to (f , e))) ≡ f
---         fro-to' f e (inl x) i true = {!!}
---         fro-to' f e (inl x) i false = {!!}
---         fro-to' f e (inr x) i b = {!!}
+--     to-fro : {t : Σ[ a ∈ A ] B' a} → isSection (to {t}) (fro {t})
+--     to-fro (b , p) = J (λ y p → to (fro (b , sym p)) ≡ (b , sym p)) to-fro-refl (sym p)
 
---         fro-to : isRetract to fro
---         fst (fro-to (f , (g , s) , g' , r) i) = {!!}
---         snd (fro-to (f , (g , s) , g' , r) i) = {!!}
+--     fro-to-refl : {t : Σ[ a ∈ A ] B a} → fro (to (t , refl)) ≡ (t , refl)
+--     fro-to-refl {t} = ap fro (transport-refl (snd t , refl))
+
+--     fro-to : {t : Σ[ a ∈ A ] B' a} → isRetract (to {t}) (fro {t})
+--     fro-to (t , p) = J (λ y p → fro (to (t , sym p)) ≡ (t , sym p)) fro-to-refl (sym p)
+
+-- Σ-isEquiv-fiberwise : {B : A → Type ℓ} {B' : A → Type ℓ'} (f₂ : (a : A) → B a → B' a)
+--   → isEquiv (Σ-map-snd f₂) → (a : A) → isEquiv (f₂ a)
+-- Σ-isEquiv-fiberwise f₂ e a = isContractibleMap→isEquiv λ b' → isContrEquiv (invEquiv (Σ-map-snd-fib-≃ f₂ (a , b'))) (isEquiv→isContractibleMap e (a , b'))
 ```
 
-## Relations
+::: Aside:
+We could use ``Σ-map-snd-fib-≃`` to prove ``Σ-map-snd-≃``, but the
+proof we suggested earlier is much more direct.
+:::
 
-mvrnote: why did we have this section again?
+I might seem intuitive that the same should be true in the first
+component, so that if `Σ-map-fst f₁ : Σ[ a ∈ A ] B (f₁ a) → Σ[ a' ∈ A'
+] B a'` is an equivalence then `f₁` must be an equivalence. But this
+isn't true!
 
-mvrnote: GCD would be a cool exercise here!
-
-A (type-valued) *relation* between two types `A` and `B` is a type
-family `R : A → B → Type` depending on both `A` and `B`. We interpret
-the type `R a b` as "the type of ways that `a` relates to `b`".
-
-```
-Rel : ∀ {ℓ} {ℓ'} (A : Type ℓ) (B : Type ℓ') → Type (ℓ-suc (ℓ-max ℓ ℓ'))
-Rel {ℓ} {ℓ'} A B = A → B → Type (ℓ-max ℓ ℓ')
-```
-
-Any function `f : A → B` induces a relation `graph f : Rel A B` known
-as the graph of `f`. You might be familiar with the graph of a
-function as defined in ordinary math: this is the subset of $A × B$ so
-where $f(a) = b$.
+We've seen that `Σ[ a ∈ ⊤ ] B a` is equivalent to `B tt` and that `Σ[
+a ∈ Bool ] B a` is equivalent to `B true ⊎ B false` (mvrnote: have we?
+or did we remove it?). If we apply ``Σ-map-fst`` to the constant map
+`Bool → ⊤` then we have a map `(Σ[ a ∈ Bool ] ∅) → (Σ[ a ∈ ⊤ ] ∅)`,
+and we can arrange for this map to be an equivalence. All we need is
+some type `X` for which `X ⊎ X ≃ X`. There are lots of these, but
+choosing ``∅`` will be easiest. (You could also try `ℕ`.)
 
 ```
-graph : {A B : Type ℓ} → (A → B) → Rel A B
-graph f a b = (f a ≡ b)
-```
-
-This says that the ways we relate `a : A` and `b : B` via the graph of
-`f` are precisely the paths from `f a` to `b` (in `B`). The graph is a
-special sort of relation: it is a "functional relation". A relation
-`R : Rel A B` is functional if for every `a : A`, there is a unique `b :
-B` and way `r : R a b` that `a` relates with `b`.
-
-```
-isFunctional : {A B : Type ℓ} → Rel A B → Type ℓ
-isFunctional {B = B} R = ∀ a → ∃! (Σ[ b ∈ B ] (R a b))
-```
-
-The graph of a function is a functional relation --- hence the name.
-
-```
-isFunctionalGraph : {A B : Type ℓ} (f : A → B) → isFunctional (graph f)
--- Exercise:
-isFunctionalGraph f a = {!!}
-```
-
-On the other hand, any functional relation gives rise to a function.
-
-```
-isFunctional→Fun : {A B : Type ℓ} (R : Rel A B) (c : isFunctional R)
-                 → A → B
--- Exercise:
-isFunctional→Fun R c a = {!!}
-```
-
-We can show that the function we extract out of the graph of a
-function `f` is just `f`:
-```
-section-isFunctionalGraph→Fun : {A B : Type} (f : A → B)
-      → isFunctional→Fun (graph f) (isFunctionalGraph f) ≡ f
--- Exercise:
-section-isFunctionalGraph→Fun f = {!!}
-```
-
-In the other direction, we get an isomorphism between `R a b` and
-`(graph (isFunctional→Fun R c)) a b` whenever `R` is a functional
-relation. We don't quite have the tools yet to prove this, we'll have
-to revisit it in the next lecture.
-
-For every relation `R : Rel A B`, there is a relation `flip R : Rel B
-A` defined by `(flip R) b a = R a b`. In fact, for this we can use the
-function ``flip`` defined way back in Lecture 1-1. A relation is
-said to be a *one-to-one correspondence* if both it and its flip are
-functional; that is, if for every `a` there is a unique `b` and `r : R
-a b` and for every `b` there is a unique `a` and `r : R a b`.
-
-```
-isOneToOne : {A B : Type} (R : Rel A B) → Type _
-isOneToOne R = isFunctional R × isFunctional (flip R)
-```
-
-If `e : A ≃ B` is an equivalence, then its graph is a one-to-one
-correspondence.
-
-```
--- mvrnote: fix
--- graphEquivIsOneToOne : {A B : Type} (e : A ≃ B)
---                      → isOneToOne (graph (fst e))
+-- fold-∅ : (Σ[ a ∈ Bool ] ∅) → (Σ[ a ∈ ⊤ ] ∅)
 -- -- Exercise:
--- graphEquivIsOneToOne e = {!!}
-graphEquivIsOneToOne (e , p) = (isFunctionalGraph e) , p
-```
+-- fold-∅ = {!!}
+fold-∅ = Σ-map-fst (λ (_ : Bool) → tt)
 
-It is also possible to go the other way, but again we'll come back to
-this.
+-- ¬Σ-isEquiv-base : ¬ ({A A' : Type} {f₁ : A → A'} {B : A' → Type} → isEquiv (Σ-map-fst {B = B} f₁) → isEquiv f₁)
+-- -- Exercise:
+-- ¬Σ-isEquiv-base p = ¬isContrBool {!!}
+¬Σ-isEquiv-base p = ¬isContrBool (Equiv⊤→isContr (equiv (λ (_ : Bool) → tt) (p isEquiv-fold-∅)))
+
+## References and Furthe Reading
+
+https://cj-xu.github.io/faum/escardo.pdf
