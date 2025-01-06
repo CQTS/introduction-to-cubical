@@ -10,13 +10,25 @@ open import Library.Prelude
 # Lecture 1-2: Inductive Types
 
 In the last lecture, we saw some abstract type theory. In this
-lecture, we'll get to define our own concrete data types.
+lecture, we'll get to define our own concrete data-types.
 
+Agda's data-types come in two flavours which are in some sense mirror
+images of each other:
+
+* **Inductive types**: These include Booleans, natural numbers, lists,
+  more generally, anything which is specified by a set of options,
+  and where elements are specified by choosing between those options.
+* **Record types**: These include product and Σ-types, more generally
+  anything where elements are specified by a set of fields, and where
+  elements are specified by choosing a value for each of those fields.
+
+In this Lecture we'll see our first few examples of inductive types.
+We'll return to record types in Lecture 1-X.
 
 ## Booleans
 
-An inductive type is a type whose elements
-are built up out of "constructors". Here is the inductive type of Booleans:
+An inductive type is a type whose elements are built up out of
+"constructors". Here is the inductive type of Booleans:
 
 ```
 data Bool : Type where
@@ -24,16 +36,16 @@ data Bool : Type where
   false : Bool
 ```
 
-This definition says, intuitively, that to construct a Boolean we
-either construct it out of ``true`` or out of ``false`` ---
-that is, a Boolean is either ``true`` or ``false``.
+This definition says that to construct a Boolean we either construct
+it using ``true`` or using ``false`` --- that is, a Boolean is either
+``true`` or ``false``.
 
-What makes a data type "inductive" is its induction principle: *to use
-an element of an inductive type, it suffices to say what we would do
-if that element was given by each of its constructors*. This process
-is often called "case analysis". For example, we may define the
-logical ``not`` by saying what we should get in the case the Boolean
-is ``true``, and if in the case the Boolean is ``false``:
+What makes a data type "inductive" is its *induction principle*, a
+process which is often called *case analysis*: "to use an element of
+an inductive type, it suffices to split into cases for what we would
+do for each of the constructors". For example, we may define the
+logical ``not`` by saying what the result is in the case the Boolean
+is ``true``, and in the case the Boolean is ``false``:
 
 ```
 not : Bool → Bool
@@ -57,7 +69,7 @@ induction you are used to.
 If we do case analysis on a ``Bool`` which is literally ``true`` or
 ``false`` rather than a variable or some other expression, then the
 case analysis will disappear leaving the value of the appropriate
-case. This is the "computation rule" for Booleans.
+case. This is the *computation rule* for Booleans.
 
 For example, normalising the expression `not false` leads to the case
 analysis
@@ -95,15 +107,16 @@ x xor y = {!!}
 ```
 
 Agda considers definitions with names that contain underscores
-specially, and lets us use them in two ways: either normally, as in
-`_and_ x y`, or with the arguments taking the place of the
-underscores, as in `x and y`. We will use infix operators like this
-whenever it is closer to normal mathematical practice, like these
-Boolean operators or arithmetic operators operations ``·``, etc.
+specially, and lets us use them in two ways: either literally like any
+other definition, as in `_and_ x y`, or with the arguments taking the
+place of the underscores, as in `x and y`. We will use infix operators
+like this whenever it is closer to normal mathematical practice, as
+with these Boolean operators, arithmetic operators like ``_·_``,
+pairing ``_,_``, etc.
 
 It is not required to do case analysis on all the variables that are
-available. Try giving a definition of the logical "or" by case analysis only
-on the variable `x`.
+available. Try giving a definition of the logical "or" by case
+analysis only on the variable `x`.
 
 ```
 _or_ : Bool → Bool → Bool
@@ -134,20 +147,20 @@ _ = λ (y : Bool) → test-identical (false or y) y
 In all the above definitions we accept some elements of an inductive
 type as arguments and then immediately split into cases. This is
 overwhelmingly the most common situation when working with inductive
-types, so Agda gives us some pleasant syntax for it. Rather writing
-definitions with variable names on the left of the `=` sign, we can
-write multiple lines of definition, one for each possible constructor
-that could occur in that position.
+types, so Agda gives us some pleasant syntax for it. Rather than
+writing definitions with variable names on the left of the `=` sign,
+we can write multiple lines of definition, one for each possible
+constructor that could occur in that position.
 
 ```
 not' : Bool → Bool
-not' true = false
+not' true  = false
 not' false = true
 
 _and'_ : Bool → Bool → Bool
-true and' true = true
-true and' false = false
-false and' true = false
+true  and' true  = true
+true  and' false = false
+false and' true  = false
 false and' false = false
 ```
 
@@ -156,20 +169,19 @@ a single definition. Agda uses a mechanism called "coverage checking"
 to make sure that every case is covered by your definition, and will
 complain if you missed something. If desired, it is always possible to
 rewrite such a definition as a single expression that does the
-case-splitting manually (at least in all the situations that occur in
-these notes!).
+case-splitting manually.
 
 The method of writing functions where we describe what they do on
-particular forms of their input is called "pattern matching". We
+particular forms of their input is called *pattern matching*. We
 already saw an example of this in the previous lecture when writing
-functions with pair types as arguments. Agda has nice support for
-working with pattern matching --- it can automatically write out all
-the cases that are needed to define a function out of an inductive
-data type. To have Agda do this for you, place your cursor in a hole
-and press `C-c C-c`. You will be prompted for the list of variables
-separated by spaces that you want to apply case-splitting to.
+functions with pairs as arguments. Agda has nice support for working
+with pattern matching --- it can automatically write out all the cases
+that are needed to define a function involving an inductive type. To
+have Agda do this for you, place your cursor in a hole and press `C-c
+C-c`. You will be prompted for the list of variables separated by
+spaces that you want to apply case-splitting to.
 
-Try this below: press `C-c C-c` in the hole for ``xor'`` below and
+Try this below: press `C-c C-c` in the hole for ``_xor'_`` below and
 enter `x y` to have Agda split this definition into all the cases you
 need to handle.
 
@@ -180,7 +192,8 @@ x xor' y = {!!}
 ```
 
 As before, we don't necessarily have to to case-split on all the
-variables. Try leaving `y` un-split as you did in ``or``.
+variables. Try leaving `y` un-split as you did in the first definition
+of ``or``.
 
 ```
 _or'_ : Bool → Bool → Bool
@@ -194,9 +207,9 @@ quodlibet" --- ``false`` implies anything.
 
 ```
 _implies_ : Bool → Bool → Bool
-true implies true  = true
-true implies false = false
-false implies _    = true
+true  implies true  = true
+true  implies false = false
+false implies _     = true
 ```
 
 Here we use a "wildcard" argument (the underscore `_`) to say that the
@@ -280,6 +293,24 @@ These two functions constitute the universal "mapping-in" property of
 ``⊤``, like the one that we saw for ``×`` in ``×-ump-to`` and
 ``×-ump-fro``.
 
+``⊤`` is a little unusual, in that it also has a universal
+"mapping-*out*" property, which says that maps out of ``⊤`` just pick
+an element of the output type.
+
+```
+⊤-ump-out-to : {A : Type}
+  → A
+  → (⊤ → A)
+-- Exercise:
+⊤-ump-out-to t = {!!}
+
+⊤-ump-out-fro : {A : Type}
+  → (⊤ → A)
+  → A
+-- Exercise:
+⊤-ump-out-fro f = {!!}
+```
+
 
 ## Natural Numbers
 
@@ -292,7 +323,9 @@ i.e. `1 + n`) is also a natural number.
 
 We actually defined ``ℕ`` behind the scenes so that we could use it in
 Lecture 1-1. On the website, you can click on its name to take you
-there. Its exact definition, copy-pasted, is:
+there.
+
+The exact definition of ``ℕ``, copy-pasted, is:
 
     data ℕ : Type where
       zero : ℕ
@@ -301,11 +334,10 @@ there. Its exact definition, copy-pasted, is:
 (We leave it commented out, so that Agda doesn't complain about
 defining a new type with the same name as an existing one.)
 
-Defining functions out of ``ℕ`` is similar to defining functions
-out of ``Bool``, we just have to give cases for the two
-constructors. The difference is that the ``suc`` constructor
-tells us which (other) natural number the provided argument is the
-successor of.
+Defining functions out of ``ℕ`` is similar to defining functions out
+of ``Bool``, we just have to give cases for the two constructors. The
+difference is that the ``suc`` constructor tells us which natural
+number the provided argument is the successor of.
 
 Here's a first example:
 
@@ -314,7 +346,7 @@ isZero : ℕ → Bool
 isZero zero = true
 isZero (suc n) = false
 
-_ = test-identical (isZero 0) true
+_ = test-identical (isZero 0)  true
 _ = test-identical (isZero 19) false
 ```
 
@@ -338,8 +370,8 @@ doubleℕ (suc n) = suc (suc (doubleℕ n))
 
 Thinking mathematically, $2 × 0 = 0$, covering the first case. For the
 second case, $2 × (1 + n) = 2 + (2 × n)$. To achieve the $2 +$ part,
-we use ``suc`` twice, and to achieve the $2 × n$ part, we use the
-``doubleℕ`` function we are currently defining!
+we use ``suc`` twice, and to achieve the $2 × n$ part, we use a
+recursive call to the ``doubleℕ`` function we are currently defining!
 
 Agda allows this kind of recursion so long as it is convinced that the
 argument that you provide to the recursive call is smaller than the
@@ -348,8 +380,8 @@ because we go from `suc n` to just `n`.
 
 We can even do what is called "mutual" recursion, where two
 definitions depend on each other to make sense. Here is a definition
-of the proposition that a number is even, defined together with the
-proposition that a number is odd:
+of a function that decides whether a number is even, defined together
+with the same for whether a number is odd:
 
 ```
 isEven : ℕ → Bool
@@ -373,8 +405,8 @@ zero    +ℕ m = m
 _ = test-identical (2 +ℕ 3) 5
 ```
 
-Remember that you can test any piece of code yourself by typing "C-c
-C-n" and then `2 +ℕ 3`, say.
+Remember that you can test any piece of code yourself by typing `C-c
+C-n` and then `2 +ℕ 3`, say.
 
 Here we have chosen to split into cases on the left side and leave the
 right side alone, but we could equally well split into cases on the

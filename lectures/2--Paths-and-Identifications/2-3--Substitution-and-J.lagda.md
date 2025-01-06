@@ -6,7 +6,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 
@@ -29,6 +29,8 @@ If `x` and `y` are natural numbers so that `x ≡ y`, and we know that
 
 There is nothing we've seen that lets us do this, so we'll need a new
 primitive notion. 
+
+mvrnote: more summary
 
 
 ## Substitution
@@ -229,7 +231,7 @@ J-ump-≃ {A = A} {x = x} Q = inv→equiv to fro to-fro fro-to
 ```
 
 When the type family used in ``J`` ignores the path, then we recover
-the ``subst`` operation that we started with.
+exactly the ``subst`` operation that we started with.
 
 ```
 subst-from-J : (B : A → Type ℓ) → (p : x ≡ y) → B x → B y
@@ -239,7 +241,7 @@ _ = λ {ℓ : Level} (A : Type ℓ) (B : A → Type ℓ) (x y : A) (p : x ≡ y)
   → test-identical (subst-from-J B p) (subst B p)
 ```
 
-There's a very subtle point here that we would like to mention. In the
+There's a very subtle point here that is worth mentioning. In the
 above definition, we used ``J`` to define an element of `B y` given
 that we already had an element `b : B x`. But we could also have used
 ``J`` to define the function `B x → B y` in its entirety.
@@ -258,7 +260,58 @@ when `y` is in fact the same as `x`, but this is easy: we have
 
 ## Applications of J
 
-mvrnote Do path composition, also rewrite the following to not use composition of equivalences
+The ``J`` principle is exceptionally powerful, much more powerful than
+it might appear. In fact, in the bare Martin-Löf theory on which
+Cubical Type Theory is based, the ``J`` rule is taken as one of the
+defining properties of equality.
+
+```
+sym-from-J : {x y : A} → (x ≡ y) → (y ≡ x)
+sym-from-J {x = x} p = J (λ z _ → z ≡ x) refl p
+```
+
+::: Caution:
+This is a perfectly valid way to define symmetry, but ``sym-from-J``
+is not identical to the symmetry function we have already:
+
+```
+-- Fails!
+-- _ = λ {A : Type} {x y : A} (p : x ≡ y)
+--   → test-identical (sym-from-J p) (sym p)
+```
+:::
+
+Try reconstructing ``ap`` using ``J``:
+
+```
+ap-from-J : (f : A → B) → {x y : A} → (x ≡ y) → (f x ≡ f y)
+ap-from-J f {x} p = J (λ z _ → f x ≡ f z) refl p
+```
+
+More interestingly, we can also get operations we haven't encountered
+yet:
+
+```
+comp-from-J : {x y z : A} → (x ≡ y) → (y ≡ z) → (x ≡ z)
+comp-from-J {x = x} p q = J (λ z _ → x ≡ z) p q
+```
+
+In these examples, we haven't yet used the path parameter of the type
+family `Q`. This often comes up when proving properties of
+constructions that have themselves involved ``J``.
+
+```
+sym-inv-from-J : {x y : A} → (p : x ≡ y) → sym-from-J (sym-from-J p) ≡ p
+sym-inv-from-J {x = x} {y} p 
+  = J (λ z q → sym-from-J (sym-from-J q) ≡ q) refl-case p
+  where 
+    refl-case : sym-from-J (sym-from-J refl) ≡ refl
+    refl-case = comp-from-J (ap sym-from-J (J-refl (λ z _ → z ≡ x) refl)) 
+                            (J-refl (λ z _ → z ≡ x) refl)
+```
+
+mvrnote: rewrite the following to not use composition of equivalences,
+or delete
 
 ```
 -- funexthalf-≃ : {A : Type ℓ} {B : I → Type ℓ'}
@@ -283,6 +336,16 @@ mvrnote Do path composition, also rewrite the following to not use composition o
 --   ≃ PathP (λ i → A i → B i) f g)
 --   funexthalf-≃ (λ i → A i)
 ```
+
+As we've said, it is possible to continue down this road and do all of
+Homotopy Type Theory relying solely on the ``J``-rule. But working in
+the cubical style has significant advantages: far more equations hold
+automatically rather than having to be proved by hand. We've just seen
+an example of this: in ``sym-inv-from-J`` we've had to do a lot more
+work to show what in ``symP-inv`` was immediate. In the next Lecture
+we'll see the more cubical approach to composition of paths, and
+similar operations.
+
 
 ## Paths in Bool
 
@@ -438,7 +501,7 @@ extends this to a general path.
 ```
 
 
-## Encode-Decode Practice
+## More Encode-Decode
 
 Try characterising the paths in ``⊤``. This should essentially be
 the same as the proof for ``Bool`` but with half of the cases
@@ -515,13 +578,13 @@ equality ``≡ℕ``.
     fro-to x y p = J (λ z q → decode x z (encode x z q) ≡ q) (fro-to-refl x) p
 ```
 
-And one final application: disjoint unions. We didn't define a
-candidate ``≡⊎`` for the paths to be equal to back in Lecture 1-X as
-we did with the others, but it's not hard to guess what it should be.
-After all, the two sides are supposed to be *disjoint*, so paths
-between ``inl``s should be exactly paths in the left type, paths
-between ``inr``s should be exactly paths in the right type, and there
-should be no paths at all between ``inl``s and ``inr``s.
+Next, disjoint unions. We didn't define a candidate ``≡⊎`` for the
+paths to be equal to back in Lecture 1-X as we did with the others,
+but it's not hard to guess what it should be. After all, the two sides
+are supposed to be *disjoint*, so paths between ``inl``s should be
+exactly paths in the left type, paths between ``inr``s should be
+exactly paths in the right type, and there should be no paths at all
+between ``inl``s and ``inr``s.
 
 ```
 _≡⊎_ : {A B : Type} (x y : A ⊎ B) → Type
@@ -571,6 +634,61 @@ manually by pattern matching, rather than using ``J``.
     fro-to : (x y : A ⊎ B) → isRetract (encode x y) (decode x y) 
 --  Exercise:
     fro-to x y = {!!}
+```
+
+Finally, ``List``s. Try this from scratch yourself, using ``ℕ`` and
+``⊎`` as a model.
+
+```
+_≡List_ : List A → List A → Type ℓ-zero
+-- Exercise:
+xs ≡List ys = {!!}
+
+≡≃≡List : (xs ys : List A) → (xs ≡ ys) ≃ (xs ≡List ys)
+-- Exsercise:
+-- ≡≃≡List {A = A} xs ys = {!!}
+≡≃≡List {A = A} xs ys = inv→equiv (encode xs ys) (decode xs ys) (to-fro xs ys) (fro-to xs ys)
+  where
+    IsHead : List A → Type
+    IsHead [] = ⊤
+    IsHead (_ :: _) = ∅
+    []≠:: : {x : A} → {xs : List A} → ¬ [] ≡ (x :: xs)
+    []≠:: p = subst IsHead p tt
+    head-inj : {x y : A} → {xs ys : List A} → (x :: xs) ≡ (y :: ys) → x ≡ y
+    head-inj {x = x} p = ap head p
+      where
+        head : List A → A
+        head [] = x
+        head (h :: hs) = h
+    tail-inj : {x y : A} → {xs ys : List A} → (x :: xs) ≡ (y :: ys) → xs ≡ ys
+    tail-inj {xs = xs} p = ap tail p
+      where
+        tail : List A → List A
+        tail [] = xs
+        tail (h :: hs) = hs
+    encode-refl : (xs : List A) → xs ≡List xs
+    encode-refl [] = tt
+    encode-refl (_ :: xs) = refl , encode-refl xs
+    encode : (xs ys : List A) → (p : xs ≡ ys) → xs ≡List ys
+    encode [] [] p = tt
+    encode [] (x :: ys) p = []≠:: p
+    encode (x :: xs) [] p = []≠:: (sym p)
+    encode (x :: xs) (y :: ys) p = (head-inj p) , encode xs ys (tail-inj p)
+    decode : (xs ys : List A) → xs ≡List ys → xs ≡ ys
+    decode [] [] _ = refl
+    decode [] (_ :: _) ()
+    decode (x :: xs) [] ()
+    decode (x :: xs) (y :: ys) (p , c) = ap-bin _::_ p (decode xs ys c)
+    to-fro : (xs ys : List A) → isSection (encode xs ys) (decode xs ys)
+    to-fro [] [] tt = refl
+    to-fro [] (x :: ys) c = ∅-rec c
+    to-fro (x :: xs) [] c = ∅-rec c
+    to-fro (x :: xs) (y :: ys) (p , q) i = p , to-fro xs ys q i
+    fro-to-refl : (x : List A) → decode x x (encode x x refl) ≡ refl
+    fro-to-refl [] = refl
+    fro-to-refl (x :: xs) i = ap (x ::_) (fro-to-refl xs i) 
+    fro-to : (xs ys : List A) → isRetract (encode xs ys) (decode xs ys)
+    fro-to xs ys = J (λ c p → decode xs c (encode xs c p) ≡ p) (fro-to-refl xs)
 ```
 
 ## References and Further Reading

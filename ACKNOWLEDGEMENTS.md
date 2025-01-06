@@ -4,6 +4,7 @@ The authors acknowledge support by Tamkeen under the NYUAD Research
 Institute grant `CG008`.
 
 mvrnote: summer students
+mvrnote: other people who I sent it to, e.g. fowler
 
 Content and exercises were adapted from many sources, in
 particular:
@@ -17,6 +18,7 @@ particular:
 * [Introduction to Univalent Foundations of Mathematics with Agda] by Martín Escardó
 * [Introduction to Homotopy Type Theory] by Egbert Rijke
 * mvrnote: https://www.andrej.com/zapiski/ISRM-LOGRAC-2022/00-introduction.html https://github.com/danelahman/lograc-2022
+* mvrnote: https://ulrikbuchholtz.dk/mgs2024-synthetic-homotopy-theory.pdf
 
 [`cubical` Agda library]: https://github.com/agda/cubical
 [1lab]: https://1lab.dev/

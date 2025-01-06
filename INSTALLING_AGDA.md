@@ -7,10 +7,15 @@ worked for us.
 
 [official documentation]: https://agda.readthedocs.io/en/v2.6.4.1/getting-started/installation.html
 
-::: Aside:
-Watch out for the version number if you are installing Agda by using a
-package manager. We are using Agda version `2.6.4.1`. The exercise
-files may not work with earlier or later versions.
+::: Caution:
+Check the version number if you are installing Agda via package
+manager. These notes were written against Agda version `2.6.4.1`. The
+exercise files may not work with earlier or later versions.
+:::
+
+::: Caution:
+These notes do **not** rely on the the Agda standard library, and so
+you don't need to worry about downloading and installing it. 
 :::
 
 ## On Mac via Homebrew
@@ -26,13 +31,15 @@ it may not in the future!
 
 ## On Windows via Stack 
 
-Install Stack from [https://docs.haskellstack.org/en/stable/install_and_upgrade/]
+Install Stack from <https://docs.haskellstack.org/en/stable/install_and_upgrade/>
 
 Open PowerShell, and use Stack to install the correct version of Agda:
 ``` shell
 stack --resolver lts-22.9 new Agda
 stack install Agda-2.6.4.1
 ```
+
+This may take a while.
 
 ## On Mac and Linux via Nix 
 

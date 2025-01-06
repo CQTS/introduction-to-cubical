@@ -5,7 +5,7 @@ module 2--Paths-and-Identifications.2-6--Univalence where
 open import Library.Prelude
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 open import 2--Paths-and-Identifications.2-3--Substitution-and-J

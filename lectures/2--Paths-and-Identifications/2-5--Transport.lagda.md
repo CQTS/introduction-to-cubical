@@ -6,7 +6,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 open import 2--Paths-and-Identifications.2-3--Substitution-and-J
@@ -44,7 +44,7 @@ This uses the built-in ``transport-fixing`` operation which has type
 _ = {ℓ : Level} → (A : (i : I) → Type ℓ) → (φ : I) → A i0 → A i1
 ```
 
-That is, the ``transport-fixing`` operation takes in three arguments:
+So, the ``transport-fixing`` operation takes in three arguments:
 
 * `A : I → Type ℓ` is a path of types,
 * `φ : I` is a formula, and,
@@ -163,10 +163,10 @@ path→equiv p = inv→equiv (transport p) (transport (sym p))
                          (transport-cancel p) (transport-cancel (sym p))
 ```
 
-And with a little effort, we can show that the equivalence that this
-gives when supplied ``refl`` is equal to the obvious ``idEquiv`` from
-earlier. This can be done with several uses of ``transport-refl``, or
-you can use ``transport-fixing`` directly.
+And with a little effort, we can show that the equivalence that
+results when ``path→equiv`` is supplied ``refl`` is equal to the
+``idEquiv`` from earlier. This can be done with several uses of
+``transport-refl``, or you can use ``transport-fixing`` directly.
 
 ```
 path→equiv-refl : path→equiv refl ≡ idEquiv A
@@ -175,35 +175,35 @@ path→equiv-refl i = {!!}
 ```
 
 There is a second way that ``PathP`` and ``transport``
-relate. Recall that an element of `PathP A a0 a1` connects two
-elements `a0 : A i0` and `a1 : A i1` of the types at either end of a
+relate. Recall that an element of `PathP A a₀ a₁` connects two
+elements `a₀ : A i0` and `a₁ : A i1` of the types at either end of a
 line of types `A : I → Type`. Instead of travelling along the line
-`A`, we could first transport the endpoint `a0` over to the type `A
+`A`, we could first transport the endpoint `a₀` over to the type `A
 i1`, and then ask for a path entirely inside `A i1`. That is, we can
 always convert a ``PathP`` into an ordinary ``Path`` involving a
 transport, and vice versa.
 
 For the first conversion, ``toPathP``, we need to do an ``hcomp``.
 
-      a0 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ > a1
+      a₀ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ > a₁
        ^                    ^
-    a0 |                    | p                    ^
+    a₀ |                    | p                    ^
        |                    |                    j |
-      a0 — — — > transport (λ j → A j) a0          ∙ — >
+      a₀ — — — > transport (λ j → A j) a₀          ∙ — >
                                                      i
                 A i
      A i0 — — — — — — — - > A i1
 
 ```
 -- mvrnote: rename?
-toPathP : {A : I → Type ℓ} {a0 : A i0} {a1 : A i1}
-  → Path (A i1) (transport (λ j → A j) a0) a1
-  → PathP A a0 a1
-toPathP {A = A} {a0} {a1} p i
+toPathP : {A : I → Type ℓ} {a₀ : A i0} {a₁ : A i1}
+  → Path (A i1) (transport (λ j → A j) a₀) a₁
+  → PathP A a₀ a₁
+toPathP {A = A} {a₀} {a₁} p i
   = hcomp (∂ i) (λ j → λ 
-    { (i = i0) → a0
+    { (i = i0) → a₀
     ; (i = i1) → p j 
-    ; (j = i0) → transport-filler (λ j → A j) a0 i })
+    ; (j = i0) → transport-filler (λ j → A j) a₀ i })
 ```
 
 To go back the other way, we will use ``transport-fixing`` again, but
@@ -212,9 +212,9 @@ B i) b1` and when `i = i1` we want `fromPathP p i1 = b2`. So we will
 ask for ``transport-fixing`` to be constant when `i = i1`.
 
 ```
-fromPathP : {A : I → Type ℓ} {a0 : A i0} {a1 : A i1}
-  → PathP A a0 a1
-  → Path (A i1) (transport (λ j → A j) a0) a1
+fromPathP : {A : I → Type ℓ} {a₀ : A i0} {a₁ : A i1}
+  → PathP A a₀ a₁
+  → Path (A i1) (transport (λ j → A j) a₀) a₁
 fromPathP {A = A} p i = transport-fixing (λ j → A (i ∨ j)) i (p i)
 ```
 
@@ -225,14 +225,14 @@ just defined.
 
 ```
 -- mvrnote: Path to PathP seems to be the more common direction, so flip this?
-PathP≡Path : (A : I → Type ℓ) (a0 : A i0) (a1 : A i1)
-  → PathP A a0 a1 ≡ Path (A i1) (transport (λ i → A i) a0) a1
-PathP≡Path A a0 a1 i =
-  PathP (λ j → A (i ∨ j)) (transport-filler (λ j → A j) a0 i) a1
+PathP≡Path : (A : I → Type ℓ) {a₀ : A i0} {a₁ : A i1}
+  → PathP A a₀ a₁ ≡ Path (A i1) (transport (λ i → A i) a₀) a₁
+PathP≡Path A {a₀} {a₁} i =
+  PathP (λ j → A (i ∨ j)) (transport-filler (λ j → A j) a₀ i) a₁
 
-PathP≃Path : (A : I → Type ℓ) (x : A i0) (y : A i1)
-  → (PathP A x y) ≃ (transport (λ i → A i) x ≡ y)
-PathP≃Path A x y = path→equiv (PathP≡Path A x y)
+PathP≃Path : (A : I → Type ℓ) {a₀ : A i0} {a₁ : A i1}
+  → (PathP A a₀ a₁) ≃ (transport (λ i → A i) a₀ ≡ a₁)
+PathP≃Path A = path→equiv (PathP≡Path A)
 ```
 
 This certainly gives an equivalence, but the forward and backward maps
@@ -242,10 +242,10 @@ enough.
 
 ```
 -- mvrnote: can can this be avoided?
-PathP≡Path' : (A : I → Type ℓ) (a0 : A i0) (a1 : A i1)
-  → PathP A a0 a1 ≡ Path (A i0) a0 (transport (λ i → A (~ i)) a1)
-PathP≡Path' A a0 a1 i =
-  PathP (λ j → A (~ (i ∨ ~ j))) a0 (transport-filler (λ j → A (~ j)) a1 i)
+PathP≡Path' : (A : I → Type ℓ) (a₀ : A i0) (a₁ : A i1)
+  → PathP A a₀ a₁ ≡ Path (A i0) a₀ (transport (λ i → A (~ i)) a₁)
+PathP≡Path' A a₀ a₁ i =
+  PathP (λ j → A (~ (i ∨ ~ j))) a₀ (transport-filler (λ j → A (~ j)) a₁ i)
 ```
 
 

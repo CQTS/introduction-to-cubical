@@ -6,7 +6,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 open import 2--Paths-and-Identifications.2-3--Substitution-and-J
@@ -32,13 +32,13 @@ cubical features, it will be worth exploring an analogue in the more
 familiar Boolean world.
 
 
-## Warmup: Boolean Partial Elements
+## Warm-up: Boolean Partial Elements
 
-First, let's revisit our function ``IsTrue`` which converts a Boolean
-into a type. Recall that we defined `IsTrue true` to be ``⊤`` (with
-its element ``tt`` a proof that ``true`` is in fact ``true``) and we
-defined `IsTrue false` to be ``∅`` (since there should be no way to
-prove that ``false`` is ``true``). Let's give a special name to the
+Let's revisit our function ``IsTrue`` which converts a Boolean into a
+type. Recall that we defined `IsTrue true` to be ``⊤``, with its
+element ``tt`` a proof that ``true`` is in fact ``true``. And we
+defined `IsTrue false` to be ``∅``, since there should be no way to
+prove that ``false`` is ``true``. Let's give a special name to the
 element `tt : IsTrue true` to help us remember. (Yes, this is a bit
 silly.)
 
@@ -47,7 +47,7 @@ IsTrue-true : IsTrue true
 IsTrue-true = tt
 ```
 
-A Boolean partial element of a type `A` is an element of `A` which
+A *Boolean partial element* of a type `A` is an element of `A` which
 exists only conditionally, with the condition being some Boolean `φ`.
 
 ```
@@ -57,7 +57,7 @@ BooleanPartial φ A = IsTrue φ → A
 
 Any actual element of `A` is also a partially defined one: if it
 always exists, then it certainly still exists when `φ` happens to be
-true.
+``true``.
 
 ```
 just : {A : Type} {φ : Bool} → A → BooleanPartial φ A
@@ -65,7 +65,7 @@ just a = λ _ → a
 ```
 
 And there's always the completely undefined element of `A` which is
-defined when ``false`` is true, i.e., never.
+defined when ``false`` is ``true``, i.e., never.
 
 ```
 nothing : {A : Type} → BooleanPartial false A
@@ -79,12 +79,12 @@ equivalent to `A`. If `φ` is ``false``, then `BooleanPartial φ A` is `∅
 equivalent to `A` or ``⊤``, depending on whether `φ` is ``true`` or
 ``false`` --- what's the big deal?
 
-The reason that ``BooleanPartial`` is an interesting type is
-because when we use it, we don't think of `φ` as representing a single
-Boolean value; we think of `φ` as representing a Boolean *formula*.
-That is, we will usually be using this type *in context* and in that
-case, `φ` can be some formula involving other Booleans (or other
-things entirely).
+The reason that ``BooleanPartial`` is an interesting type is that,
+when we use it, we don't think of `φ` as representing a single Boolean
+value; we think of `φ` as representing a Boolean *formula*. That is,
+we will usually be using this type *in context* and in that case, `φ`
+can be some formula involving other Booleans (or other things
+entirely).
 
 Consider this function which divides a natural number evenly in two,
 for example.
@@ -93,14 +93,14 @@ for example.
 halfOf : (n : ℕ) → BooleanPartial (isEven n) ℕ
 halfOf zero          = just zero         -- half of 0 is 0
 halfOf (suc zero)    = nothing           -- half of 1 is not defined
-halfOf (suc (suc n)) = suc ∘ (halfOf n)  -- half of (n + 2) is one more than half of n
+halfOf (suc (suc n)) = suc ∘ halfOf n    -- half of (n + 2) is one more than half of n
 ```
 
 This function cannot produce a natural number on every input, since
 not every input can be divided evenly in two. We can, however, think
-of `halfOf n` as a partially defined element of ``ℕ``; specifically,
+of `halfOf n` as a *partially defined* element of ``ℕ``; specifically,
 `halfOf n` is only well-defined when `isEven n` is ``true`` --- or, in
-other words, `IsTrue-true : IsTrue (isEven n)`, using our definitions
+other words, `IsTrue-true : IsTrue (isEven n)` using our definitions
 above.
 
 Here's another example of a partially defined element, which shows
@@ -143,6 +143,8 @@ suc n ≤ suc m = n ≤ m
 take : (n : ℕ) (L : List A) → BooleanPartial (n ≤ length L) (List A)
 -- Exercise:
 take n L = {!!}
+
+-- mvrnote: tests
 ```
 
 
@@ -427,13 +429,16 @@ sides of the box when doing an ``hcomp``. This is the same as
 defining the sides separately, it just avoids giving them a name.
 
 ```
-double-comp' : (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → w ≡ z
-double-comp' r p q i = hcomp (∂ i) (λ { j (i = i0) → (sym r) j
-                                           ; j (i = i1) → q j 
-                                           ; j (j = i0) → p i })
+double-comp-inline : (r : w ≡ x) (p : x ≡ y) (q : y ≡ z) → w ≡ z
+double-comp-inline r p q i 
+  = hcomp (∂ i) (λ { j (i = i0) → (sym r) j
+                   ; j (i = i1) → q j
+                   ; j (j = i0) → p i })
 
 _ = λ {A : Type} {w x y z : A} (r : w ≡ x) (p : x ≡ y) (q : y ≡ z)
-  → test-identical (r ∙∙ p ∙∙ q) (double-comp' r p q)
+  → test-identical 
+    (r ∙∙ p ∙∙ q) 
+    (double-comp-inline r p q)
 ```
 :::
 
@@ -591,7 +596,7 @@ diamond-tube-alt p q i j k (j = i1) = {!!}
 diamond-tube-alt p q i j k (k = i0) = {!!}
 
 diamond-alt : (p : x ≡ y) → (q : y ≡ z) → Square p q p q
-diamond-alt {y = y} p q i j = hcomp (∂ i ∨ ∂ j) (diamond-tube-alt p q i j)
+diamond-alt p q i j = hcomp (∂ i ∨ ∂ j) (diamond-tube-alt p q i j)
 ```
 
 A crucial application of ``hcomp`` for 3-d cubes is showing that the

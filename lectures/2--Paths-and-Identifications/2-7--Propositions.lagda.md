@@ -6,7 +6,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 open import 2--Paths-and-Identifications.2-3--Substitution-and-J
@@ -17,7 +17,6 @@ private
   variable
     ℓ ℓ' : Level
     A B P : Type ℓ
-    x y z : A
 ```
 -->
 
@@ -304,39 +303,58 @@ out that often just half of the data of an equivalence is enough.
 Recall that a map *is* a retract when it *has* a section.
 
 ```
--- mvrnote: make record
-_RetractOnto_ : Type ℓ → Type ℓ' → Type (ℓ-max ℓ ℓ')
-B RetractOnto A = Σ[ r ∈ (B → A) ] SectionOf r
+record _RetractOnto_ (A : Type ℓ) (B : Type ℓ') : Type (ℓ-max ℓ ℓ') where
+  constructor retractOntoData
+  field
+    map : A → B
+    section : SectionOf map
+
+open _RetractOnto_ public
 ```
 
 If `A` is equivalent to `B` then certainly `B` retracts onto `A`,
 forgetting the other part of the equivalence.
 
 ```
-equiv→retract : {A : Type ℓ} {B : Type ℓ'} → (A ≃ B) → B RetractOnto A
-equiv→retract e = e .proof .retract .map , sectionData (e .map) (e .proof .retract .proof)
-```
-
-Now if ``⊤`` retracts onto `A`, then `A` is contractible.
-
-```
-retract-of-⊤→isContr : ⊤ RetractOnto A → isContr A
--- Exercise:
-retract-of-⊤→isContr (r , (s , p)) = ?
-
-≃⊤→isContr : (A ≃ ⊤) → isContr A
--- Exercise:
-≃⊤→isContr = {!!}
+equiv→retract : {A : Type ℓ} → {B : Type ℓ'} → (A ≃ B) → B RetractOnto A
+equiv→retract e .map = e .proof .retract .map
+equiv→retract e .section .map = e .map
+equiv→retract e .section .proof = e .proof .retract .proof
 ```
 
 If `B' retracts onto `A`, then in some sense `A` is a continuous
-shrinking of `B`. And so if `B` is a proposition then `A` must be
-too:
+shrinking of `B`. And so if `B` is a proposition then `A` must be too.
+Here is the key lemma, with a pre-drawn cube for your convenience:
+
+                y — — — — — — — — > y
+              / ^                 / ^
+      .map  /   |            p  /   |
+          /     |             /     |
+        x — — — — — — — — > x       |
+        ^       |           ^       |                    ^   j
+        |       |           |       |                  k | /
+        |       |           |       |                    ∙ — >
+        |       |           |       |                      i
+        |    r (s y)  — — — | — — > y
+        |     /             |     /
+        |   /               |   /
+        | /                 | /
+     r (s x) — — — — — — —  x
+
+```
+retract-≡ : (r : B RetractOnto A)
+  → {x y : A}
+  → (r .section .map x ≡ r .section .map y) RetractOnto (x ≡ y)
+-- Exercise: (Hint: Using `∙∙` gives the cleanest argument!)
+retract-≡ r {x} {y} = {!!}
+```
+
+Then the fact about ``isProp`` follows easily.
 
 ```
 isProp-retract : B RetractOnto A → isProp B → isProp A
 -- Exercise:
-isProp-retract (r , sectionData s p) pB x y = {!!}
+isProp-retract r pB x y = {!!}
 ```
 
 In particular, any type equivalent to a proposition is also a
@@ -348,25 +366,36 @@ isProp-equiv : A ≃ B → isProp B → isProp A
 isProp-equiv = {!!}
 ```
 
-And the same is true for contractible types:
+And if some contractible type `B` retracts onto `A`, then `A` is also
+contractible.
 
 ```
 isContr-retract : B RetractOnto A → isContr B → isContr A
 -- Exercise:
-isContr-retract (r, s, p) (c , h) = {!!}
+isContr-retract r c = {!!}
 
 isContr-equiv : A ≃ B → isContr B → isContr A
-isContr-equiv = isContr-retract ∘ equiv→retract
+-- Exercise:
+isContr-equiv = {!!}
+```
+
+So we have a converse to ``isContr→≃⊤``, and being contractible is the
+same as being equivalent to ``⊤``.
+
+```
+≃⊤→isContr : (A ≃ ⊤) → isContr A
+-- Exercise:
+≃⊤→isContr = {!!}
 ```
 
 mvrnote:sort
 ```
-¬→Equiv∅ : ¬ A → (A ≃ ∅)
-¬→Equiv∅ p .map = p
-¬→Equiv∅ p .proof .section .map ()
-¬→Equiv∅ p .proof .section .proof ()
-¬→Equiv∅ p .proof .retract .map ()
-¬→Equiv∅ p .proof .retract .proof a = ∅-rec (p a)
+¬→≃∅ : ¬ A → (A ≃ ∅)
+¬→≃∅ p .map = p
+¬→≃∅ p .proof .section .map ()
+¬→≃∅ p .proof .section .proof ()
+¬→≃∅ p .proof .retract .map ()
+¬→≃∅ p .proof .retract .proof a = ∅-rec (p a)
 ```
 
 
@@ -446,13 +475,19 @@ proposition, then we can fill any shape at all.
 
 ## Filling Shapes in Propositions
 
+mvrnote: this section needs rationalising
+
 If a type is a proposition we can use the element of ``isProp`` to
-fill the path between any two points. We can use this to bootstrap the
-process of filling more interesting shapes.
+find a path between any two points. Not only that, but this path we
+are given is unique; all path between those points are equal.
+
+This is a priori surprising: the definition of ``isProp`` gives us
+paths between points, but says nothing about cubes of higher
+dimension.
 
 mvrnote: draw cube
 
-mvrnote: experiment:
+mvrnote: out of date:
 <iframe class="quiver-embed" src="https://q.uiver.app/#q=WzAsMTIsWzEsMCwiXFxtYXRodHR7YzF9Il0sWzMsMCwiXFxtYXRodHR7eX0iXSxbMCwxLCJcXG1hdGh₀dHtjMH₀iXSxbMiwxLCJcXG1hdGh₀dHt5fSJdLFswLDMsIlxcbWF0aHR0e2MwfSJdLFsyLDMsIlxcbWF0aHR0e2MwfSJdLFsxLDIsIlxcbWF0aHR0e2MwfSJdLFszLDIsIlxcbWF0aHR0e2MwfSJdLFs0LDIsIlxcLCJdLFs1LDIsIlxcLCJdLFs0LDEsIlxcLCJdLFs1LDEsIlxcLCJdLFswLDEsIlxcbWF0aHR0e2gxfVxcLCBcXG1hdGh₀dHt5fSJdLFsyLDMsIlxcbWF0aHR0e2gwfVxcLCBcXG1hdGh₀dHt5fSIsMCx7ImxhYmVsX3Bvc2l0aW9uIjo3MH₁dLFszLDEsIlxcbWF0aHR0e3l9IiwwLHsibGFiZWxfcG9zaXRpb24iOjQwfV0sWzIsMCwiXFxtYXRodHR7aDB9XFwsIFxcbWF0aHR0e2MxfSIsMCx7ImxhYmVsX3Bvc2l0aW9uIjozMH₁dLFs0LDJdLFs1LDNdLFs2LDBdLFs1LDddLFs0LDZdLFs0LDVdLFs2LDddLFs3LDFdLFs4LDksImkiLDJdLFs4LDEwLCJrIl0sWzgsMTEsImoiLDAseyJsYWJlbF9wb3NpdGlvbiI6NDAsInNob3J0ZW4iOnsidGFyZ2V0IjozMH₁9XV0=&embed" width="816" height="560" style="border-radius: 8px; border: none;"></iframe>
 
 ```
@@ -465,22 +500,33 @@ isProp→Square : isProp A
 isProp→Square pA {a = a} r s t u i j = {!!}
 ```
 
-A special case of this is when we fix two sides of the square to be
-``refl``, resulting in an ordinary path between paths. There's another
-way to read this: for `x` and `y` elements of a proposition, `x ≡ y`
-is also a proposition.
+A special case of ``isProp→Square`` is when we fix two sides of the
+square to be ``refl``, resulting in an ordinary path between paths.
+There's another way to read this: for `x` and `y` elements of a
+proposition, `x ≡ y` is also a proposition.
 
 ```
 isProp→isProp≡ : isProp A → (x y : A) → isProp (x ≡ y)
 -- Exercise:
 isProp→isProp≡ = {!!}
+```
 
-isProp→isProp-PathP : {A : I → Type ℓ} 
-  → ((i : I) → isProp (A i))
-  → (a0 : A i0) (a1 : A i1)
-  → isProp (PathP A a0 a1)
--- Exercise:
-isProp→isProp-PathP pA x y = isProp-equiv {!!} {!1}
+And from this we get that the types of paths in any proposition are
+always contractible.
+
+```
+isProp→isContr≡ : isProp A → (x y : A) → isContr (x ≡ y)
+-- Exercise: 
+isProp→isContr≡ p x y = {!!}
+```
+
+We could have used this as an alternative definition of what it means
+to be a proposition, because it's trivial to go the other way:
+
+```
+isContr≡→isProp : ((x y : A) → isContr (x ≡ y)) → isProp A
+-- Exercise: 
+isContr≡→isProp f x y = {!!}
 ```
 
 There's a another way we can generalise ``isProp``. If we have a path
@@ -494,11 +540,21 @@ isProp→PathP : {A : I → Type ℓ}
   → PathP A a0 a1
 -- Exercise: (Hint: `toPathP`)
 isProp→PathP {A = A} hB a0 a1 = {!!}
+
+isProp→isProp-PathP : {A : I → Type ℓ}
+  → ((i : I) → isProp (A i))
+  → (a0 : A i0) (a1 : A i1)
+  → isProp (PathP A a0 a1)
+-- Exercise: (Hint: Piggyback on `isProp→isProp≡`)
+isProp→isProp-PathP pA x y = isProp-equiv {!!} {!1}
 ```
 
-These can be mixed and matched to prove that any ``SquareP`` can be
-filled. We prove this in full, painful generality, because we will need
-to use it later.
+We can use what we've proven so far to bootstrap the process of
+filling more interesting shapes. For example, any ``SquareP`` can be
+filled. We prove this in full, painful generality, because we will
+need to use it shortly.
+
+mvrnote: draw square
 
 ```
 isProp→SquareP : {A : I → I → Type ℓ} 
@@ -511,11 +567,11 @@ isProp→SquareP : {A : I → I → Type ℓ}
 
   → SquareP A t u r s
 -- Exercise:
-isProp→SquareP pB r s t u = {!!}
+isProp→SquareP pA r s t u = {!!}
 ```
 
-We can prove similar facts for contractibility. These can be
-done entirely by gluing together results we've already seen.
+We can prove similar facts for contractibility. These can be done
+entirely by gluing together results we've already seen.
 
 ```
 isContr→isContr≡ : isContr A → (a b : A) → isContr (a ≡ b)
@@ -523,13 +579,8 @@ isContr→isContr≡ : isContr A → (a b : A) → isContr (a ≡ b)
 isContr→isContr≡ c a b = {!!}
 
 isContr→isContr-PathP : {A : I → Type ℓ} (c : isContr (A i1)) → (a : A i0) → (b : A i1) → isContr (PathP A a b)
-isContr→isContr-PathP {A = A} isc a b = isContr-equiv (PathP≃Path A a b) (isContr→isContr≡ isc _ _)
-
-isProp→isContr≡ : isProp A → (x y : A) → isContr (x ≡ y)
--- Exercise: (Hint: `isContr→isContr≡`)
-isProp→isContr≡ p x y = {!!}
+isContr→isContr-PathP {A = A} isc a b = isContr-equiv (PathP≃Path A) (isContr→isContr≡ isc _ _)
 ```
-
 
 Let's give some more explicit examples of propositions. The first is a
 little self-referential: for any type `A`, there is the proposition
@@ -555,11 +606,17 @@ There's another important type that is a proposition: the fact that a
 map is an equivalence. We will prove this a little later in Lecture
 2-X.
 
+
+## Subtypes
+
 Our definition of proposition leads to a good notion of "subtype". If
 `P : A → Type` is a family of propositions depending on a type `A`,
 then the *subtype* of `A` carved out by `P` is simply the type of
 pairs `Σ[ a ∈ A ] P a`. So, an element of the subtype is pair `(a ,
 p)` of an `a : A` and a witness `p : P a` that `P` is true about `a`.
+
+mvrnote: examples, isEven etc
+mvrnote: union/intersection etc
 
 The main fact to prove about subtypes is that they have the same paths
 as the types they came from. That is, `(a1 , b1) ≡ (a2 , b2)` is
@@ -567,44 +624,32 @@ equivalent to `a1 ≡ a2` whenever `B` is a family of propositions.
 
 ```
 ≡-in-subtype : {A : Type ℓ} {B : A → Type ℓ'}
-         → (p : (a : A) → isProp (B a))
-         → (x y : Σ[ a ∈ A ] B a)
-         → (x .fst ≡ y .fst) ≃ (x ≡ y)
-≡-in-subtype {A = A} {B = B} p x y = inv→equiv to (ap fst) to-fro fro-to
+  → (p : (a : A) → isProp (B a))
+  → (x y : Σ[ a ∈ A ] B a)
+  → (x .fst ≡ y .fst) ≃ (x ≡ y)
+≡-in-subtype pB x y = inv→equiv to (ap fst) to-fro fro-to
   where
     to : x .fst ≡ y .fst → x ≡ y
     -- Exercise: (Hint: `isProp→PathP`)
-    fst (to e i) = {!!}
-    snd (to e i) = {!!}
+    to e i .fst = {!!}
+    to e i .snd = {!!}
 
     to-fro : isSection to (ap fst)
     -- Exercise: (Hint: `isProp→SquareP`)
-    fst (to-fro e i j) = {!!}
-    snd (to-fro e i j) = {!!}
+    to-fro e i j .fst = {!!}
+    to-fro e i j .snd = {!!}
 
     fro-to : isRetract to (ap fst)
-    fro-to e i j = e j
+    fro-to p i j = p j
 ```
 
-To foreshadow a little mvrnote: link, this is extremely useful when we
-start looking at algebraic structures such as groups, rings, and so
-on. These come with some data, like addition and multiplication
-operators, together with a bunch of axioms, like associativity,
-commutativity, and so on. What we've just proven tells us that to
-build a path between two groups, it's enough to build a path just
-between the underlying data, ignoring all the axioms.
-
-
-```
-record Prop (ℓ : Level) : Type (ℓ-suc ℓ) where
-  constructor propData
-  field
-    witness : Type ℓ
-    witnessIsProp : isProp witness
-open Prop public
-```
-
-mvrnote: good examples?
+To foreshadow Lecture 3-X, this is extremely useful when we start
+looking at algebraic structures such as groups, rings, and so on.
+These come with some data, like addition and multiplication operators,
+together with a bunch of axioms, like associativity, commutativity,
+and so on. What we've just proven tells us that to build a path
+between two groups, it's enough to build a path just between the
+underlying data, ignoring all the axioms.
 
 
 ## Dependent Closure Properties
@@ -701,14 +746,15 @@ with a specific element of `A`, just the fuzzy knowledge that there
 exists one.
 
 ```
+
 data ∃_ (A : Type ℓ) : Type ℓ where
-  ∣_∣ : A → ∃ A
+  in-∃ : A → ∃ A
   squash : (x y : ∃ A) → x ≡ y
 
 infix 3 ∃_
 ```
 
-The first constructor, written ``∣_∣``, says that to prove that there
+The first constructor, written ``in-∃``, says that to prove that there
 exists an element in `A`, it suffices to have an actual element of
 `A`. The second constructor, ``squash``, is exactly the claim that `∃
 A` to be a proposition. This is a recursive constructor (like ``suc``
@@ -725,7 +771,7 @@ have type `isProp (∃ A)`, and realise by unfolding the definition that
 this is asking for a path constructor.
 :::
 
-::: Aside:
+::: Warning:
 The usual terminology for propositional truncation in Homotopy Type
 Theory is `∥ A ∥`, but this can get confusing if we are doing
 mathematics where the same double-bars denote the norm of a vector or
@@ -742,14 +788,14 @@ we can get an implication `∃ A → P` whenever `P` is a proposition.
       → (A → P)
       → (∃ A → P)
 -- Exercise:
-∃-rec pP f ∣ x ∣ = {!!}
+∃-rec pP f (in-∃ x) = {!!}
 ∃-rec pP f (squash x y i) = pP {!!} {!!} {!!}
 ```
 
 ::: Aside:
 This definition is recursive --- we use ``∃-rec`` in its own
 definition. It's tempting to give the ``squash`` constructor the
-non-recursive type `(x y : A) → ∣ x ∣ ≡ ∣ y ∣`. It turns out this is
+non-recursive type `(x y : A) → (in-∃ x) ≡ (in-∃ y)`. It turns out this is
 not enough: it really is necessary to equate *all* elements of `∃ A`,
 not just those coming from `A`. With the non-recursive type, it's not
 possible to prove that `∃ A` is a proposition.
@@ -762,10 +808,10 @@ types, each of which is a proposition.
 ```
 ∃-ind : {P : ∃ A → Type ℓ}
       → ((e : ∃ A) → isProp (P e))
-      → ((a : A) → P ∣ a ∣)
+      → ((a : A) → P (in-∃ a))
       → ((e : ∃ A) → P e)
 -- Exercise:
-∃-ind pP f ∣ x ∣ = {!!}
+∃-ind pP f (in-∃ x) = {!!}
 ∃-ind pP f (squash x y i) = isProp→PathP {!!} {!!} {!!} {!!}
 ```
 
@@ -775,7 +821,7 @@ In fact, all maps into a proposition are of this form, that is,
 ```
 ∃-ump-≃ : {P : ∃ A → Type ℓ}
       → ((e : ∃ A) → isProp (P e))
-      → ((a : A) → P ∣ a ∣)
+      → ((a : A) → P (in-∃ a))
       ≃ ((e : ∃ A) → P e)
 -- Exercise:
 ∃-ump-≃ pP = propExt {!!} {!!} {!!} {!!}

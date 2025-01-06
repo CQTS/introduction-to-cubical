@@ -10,15 +10,18 @@ open import 1--Type-Theory.1-2--Inductive-Types
 
 # Lecture 1-3: Universes and More Inductive Types
 
-There is a lingering question from Lecture 1-1. what is the type of
-the universe ``Type`` itself?. One option is to just declare that
-`Type : Type`, this is the approach taken by the Haskell language.
-This works fine for practical programming but leads to logical
-contradictions thanks to some "Russell-style" paradoxes. (Have a look
-at [Girard's paradox] if you are curious!)
+There is a lingering question that we've left unanswered from Lecture
+1-1. What is the type of the universe ``Type`` itself?. One option
+that is open to the designer of a type theory is to just declare that
+``Type`` is an element of ``Type``; this is the [approach] taken by the
+[Haskell] programming language. This works fine for practical
+programming but leads to logical contradictions thanks to some
+"Russell-style" paradoxes. (Do some research on [Girard's paradox] if
+you are curious!)
 
 [Girard's paradox]: https://en.wikipedia.org/wiki/System_U#Girard's_paradox
-
+[approach]: https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/poly_kinds.html#overview-of-type-in-type
+[Haskell]: https://www.haskell.org/
 
 ## Universe Levels
 
@@ -432,8 +435,8 @@ These turn out to be quite useful, so we'll prove a few of them here.
 In fact, we have demonstrated several of them already in the form of
 functions in each direction:
 
-* ``×-commI`` shows $x × y = y × x$,
-* ``×-assoc-toI`` and ``×-assoc-froI`` show $x × (y × z) = (x × y) × z$,
+* ``×-commⁱ`` shows $x × y = y × x$,
+* ``×-assoc-toⁱ`` and ``×-assoc-froⁱ`` show $x × (y × z) = (x × y) × z$,
 * ``×-ump-to`` and ``×-ump-fro`` show $(x × y)^z = (x^z) × (y^z)$,
 * ``×-curry`` and ``×-uncurry`` show $(x^y)^z = x^{y×z}$.
 * ``⊎-ump-to`` and ``⊎-ump-fro`` show $x^{y + z} = (x^y) × (x^z)$,

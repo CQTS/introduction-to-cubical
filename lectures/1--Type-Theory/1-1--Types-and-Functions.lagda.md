@@ -31,8 +31,10 @@ intentions with data, it turns out that we can formalize essentially
 all of mathematics. The basic work of mathematics --- defining
 concepts and structures, constructing examples, stating and proving
 propositions --- can all be expressed in the language of the
-particular type theory we will be using: a variant of Martin-Löf type
-theory called "Cubical Type Theory".
+particular type theory we will be using: a variant of [Martin-Löf type
+theory] called "Cubical Type Theory".
+
+[Martin-Löf type theory]: https://plato.stanford.edu/entries/type-theory-intuitionistic/
 
 To keep us honest, we will be using a program called Agda to check
 that the definitions we make in Cubical Type Theory are sensible. Agda
@@ -44,21 +46,21 @@ triple backticks are actual Agda code that can be loaded, which you
 should try now by pressing `C-c C-l`.
 
 ::: Aside:
-Agda is a programming language but is unlike most programming
-languages used in practical software engineering. The most similar
-languages are "functional" languages like OCaml, Racket, and
+Agda is a programming language, but is unlike most programming
+languages used by software engineers. The most similar languages used
+in practice are "functional" languages like OCaml, Racket, and
 especially Haskell. (Agda is written in Haskell and its syntax has
 some similarities.)
 :::
 
-The basic statement of any type theory is claims of the form "this `a`
-is a thing of type `A`". We write this symbolically using a colon, so
-`a : A`. In the expression `a : A`, the `A` is the "type" and the `a`
-is the "element".
+The basic statement of any type theory is claims with the form "this
+`a` is a thing of type `A`". We write this symbolically using a colon,
+so `a : A`. In the expression `a : A`, the `a` is an "element" of the
+type `A`.
 
-The vast majority of any Agda file consists of definitions, which have
-two parts. First, a declaration that specifies the name of the thing
-we are defining together with the type that we want it to have.
+The vast majority of any Agda file consists of definitions, which
+always have two parts. First, a declaration that specifies the name of
+the thing we are defining together with the type it is going to have.
 Second, a list of equations that define the actual content of the
 definition.
 
@@ -68,16 +70,16 @@ three = 3   -- This line defines `three` to be the actual number 3
             -- (Everything after a double dash in a line is a comment.)
 ```
 
-In this case there the definition only requires one equation, but we
-will soon see examples with more than one.
+In this case the definition only requires one equation to be complete,
+but we will soon see examples with more than one.
 
 In Lecture 1-2, we'll see how to define specific types of data like
-the Booleans and natural numbers (like the number `3` we used in the
-above definition). For this lecture, we'll focus on the most
+the Booleans and natural numbers (such as the number `3` we used in
+the above definition). For this lecture, we'll focus on the most
 fundamental concepts in type theory: functions types and pair types.
 
 
-## Functions
+## Function Types
 
 A function `f : A → B` may be thought of in (at least) two ways:
 
@@ -91,8 +93,8 @@ the mathematical sense: providing the same input always yields the
 same output, and a function is not allowed to cause side-effects like
 changing the state of memory or performing IO.
 
-Here is our first Agda function: a function ``double`` that has type
-`ℕ → ℕ`, which doubles the natural number that you give it.
+Here is our first Agda function: a function called ``double`` that has
+type `ℕ → ℕ`, which doubles the natural number that you give it.
 
 ```
 double : ℕ → ℕ
@@ -109,17 +111,17 @@ We can apply a function `f : A → B` to an argument `a : A` by writing
 `f a : B` --- note the lack of parentheses around `a`!
 
 ```
-hopefullySix : ℕ
-hopefullySix = double 3
+hopefully-six : ℕ
+hopefully-six = double 3
 ```
 
 We can get Agda to actually compute this definition by pressing `C-c
-C-n` (for "normalise") and typing ``hopefullySix``. Just to make
+C-n` (for "normalise") and typing ``hopefully-six``. Just to make
 absolutely sure, the following helper will test that Agda considers
-the expressions ``hopefullySix`` and `6` identical.
+the expressions ``hopefully-six`` and `6` identical.
 
 ```
-_ = test-identical hopefullySix 6
+_ = test-identical hopefully-six 6
 ```
 
 Here we are witnessing the *computation rule* for functions. When
@@ -141,10 +143,10 @@ cents : ℕ → ℕ → ℕ → ℕ → ℕ
 cents quarters dimes nickels pennies =
   (25 · quarters) + (10 · dimes) + (5 · nickels) + pennies
 
-hopefullyOneDollar : ℕ
-hopefullyOneDollar = cents 3 1 2 5
+hopefully-one-dollar : ℕ
+hopefully-one-dollar = cents 3 1 2 5
 
-_ = test-identical hopefullyOneDollar 100
+_ = test-identical hopefully-one-dollar 100
 ```
 
 ::: Aside:
@@ -171,7 +173,7 @@ ask Agda to accept it, type `C-c C-space`, which is the keybinding for
 curly brackets will disappear and the hole will be replaced by what
 you have written.
 
-::: Aside:
+::: Caution:
 At the time of writing, MacOS may capture `C-space` and open the
 Spotlight search bar. If this happens to you, use `C-c C-r` for
 "refine" as a replacement.
@@ -290,7 +292,9 @@ computed in exactly the same way as an ordinary definition: the
 argument is substituted in for the variable wherever it appears.
 
 ```
-_ = test-identical ((λ (x : ℕ) → x + 1) three) (three + 1)
+_ = test-identical 
+  ((λ (x : ℕ) → x + 1) three)
+  (three + 1)
 ```
 
 Finally, a slightly more complicated example with more than one
@@ -341,8 +345,8 @@ more functions:
     f  ~>  (λ x → f x)  ~>  (λ y → (λ x → f x) y)  ~>  ...
 
 The *uniqueness principle* for functions expresses that any function
-is identical to the version of it that is expanded using λ-abstraction
-in this way. So in fact, all these functions are equal. 
+is identical to the expanded version of it that uses a λ. So in fact,
+all these functions are equal.
 
 ```
 _ = test-identical double   (λ (x : ℕ) → double x)
@@ -374,18 +378,18 @@ right-hand side. Instead, we can define an identity function `A → A`
 that works for any type `A` at all.
 
 ```
-idfunE : (A : Type) → (A → A)
-idfunE A x = x
+idfunᵉ : (A : Type) → (A → A)
+idfunᵉ A x = x
 ```
 
-Let's understand why the type of ``idfunE`` is more complicated
-than just `idfunE : A → A`. The extra bit "`(A : Type) →`" is there
+Let's understand why the type of ``idfunᵉ`` is more complicated
+than just `idfunᵉ : A → A`. The extra bit "`(A : Type) →`" is there
 because `A → A` itself involves a variable: the type `A`. This `A` is
 then an additional argument to the function, so it also appears on the
 left of the `=` in the definition on the next line.
 
-If we think in terms of currying, ``idfunE`` is a function of a
-variable `A`, which is a type. When applied, `idfunE A` gives
+If we think in terms of currying, ``idfunᵉ`` is a function of a
+variable `A`, which is a type. When applied, `idfunᵉ A` gives
 back the identity function `A → A` for that type.
 
 Like every variable in Agda, `A` itself has a type, in this case the
@@ -393,21 +397,21 @@ type ``Type``. This is a type whose elements themselves are
 types, things like this are often called "type universes".
 
 We can reconstruct ``idfunℕ`` back by providing `ℕ` to
-``idfunE``:
+``idfunᵉ``:
 
 ```
 idfunℕ₂ : ℕ → ℕ
-idfunℕ₂ = idfunE ℕ
+idfunℕ₂ = idfunᵉ ℕ
 ```
 
 And we can similarly generalise all the functions we have defined so far.
 
 ```
-constE : (A : Type) → (B : Type) → A → B → A
-constE A B a b = a
+constᵉ : (A : Type) → (B : Type) → A → B → A
+constᵉ A B a b = a
 
-applyE : (A : Type) → (B : Type) → (A → B) → A → B
-applyE A B f a = f a
+applyᵉ : (A : Type) → (B : Type) → (A → B) → A → B
+applyᵉ A B f a = f a
 ```
 
 ::: Aside:
@@ -425,18 +429,18 @@ yourself, or use a bunch of `λ` on the right-hand side. Remember to
 include the types in your list of arguments now!
 
 ```
-apply-twiceE : (A : Type)
+apply-twiceᵉ : (A : Type)
   → (A → A)
   → A
   → A
 -- Exercise:
-apply-twiceE = {!!}
+apply-twiceᵉ = {!!}
 
-flipE : (A : Type) → (B : Type) → (C : Type)
+flipᵉ : (A : Type) → (B : Type) → (C : Type)
   → (A → B → C)
   → (B → A → C)
 -- Exercise:
-flipE = {!!}
+flipᵉ = {!!}
 ```
 
 Let's do one more important example, as a way to introduce a few more
@@ -444,22 +448,22 @@ Agda hotkeys. For any three types, we can compose functions between
 them:
 
 ```
-composeE : (A : Type) → (B : Type) → (C : Type)
+composeᵉ : (A : Type) → (B : Type) → (C : Type)
   → (B → C)
   → (A → B)
   → (A → C)
 -- Exercise:
-composeE A B C g f = {!!}
+composeᵉ A B C g f = {!!}
 ```
 
-You may be able to fill this in immedidately, but try the following.
+You may be able to fill this in immediately, but try the following.
 Place your cursor in the goal and type `C-c C-,`. Agda will show you
 the type of the goal, in this case `A → C`, and all of the variables
 you have available to construct it. Because the type of a goal is a
 function, Agda knows that a `λ` expression can go here. Type `C-c C-r`
 to "refine" the goal; this will automatically insert a `λ`:
 
-    composeE A B C g f = λ x → {!!}
+    composeᵉ A B C g f = λ x → {!!}
 
 Typing `C-c C-,` again, you will see that the goal is now a term of
 type just `C`. We know that we can get a term of `C` by applying `g`
@@ -471,18 +475,18 @@ These don't line up, but Agda is clever enough to know that `g` is
 still progress: if you type `C-c C-r` again to refine the goal, Agda
 will accept `g` in place, and move it out of the hole.
 
-    composeE A B C g f = λ x → g {!!}
+    composeᵉ A B C g f = λ x → g {!!}
 
 Now, `C-c C-,` again tells us that the goal is a term of type `B`, and
 this time we can produce one using `f`. Putting `f` and hitting `C-c
 C-r` again:
 
-    composeE A B C g f = λ x → g (f {!!})
+    composeᵉ A B C g f = λ x → g (f {!!})
 
 Finally, the goal type is `A`, and we have `x` available, so we can
 put `x` in the hole and type `C-c C-space` to give it to Agda.
 
-    composeE A B C g f = λ x → g (f x)
+    composeᵉ A B C g f = λ x → g (f x)
 
 This is the kind of interaction you should expect to do while solving
 more complicated exercises: repeatedly using `C-c C-,` to ask Agda
@@ -497,7 +501,7 @@ There are a couple more tricks before we reach the true definitions of
 functions, the type arguments are necessary so that the function can
 know which types should be used in the input and output, but in some
 sense actually specifying these arguments is redundant. For example,
-the `x` argument to ``idfunE`` is of type `A`, so if we know what `x`
+the `x` argument to ``idfunᵉ`` is of type `A`, so if we know what `x`
 is, we also know what `A` has to be.
 
 Agda lets us make arguments *implicit* so that they are automatically
@@ -506,15 +510,15 @@ notated by surrounding them in the type by curly braces rather than
 parentheses:
 
 ```
-idfunI : {A : Type} → A → A
-idfunI x = x
+idfunⁱ : {A : Type} → A → A
+idfunⁱ x = x
 ```
 
 In the actual definitions, we no longer write these implicit arguments
 on the left-hand side of the `=` sign. Formally, those arguments are
 still there: we are still defining a function that accepts some types
 as arguments: these arguments are just invisible in the code. This is
-just a cosmetic difference compared to ``idfunE``, but these implicit
+just a cosmetic difference compared to ``idfunᵉ``, but these implicit
 arguments save a huge amount of typing in the long run.
 
 One more time, we can get ``idfunℕ`` by having Agda realise what
@@ -522,7 +526,7 @@ the type `A` has to be:
 
 ```
 idfunℕ₃ : ℕ → ℕ
-idfunℕ₃ = idfunI
+idfunℕ₃ = idfunⁱ
 ```
 
 Agda will complain if it fails to reconstruct an implicit argument from
@@ -533,37 +537,38 @@ curly braces, as follows:
 
 ```
 idfunℕ₄ : ℕ → ℕ
-idfunℕ₄ = idfunI {A = ℕ}
+idfunℕ₄ = idfunⁱ {A = ℕ}
 ```
 
-Here is round 3 of defining our favourite functions:
+Here is round 3 of defining our favourite functions (with `ⁱ` for
+"implicit"):
 
 ```
-constI : {A : Type} → {B : Type} → A → B → A
-constI a b = a
+constⁱ : {A : Type} → {B : Type} → A → B → A
+constⁱ a b = a
 
-applyI : {A : Type} → {B : Type} → (A → B) → A → B
-applyI f a = f a
+applyⁱ : {A : Type} → {B : Type} → (A → B) → A → B
+applyⁱ f a = f a
 
-apply-twiceI : {A : Type}
+apply-twiceⁱ : {A : Type}
   → (A → A)
   → A
   → A
 -- Exercise:
-apply-twiceI = {!!}
+apply-twiceⁱ = {!!}
 
-flipI : {A : Type} → {B : Type} → {C : Type}
+flipⁱ : {A : Type} → {B : Type} → {C : Type}
   → (A → B → C)
   → (B → A → C)
 -- Exercise:
-flipI = {!!}
+flipⁱ = {!!}
 
-composeI : {A : Type} → {B : Type} → {C : Type}
+composeⁱ : {A : Type} → {B : Type} → {C : Type}
   → (B → C)
   → (A → B)
   → (A → C)
 -- Exercise:
-composeI = {!!}
+composeⁱ = {!!}
 ```
 
 
@@ -634,8 +639,8 @@ _ = λ {A : Type} {B : Type} (p : A × B)
   → test-identical p (p .fst , p .snd)
 ```
 
-To work with nested pairs, we chain together the uses of the `,` and
-`fst`/`snd`.
+To work with nested pairs, we chain together the uses of the ``,`` and
+``fst``/``snd``.
 
 ```
 triple× : {A B C : Type} → A → B → C → ((A × B) × C)
@@ -676,27 +681,27 @@ pattern-fst× (a , b) = a
 pattern-snd× : {A : Type} → {B : Type} → (A × B) → B
 pattern-snd× (a , b) = b
 
-×-assoc-toI : {A B C : Type} → A × (B × C) → (A × B) × C
-×-assoc-toI (a , (b , c)) = (a , b) , c
+×-assoc-toⁱ : {A B C : Type} → A × (B × C) → (A × B) × C
+×-assoc-toⁱ (a , (b , c)) = (a , b) , c
 
-×-assoc-froI : {A B C : Type} → (A × B) × C → A × (B × C)
+×-assoc-froⁱ : {A B C : Type} → (A × B) × C → A × (B × C)
 -- Exercise: (Remember to put a spaces around the comma in a pair!)
-×-assoc-froI = {!!}
+×-assoc-froⁱ = {!!}
 
-×-commI : {A B C : Type} → (A × B) → (B × A)
+×-commⁱ : {A B C : Type} → (A × B) → (B × A)
 -- Exercise:
-×-commI = {!!}
+×-commⁱ = {!!}
 ```
 
 mvrnote: functorial
 
 ```
-×-mapI : {A B C D : Type}
+×-mapⁱ : {A B C D : Type}
   → (A → B)
   → (C → D)
   → (A × C → B × D)
 -- Exercise:
-×-mapI = {!!}
+×-mapⁱ = {!!}
 ```
 
 With pair types we can make precise the currying and uncurrying idea
@@ -761,18 +766,18 @@ elements for their definition.
 As a slightly contrived mathematical example, suppose $n ∈ ℕ$ is a
 number and consider the set $\{m : ℕ ∣ ∃ i. m = n · i\}$ of numbers
 which are multiples of $n$. We can define this as an Agda type
-``MultiplesOf``. (Don't worry about the actual definition for now.)
+``Multiples-Of``. (Don't worry about the actual definition for now.)
 
 ```
-MultiplesOf : ℕ → Type
-MultiplesOf n = Σ[ m ∈ ℕ ] Σ[ i ∈ ℕ ] m ≡ i · n
+Multiples-Of : ℕ → Type
+Multiples-Of n = Σ[ m ∈ ℕ ] Σ[ i ∈ ℕ ] m ≡ i · n
 ```
 
-Notice that the elements that `MultiplesOf n` has will *depend* on the
-value of `n` that we choose: different choices will yield genuinely
-different sets of numbers, and generally speaking an element of
-`MultiplesOf n₁` will not also be an element of `MultiplesOf n₂` for
-some other `n₂`. In other words, we are describing a function from
+Notice that the elements that `Multiples-Of n` has will *depend* on
+the value of `n` that we choose: different choices will yield
+genuinely different sets of numbers, and generally speaking an element
+of `Multiples-Of n₁` will not also be an element of `Multiples-Of n₂`
+for some other `n₂`. In other words, we are describing a function from
 natural numbers to types, i.e. a function `ℕ → Type`. A function of
 this shape (`A → Type`) is often called a "type family over `A`".
 
@@ -789,30 +794,30 @@ element of ``ℕ``, but we can record the fact that the result is always
 a multiple of the input:
 
 ```
-doubleDep : (n : ℕ) → MultiplesOf n
-doubleDep n = double n , 2 , (λ i → 2 · n)
+doubleᵈ : (n : ℕ) → Multiples-Of n
+doubleᵈ n = double n , 2 , (λ i → 2 · n)
 ```
 
 (Again, don't worry about the actual definition for now.)
 
 ```
-tenAsMultiple : MultiplesOf 5
-tenAsMultiple = doubleDep 5
+ten-as-multiple : Multiples-Of 5
+ten-as-multiple = doubleᵈ 5
 ```
 
 Non-dependent functions are a special case of dependent functions,
 where the type family that we use is constantly the same type.
 
 ```
-ConstantℕFamily : ℕ → Type
-ConstantℕFamily n = ℕ -- `n` is ignored
+Constant-ℕ-Family : ℕ → Type
+Constant-ℕ-Family n = ℕ -- `n` is ignored
 
-doubleNonDep : (n : ℕ) → ConstantℕFamily n
-doubleNonDep = double
+doubleⁿ : (n : ℕ) → Constant-ℕ-Family n
+doubleⁿ = double
 ```
 
 Most of the functions in this file have actually been dependent
-function types already! In `idfunE : (A : Type) → (A → A)`, the type
+function types already! In `idfunᵉ : (A : Type) → (A → A)`, the type
 `A → A` depends on `A : Type` to make sense at all, so this is a
 dependent function where the target is the type family
 
@@ -821,7 +826,7 @@ idfun-family : Type → Type
 idfun-family A = A → A
 ```
 
-That is, when we provide ``idfunE`` with some type `A`, the
+That is, when we provide ``idfunᵉ`` with some type `A`, the
 resulting function we get back is the identity function for that
 specific type `A`. Notice that ``idfun-family`` is a type family
 over ``Type``: nothing stops us from having ``Type`` on both
@@ -831,7 +836,7 @@ Here is function composition again, where the two functions involved
 are now allowed to be dependent.
 
 ```
-depCompose :
+composeᵈ :
       {A : Type}
     → {B : A → Type}
     → {C : (x : A) → B x → Type}
@@ -839,10 +844,10 @@ depCompose :
     → (g : {a : A} → (b : B a) → C a b)
     → (f : (a : A) → B a)
     → (a : A) → C a (f a)
-depCompose g f = λ x → g (f x)
+composeᵈ g f = λ x → g (f x)
 ```
 
-The type of ``depCompose`` is a little gnarly, but you should see that
+The type of ``composeᵈ`` is a little gnarly, but you should see that
 the actual *definition* is exactly the same as before. You should work
 through the type of each of the intermediate pieces in the expression
 `λ x → g (f x)`:
@@ -892,36 +897,36 @@ Type` when evaluated at `p .fst`. To express that in the type of
 can refer to the pair `p`.
 
 Try writing the types for a dependently-typed version of
-``×-mapI``. All you need to do is replace the `×` from the
+``×-mapⁱ``. All you need to do is replace the `×` from the
 previous definition with an appropriate `Σ`-type.
 
 ```
 -- Exercise:
-Σ-mapI : {A : Type} {B : A → Type} {A' : Type} {B' : A' → Type}
+Σ-mapⁱ : {A : Type} {B : A → Type} {A' : Type} {B' : A' → Type}
          → (f : A → A')
          → (g : (a : A) → B a → B' (f a))
          → {!!} → {!!}
 
-Σ-mapI f g (a , b) = (f a , g a b)
+Σ-mapⁱ f g (a , b) = (f a , g a b)
 ```
 
 Notice that the type of `g` has changed from the type it had back in
-``×-mapI``. Rather than giving a single funciton `B → B'`, we have to
+``×-mapⁱ``. Rather than giving a single function `B → B'`, we have to
 now give a function `B a → B' (f a)` for each possible `a : A`.
 
 ``×-curry`` and ``×-uncurry`` can be generalised to work with
 dependent pairs and functions.
 
 ```
-Σ-curryI : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
+Σ-curryⁱ : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
   → ((p : Σ[ x ∈ A ] B x) → C (p .fst) (p .snd))
   → (x : A) → (y : B x) → C x y
-Σ-curryI f x y = f (x , y)
+Σ-curryⁱ f x y = f (x , y)
 
-Σ-uncurryI : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
+Σ-uncurryⁱ : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
   → ((x : A) → (y : B x) → C x y)
   → (p : Σ[ x ∈ A ] B x) → C (p .fst) (p .snd)
-Σ-uncurryI f p = f (p .fst) (p .snd)
+Σ-uncurryⁱ f p = f (p .fst) (p .snd)
 ```
 
 Like `×`, we can chain `Σ` together however we like. The dependent
@@ -952,18 +957,18 @@ As with non-dependent pairs, these two types are interconvertible.
 
 ```
 -- Exercise:
-Σ-assoc-toI : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
+Σ-assoc-toⁱ : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
      → {!!}
      → {!!}
 
-Σ-assoc-toI (a , (b , c)) = (a , b) , c
+Σ-assoc-toⁱ (a , (b , c)) = (a , b) , c
 
 -- Exercise:
-Σ-assoc-froI : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
+Σ-assoc-froⁱ : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
      → {!!}
      → {!!}
 
-Σ-assoc-froI ((a , b) , c) = a , (b , c)
+Σ-assoc-froⁱ ((a , b) , c) = a , (b , c)
 ```
 
 

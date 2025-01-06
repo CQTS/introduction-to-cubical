@@ -6,7 +6,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 ```
 -->
 
@@ -69,7 +69,7 @@ cluttering every definition with `{A : Type} {B : Type}`, and so on.
 ```
 private
   variable
-    ℓ ℓ' ℓ₂ : Level
+    ℓ ℓ' ℓ₂ ℓ₃ : Level
     A B C D : Type ℓ
     x y : A
 ```
@@ -202,10 +202,10 @@ that accept paths as arguments and produce paths as results. It is
 easy to show that any function sends equal inputs to equal outputs.
 
 ```
-apE : (f : A → B)
+apⁿ : (f : A → B)
   → x ≡ y
   → f x ≡ f y
-apE f p i = f (p i)
+apⁿ f p i = f (p i)
 ```
 
 Here, we are composing the function `f` with the "function" `x ≡ y`.
@@ -215,26 +215,26 @@ right endpoint as `f (p i1)`, i.e. `f y`. So indeed, this defines a
 path `f x ≡ f y`.
 
 ```
-apE-bin : (f : A → B → C) {a a' : A} {b b' : B}
+apⁿ-bin : (f : A → B → C) {a a' : A} {b b' : B}
   → a ≡ a'
   → b ≡ b'
   → f a b ≡ f a' b'
 -- Exercise:
-apE-bin f p q = {!!}
+apⁿ-bin f p q = {!!}
 
-apE-∘ : (f : A → B) (g : B → C)
+apⁿ-∘ : (f : A → B) (g : B → C)
   → (p : x ≡ y)
-  → apE (g ∘ f) p ≡ apE g (apE f p)
+  → apⁿ (g ∘ f) p ≡ apⁿ g (apⁿ f p)
 -- Exercise:
-apE-∘ f g p = {!!}
+apⁿ-∘ f g p = {!!}
 ```
 
-``apE`` is simple but useful. For example, we can re-prove some of
-the properties of addition (``+ℕ-≡ℕ-idl``, ``+ℕ-≡ℕ-idr``,
-``+ℕ-≡ℕ-assoc``) using our new notion of equality. In each recursive
-step, you will have to use ``apE`` to convert a path `n ≡ m` to a
-path `suc n ≡ suc m`. (We didn't have to do that previously, because
-`suc n ≡ℕ suc m` was *defined* to be `n ≡ℕ m`. Win some lose some!)
+``apⁿ`` is simple but useful. For example, we can re-prove some of the
+properties of addition (``+ℕ-≡ℕ-idl``, ``+ℕ-≡ℕ-idr``, ``+ℕ-≡ℕ-assoc``)
+using our new notion of equality. In each recursive step, you will
+have to use ``apⁿ`` to convert a path `n ≡ m` to a path `suc n ≡ suc
+m`. (We didn't have to do that previously, because `suc n ≡ℕ suc m`
+was *defined* to be `n ≡ℕ m`. Win some lose some!)
 
 ```
 +ℕ-idl : (n : ℕ) → (zero +ℕ n) ≡ n
@@ -260,7 +260,7 @@ suc-inj : {x y : ℕ} → suc x ≡ suc y → x ≡ y
 suc-inj p = {!!}
 
 inl-inj : {x y : A} → Path (A ⊎ B) (inl x) (inl y) → x ≡ y
-inl-inj {A = A} {x = x} p = apE uninl p
+inl-inj {A = A} {x = x} p = apⁿ uninl p
   where
     uninl : A ⊎ B → A
     uninl (inl a) = a
@@ -404,11 +404,11 @@ has the correct endpoints.
 ```
 ×≡→≡× : {x y : A × B} → (x .fst ≡ y .fst) × (x .snd ≡ y .snd) → x ≡ y
 -- Exercise:
-×≡→≡× p i .fst = p .fst i
+×≡→≡× p = {!!}
 
 ≡×→×≡ : {x y : A × B} → x ≡ y → (x .fst ≡ y .fst) × (x .snd ≡ y .snd)
-≡×→×≡ p .fst i = p i .fst
-≡×→×≡ p .snd i = p i .snd
+-- Exercise:
+≡×→×≡ p = {!!}
 ```
 
 Similarly, what is a path in a function type? It is a function landing
@@ -416,18 +416,20 @@ in paths! This is the principle of "function extensionality": to say
 that `f` is the same as `g` means that, for all `x`, `f x` is the same
 as `g x`.
 
-```
-funext : {f g : A → B}
-  → ((x : A) → f x ≡ g x)
-  → f ≡ g
--- Exercise:
-funext f = {!!}
+mvrnote: relate back to homotopy discussion
 
-funext⁻ : {f g : A → B}
+```
+funextˢ : {f g : A → B}
+  → ((x : A) → f x ≡ g x)
+  → f ≡ g
+-- Exercise:
+funextˢ f = {!!}
+
+funextˢ⁻ : {f g : A → B}
   → f ≡ g
   → ((x : A) → f x ≡ g x)
 -- Exercise:
-funext⁻ p = {!!}
+funextˢ⁻ p = {!!}
 ```
 
 This works for functions with any number of arguments:
@@ -487,20 +489,33 @@ not depend on `x`.
 
 ```
 ≡-again : (A : Type) (x : A) (y : A) → Type
-  -- Exercise: (easy)
+-- Exercise: (easy)
 ≡-again A x y = {!!}
 ```
 
-We can upgrade ``apE`` to apply to dependent functions:
+We can upgrade ``apⁿ`` to apply to dependent functions:
 
 ```
 -- Exercise:
-ap : {B : A → Type ℓ₂} {x y : A}
-          (f : (a : A) → B a)
-        → (p : x ≡ y)
-        → PathP {!!} {!!} {!!}
+ap : {B : A → Type ℓ₂} 
+     → {x y : A}
+     → (f : (a : A) → B a)
+     → (p : x ≡ y)
+     → PathP {!!} {!!} {!!}
 
 ap f p i = f (p i)
+
+-- Exercise:
+ap-bin :
+     {B : A → Type ℓ₂}
+     {C : (x : A) → B x → Type ℓ₃}
+     (f : (x : A) → (y : B x) → C x y)
+     {a a' : A} {b : B a} {b' : B a'}
+     → (p : a ≡ a')
+     → (q : PathP {!!} {!!} {!!})
+     → PathP {!!} {!!} {!!}
+
+ap-bin f p q i = f (p i) (q i)
 ```
 
 Let's return to paths in pair types, but look at *dependent* pairs.
@@ -549,31 +564,48 @@ module _ {A : I → Type ℓ} {B : (i : I) → A i → Type ℓ₂}
   ΣPathP→PathPΣ : Σ[ p ∈ PathP {!!} {!!} {!!} ] PathP {!!} {!!} {!!}
          → PathP (λ i → Σ[ a ∈ A i ] B i a) x y
 
-  ΣPathP→PathPΣ eq i .fst = eq .fst i
-  ΣPathP→PathPΣ eq i .snd = eq .snd i
+  ΣPathP→PathPΣ p i .fst = p .fst i
+  ΣPathP→PathPΣ p i .snd = p .snd i
 
   -- Exercise:
   PathPΣ→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
          → Σ[ p ∈ PathP {!!} {!!} {!!} ] PathP {!!} {!!} {!!}
 
-  PathPΣ→ΣPathP eq .fst i = eq i .fst
-  PathPΣ→ΣPathP eq .snd i = eq i .snd
+  PathPΣ→ΣPathP p .fst i = p i .fst
+  PathPΣ→ΣPathP p .snd i = p i .snd
 ```
 
-And now dependent functions. There are lots of ways that mvrnote: more to say?
+And now dependent functions. Similarly to what we have just seen for
+Σ-types, there are lots of ways to add dependency to the arguments of
+function extensionality. The most obvious is to allow `B` to depend on
+`A`, not involving the cubical interval:
 
 ```
-funextP : {A : Type ℓ} {B : I → Type ℓ'}
-  → {f : A → B i0} {g : A → B i1}
-  → ((x : A) → PathP B (f x) (g x))
-  → PathP (λ i → A → B i) f g
-funextP h i x = h x i
+module _ {A : Type ℓ} {B : A → Type ℓ₂}
+  {f g : (a : A) → B a}
+  where
+  funext : ((x : A) → (f x ≡ g x)) → f ≡ g
+  funext h i x = h x i
+  
+  funext⁻ : f ≡ g → ((x : A) → (f x ≡ g x))
+  funext⁻ p x i = p i x
+```
 
-funextP⁻ : {A : Type ℓ} {B : I → Type ℓ'}
-  → {f : A → B i0} {g : A → B i1}
-  → PathP (λ i → A → B i) f g
-  → ((x : A) → PathP B (f x) (g x))
-funextP⁻ p x i = p i x
+mvrnote:
+
+```
+module _ {A : Type ℓ} {B : I → Type ℓ'}
+  {f : A → B i0} {g : A → B i1}
+  where
+  funextP : 
+      ((x : A) → PathP B (f x) (g x))
+    → PathP (λ i → A → B i) f g
+  funextP h i x = h x i
+  
+  funextP⁻ : 
+      PathP (λ i → A → B i) f g
+    → ((x : A) → PathP B (f x) (g x))
+  funextP⁻ p x i = p i x
 ```
 
 Path-overs are also what is required to describe the *induction*
@@ -625,23 +657,23 @@ continuously transforms from the type of `a0-` to the type of `a1-`,
 as we sweep from left to right.
 
 ```
-Square-Sweep : {A : Type ℓ} {a00 a01 a10 a11 : A}
+Square-sweep : {A : Type ℓ} {a00 a01 a10 a11 : A}
   → (a-0 : a00 ≡ a10) (a-1 : a01 ≡ a11)
   → (I → Type ℓ)
-Square-Sweep a-0 a-1 i = a-0 i ≡ a-1 i
+Square-sweep a-0 a-1 i = a-0 i ≡ a-1 i
 ```
 
 Plugging in the endpoints of `I`, we indeed see that
 
-* `(Square-Sweep a-0 a-1 i0) = (a00 ≡ a01)` and
-* `(Square-Sweep a-0 a-1 i1) = (a10 ≡ a11)`
+* `(Square-sweep a-0 a-1 i0) = (a00 ≡ a01)` and
+* `(Square-sweep a-0 a-1 i1) = (a10 ≡ a11)`
 
 by definition.
 
 We want to say that the square is somehow an element of this
 continuously varying path type. With ``PathP``, we can do exactly
 this, and define the type of squares as paths over the continuously
-varying path ``Square-Sweep``:
+varying path ``Square-sweep``:
 
 ```
 Square : {A : Type ℓ} {a00 a01 a10 a11 : A}
@@ -650,7 +682,7 @@ Square : {A : Type ℓ} {a00 a01 a10 a11 : A}
   → (a-0 : a00 ≡ a10)
   → (a-1 : a01 ≡ a11)
   → Type ℓ
-Square a0- a1- a-0 a-1 = PathP (Square-Sweep a-0 a-1) a0- a1-
+Square a0- a1- a-0 a-1 = PathP (Square-sweep a-0 a-1) a0- a1-
 ```
 
 Here's the picture again, for you to inspect:
@@ -662,6 +694,8 @@ Here's the picture again, for you to inspect:
         |           |             ∙ — >
        a00 — — — > a10              i
              a-0
+
+mvrnote: Square p q refl refl is the same as p ≡ q 
 
 Elements of the `Square A` type are squares exist in a constant type
 `A`. But just as we can upgrade ``Path`` to ``PathP`` where
@@ -704,7 +738,7 @@ ap-Square : (f : A → B)
 ap-Square f s = {!!}
 ```
 
-And write down the function that flips a square along the diagonal:
+Next, write down the function that flips a square along the diagonal:
 
 
              a-1                           a1-
@@ -717,14 +751,14 @@ And write down the function that flips a square along the diagonal:
 
 ```
 flipSquare : {a₀₀ a₀₁ a₁₀ a₁₁ : A }
-  → (a₀- : Path A a₀₀ a₀₁)
-  → (a₁- : Path A a₁₀ a₁₁)
-  → (a-₀ : Path A a₀₀ a₁₀)
-  → (a-₁ : Path A a₀₁ a₁₁)
+  → {a₀- : Path A a₀₀ a₀₁}
+  → {a₁- : Path A a₁₀ a₁₁}
+  → {a-₀ : Path A a₀₀ a₁₀}
+  → {a-₁ : Path A a₀₁ a₁₁}
   → Square a₀- a₁- a-₀ a-₁
   → Square a-₀ a-₁ a₀- a₁-
 -- Exercise:
-flipSquare a₀- a₁- a-₀ a-₁ s = {!!}
+flipSquare s = {!!}
 ```
 
 Once you've figured this out, try to define a similar function
@@ -736,16 +770,69 @@ as ``flipSquare`` --- but rather the type.
 flipSquareP : 
   (A : I → I → Type ℓ)
   {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
-  (a₀- : PathP (λ j → A i0 j) a₀₀ a₀₁)
-  (a₁- : PathP (λ j → A i1 j) a₁₀ a₁₁)
-  (a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀)
-  (a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁)
+  {a₀- : PathP (λ j → A i0 j) a₀₀ a₀₁}
+  {a₁- : PathP (λ j → A i1 j) a₁₀ a₁₁}
+  {a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀}
+  {a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁}
   -- Exercise:
   → SquareP {!!} a₀- a₁- a-₀ a-₁
   → SquareP {!!} a-₀ a-₁ a₀- a₁-
 
-flipSquareP A a₀- a₁- a-₀ a-₁ s = λ i j → s j i
+flipSquareP A s = λ i j → s j i
 ```
+
+Any homotopy between functions is automatically "natural", in the
+following sense. Say we have a homotopy between `f` and `g`, that is,
+a function `H : (x : A) → (f x ≡ g x)`. If we have a path `p : x ≡ y`
+in `A`, then there are two ways we could get from `f x` to `g y`: the
+two ways of going around the following square:
+
+                H y
+          f y — — — > g y
+           ^           ^             ^
+    ap f p |           | ap g p    j |
+           |           |             ∙ — >
+          f x — — — > g x              i
+                H x
+
+mvrnote: illustration
+
+It is not hard to produce a square that shows these are in fact equal,
+as paths in `B`:
+
+```
+homotopy-natural : {f g : A → B}
+  → (H : (x : A) → (f x ≡ g x))
+  → {x y : A}
+  → (p : x ≡ y)
+  → Square (ap f p) (ap g p) (H x) (H y)
+-- Exercise:
+homotopy-natural H p k i = {!!}
+```
+
+mvnrote: delete this?
+And this even works in higher dimensions. We could define a "`Cube`"
+type to use here, but as a one-off just writing the ``PathP`` manually
+will do.
+
+```
+homotopy-natural-cube : {f g : A → B}
+  → (H : (x : A) → (f x ≡ g x))
+  → {a b c d : A}
+  → {r : a ≡ c} {s : b ≡ d}
+  → {t : a ≡ b} {u : c ≡ d}
+  → (sq : Square t u r s)
+  → PathP (λ k → Square (homotopy-natural H t k) 
+                        (homotopy-natural H u k) 
+                        (homotopy-natural H r k) 
+                        (homotopy-natural H s k))
+    (ap-Square f sq) 
+    (ap-Square g sq)
+homotopy-natural-cube H sq k i j = H (sq i j) k
+```
+
+
+## Higher Path Constructors
 
 Inductive types can also contain path-of-path constructors. Here's a
 nice example: the torus, which consists a basepoint, two circles

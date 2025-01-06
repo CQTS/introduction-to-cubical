@@ -6,7 +6,7 @@ open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 
 private
@@ -383,7 +383,8 @@ curry-≃ : {ℓ₁ ℓ₂ ℓ₃ : Level}
 curry-≃ = equiv Σ-curry Σ-uncurry (λ x → {!!}) (λ x → {!!})
 
 -- mvrnote: put somewhere?
-funext-≃ : {f g : A → B}
+funext-≃ : {A : Type ℓ} {B : A → Type ℓ'}
+  → {f g : (a : A) → B a}
   → ((x : A) → f x ≡ g x)
   ≃ (f ≡ g)
 funext-≃ = inv→equiv funext funext⁻ (λ _ → refl) (λ _ → refl)
@@ -397,6 +398,23 @@ funextP-≃ = inv→equiv funextP funextP⁻ (λ _ → refl) (λ _ → refl)
 
 The above examples work because the composite of `to` and `fro` acts
 like the identity on any argument.
+
+Another place we'll want to do this is when pulling records apart. The
+uniqueness rule for records means that the section and retraction
+proofs are trivial.
+
+```
+explode-isEquiv : {f : A → B} → isEquiv f ≃ (SectionOf f × RetractOf f)
+explode-isEquiv = inv→equiv 
+  (λ e → e .section , e .retract) 
+  (λ p → isEquivData (p .fst) (p .snd))
+  (λ _ → refl)
+  (λ _ → refl)
+
+explode-Equiv : (A ≃ B) ≃ (Σ[ f ∈ (A → B)] isEquiv f)
+-- Exercise:
+explode-Equiv = {!!}
+```
 
 In the Lecture 2-X we gave descriptions of ``PathP``s in
 various types. The functions involved are also definitional inverses
