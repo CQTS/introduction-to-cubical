@@ -5,11 +5,11 @@ system you are using. The [official documentation] gives a lot of
 details, but below we have listed some simplified instructions that
 worked for us.
 
-[official documentation]: https://agda.readthedocs.io/en/v2.6.4.1/getting-started/installation.html
+[official documentation]: https://agda.readthedocs.io/en/latest/getting-started/installation.html
 
 ::: Caution:
 Check the version number if you are installing Agda via package
-manager. These notes were written against Agda version `2.6.4.1`. The
+manager. These notes were written against Agda version `2.7.0`. The
 exercise files may not work with earlier or later versions.
 :::
 
@@ -35,13 +35,15 @@ Install Stack from <https://docs.haskellstack.org/en/stable/install_and_upgrade/
 
 Open PowerShell, and use Stack to install the correct version of Agda:
 ``` shell
-stack --resolver lts-22.9 new Agda
-stack install Agda-2.6.4.1
+stack --resolver lts-23.9 new Agda
+stack install Agda
 ```
 
 This may take a while.
 
 ## On Mac and Linux via Nix 
+
+mvrnote: these instructions may not get the correct version now
 
 If installing Agda via `brew` did not work, we have also provided a
 Nix shard that will install the correct version of Agda. This will
@@ -81,7 +83,7 @@ This might take a while the first time.
 
 Install [VSCode] and then the [`agda-mode` extension]. If your key
 combinations (like `C-c C-c`) don't work, you may need to apply the
-temporary fix described [here].
+fix described [here].
 
 [VSCode]: https://code.visualstudio.com/
 [`agda-mode` extension]: https://marketplace.visualstudio.com/items?itemName=banacorn.agda-mode
@@ -90,6 +92,11 @@ temporary fix described [here].
 Depending on how you installed Agda, you may need to tell VSCode where
 the `agda` executable is located. This is under `Preferences >
 Extensions` and then the `Agda Mode > Connection: Agda Path` option.
+
+You will want to go `File -> Preferences -> Settings -> Text Editor ->
+Suggestions`, and disable `Inline Suggest`. This feature will give
+suggested snippets of code as you type, unfortunately, for Agda these
+snippets are generally confusing and wrong.
 
 # Installing Emacs on Mac
 
@@ -104,10 +111,4 @@ Now try running `emacs` in the terminal. If a nice Emacs window
 doesn't appear, run
 ``` shell
 brew link --overwrite emacs-plus
-```
-
-Finally, add the following line to your `~/.emacs` file, so that the
-literate Agda files are recognised correctly.
-``` emacs-lisp
-(add-to-list 'auto-mode-alist '("\\.lagda.md\\'" . agda2-mode))
 ```

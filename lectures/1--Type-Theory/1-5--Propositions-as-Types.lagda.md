@@ -1,6 +1,6 @@
 <!--
 ```
-module 1--Type-Theory.1-4--Propositions-as-Types where
+module 1--Type-Theory.1-5--Propositions-as-Types where
 
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
@@ -10,19 +10,20 @@ open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
 -->
 
 
-# Lecture 1-4: Propositions as Types
+# Lecture 1-5: Propositions as Types
 
 In the previous lectures we saw how to define some familiar data types
 --- Booleans, natural numbers, integers --- and how to define some of
 their familiar operations. But to do mathematics, we need to be able
 to prove things about these types.
 
-One way to formalize a proposition is as a function to the Booleans.
-We've already seen several of these, like ``isEven``, ``isWeekend``,
-``isLeft``, and so on. This way of representing propositions is common
-in other programming languages. But there is another, more powerful
-way of formalizing propositions which is made possible by dependent
-types: we think of types as themselves expressing propositions.
+One way to formalize a proposition is as an element of the Booleans.
+We've already seen several functions into the Booleans, like
+``isEven``, ``isWeekend``, ``isLeft``, and so on. This way of
+representing propositions is common in other programming languages,
+but there is another, more powerful way of formalizing propositions
+which is made possible by dependent types: we think of types as
+themselves expressing propositions.
 
 A proposition, informally speaking, is a mathematical statement for
 which we know what would constitute a proof. To prove that 6 is even,
@@ -37,9 +38,8 @@ prove is not actually true: a proof that 7 is even would also consist
 of a demonstration that we can divide it evenly into two whole
 numbers, but this time we can't actually achieve that goal.
 
-In this lecture, we will give a first pass at a type theoretic
-formalization of the notion of proposition, something we will refine
-later in Lecture 2-X.
+In this lecture, we give a first pass at a type theoretic notion of
+proposition, something we will refine later in Lecture 2-X.
 
 
 ## Propositions as Types
@@ -72,7 +72,7 @@ IsTrue true  = TrueP
 IsTrue false = FalseP
 ```
 
-An amazing feature of propositions-as-types idea is that the
+An amazing feature of propositions-as-types idea is that many of the
 operations on types we have seen in the last few lectures become
 familiar operations on propositions.
 
@@ -104,24 +104,26 @@ _iffP_ : {ℓ ℓ' : Level} → Type ℓ → Type ℓ' → Type (ℓ-max ℓ ℓ
 P iffP Q = (P → Q) × (Q → P)
 ```
 
-We can show that these operations on types correspond correctly with
-the analogous operations on Booleans via ``IsTrue``. Prove the
-following by case-splitting on the arguments and filling in both sides
-of the logical equivalence. On the left of the ``iffP`` we use the
-ordinary operation on Booleans, and on the right we use the
-corresponding operation on propositions-as-types.
+As a sanity check, we can show that these operations on types
+correspond correctly with the analogous operations on Booleans via
+``IsTrue``. Prove the following by case-splitting on the arguments and
+filling in both sides of the logical equivalence. On the left of the
+``iffP`` we use the ordinary operation on Booleans, and on the right
+we use the corresponding operation on propositions-as-types.
+
+mvrnote: explain splitting goal
 
 ```
-and→Type : (a b : Bool) → (IsTrue (a and b)) iffP (IsTrue a × IsTrue b)
+and→Type : (a b : Bool) → (IsTrue (a and b)) iffP ((IsTrue a) andP (IsTrue b))
 -- Exercise:
 and→Type a b = {!!}
 
-implies→Type : (a b : Bool) → (IsTrue (a implies b)) iffP (IsTrue a → IsTrue b)
+implies→Type : (a b : Bool) → (IsTrue (a implies b)) iffP ((IsTrue a) impliesP (IsTrue b))
 -- Exercise:
 implies→Type a b = {!!}
 ```
 
-Negation can be seen as a special case of implication: "not P" is the
+We interpret negation as a special case of implication: "not P" is the
 same as "P implies false", and again we make this our definition.
 
 ```
@@ -144,12 +146,11 @@ A basic principle of negation is contraposition: if `P` implies `Q`
 then whenever `Q` is false, certainly `P` must be false too.
 
 This gives us an opportunity to introduce another useful Agda hotkey.
-If you place your cursor in the below hole and press `C-c C-,`, Agda
-will tell you that the goal has type `¬ Q → ¬ P`. This is certainly
-true, but the path forwards is a little obscured. It helps if we
-*unfold* the definition of ``¬`` in the goal, which we can ask
-Agda to do by pressing `C-u C-u C-c C-,` in Emacs, or `C-y C-,` in
-VSCode.
+If you place your cursor in the below hole and press `C-c C-,` (that
+is, control-c, control-comma), Agda will tell you that the goal has
+type `¬ Q → ¬ P`. This is true, but the path forwards is a little
+obscured. It helps if we *unfold* the definition of ``¬`` in the goal,
+which we can ask Agda to do by pressing `C-u C-u C-c C-,`. (mvrnote: explain C-u and C-u C-u)
 
 It is revealed that the goal has type `(Q → ∅) → P → ∅`. This makes it
 clear that ``¬-contra`` should take two arguments, one with type
@@ -157,8 +158,8 @@ clear that ``¬-contra`` should take two arguments, one with type
 
 ```
 ¬-contra : {ℓ ℓ' : Level} → {P : Type ℓ} → {Q : Type ℓ'}
-        → (P → Q)
-        → (¬ Q → ¬ P)
+  → (P → Q)
+  → (¬ Q → ¬ P)
 -- Exercise:
 ¬-contra f = {!!}
 ```
@@ -170,7 +171,8 @@ you can check by just trying both possibilities. Working with
 propositions-as-types, we can show one direction of that equivalence:
 
 ```
-implies¬¬ : {ℓ : Level} → {P : Type ℓ} → (P → (¬ ¬ P))
+implies¬¬ : {ℓ : Level} → {P : Type ℓ} 
+  → (P → (¬ ¬ P))
 -- Exercise:
 implies¬¬ p = ?
 ```
@@ -185,7 +187,7 @@ But, we cannot show that `¬ ¬ A → A` in general!
 
 One way to understand the difference between `¬ ¬ P` and `P` is that
 we think of `p : P` as giving *evidence* that the proposition `P`
-holds. What `¬ ¬ P` says is that to assume `P` were false would lesd
+holds. What `¬ ¬ P` says is that to assume `P` were false would lead
 to a contradiction, but this does not on its own conjure any direct
 evidence for `P`. This quirk of logic in type theory makes it a
 *constructive* logic --- there is a difference between providing (or
@@ -198,7 +200,8 @@ implication only works in one direction. But in fact, as soon as we
 have three `¬`s, we can cancel two of them.
 
 ```
-¬¬¬implies¬ : {ℓ : Level} → {P : Type ℓ} → (¬ ¬ ¬ P) → (¬ P)
+¬¬¬implies¬ : {ℓ : Level} → {P : Type ℓ} 
+  → (¬ ¬ ¬ P) → (¬ P)
 -- Exercise:
 ¬¬¬implies¬ nnnp = ?
 ```
@@ -208,7 +211,8 @@ logically equivalence. Again, it may help to see what to do next if
 you unfold the definitions.
 
 ```
-¬-not-same : {ℓ : Level} → {P : Type ℓ} → ¬ (P iffP (¬ P))
+¬-not-same : {ℓ : Level} → {P : Type ℓ} 
+  → ¬ (P iffP (¬ P))
 -- Exercise: 
 ¬-not-same (l , r) = ?
 ```
@@ -217,7 +221,7 @@ you unfold the definitions.
 ## Or
 
 This pattern of relating logical operations to type operations
-continues with ``or``e but runs into a subtle hiccup. Our first
+continues with ``or`` but runs into a subtle hiccup. Our first
 attempt at a type avatar of ``or`` is ``⊎``, the disjoint union. This
 makes some sense: to prove `P or Q` should consist of either a proof
 of `P` or a proof of `Q`.
@@ -269,7 +273,7 @@ Nevertheless, ``⊎`` is close enough to ``or`` for our
 current purposes. Try proving De Morgan's laws, which may be
 familiar from ordinary propositional logic. For the last one, we get
 stuck in a similar way to `impossible-¬¬implies` above. In that case,
-how are we suppoesd to know which of ``inl`` or ``inr`` to
+how are we supposed to know which of ``inl`` or ``inr`` to
 pick?
 
 ```
@@ -313,8 +317,8 @@ Now how do we prove an equality of ``Bool``s? We just inhabit the
 relevant type:
 
 ```
-true-is-true : true ≡Bool true
-true-is-true = tt
+true-equals-true : true ≡Bool true
+true-equals-true = tt
 ```
 
 What if the Boolean value involved is a variable, or some complicated
@@ -333,7 +337,7 @@ Middle for Booleans logic; there is no middle option!
 ≡Bool-LEM false = inr tt
 ```
 
-Using recursion we can prove that observational equality is a
+By pattern matching, we can prove that observational equality is a
 reflexive, symmetric, and transitive relation on Booleans.
 
 ```
@@ -373,7 +377,7 @@ and-≡Bool : (a1 a2 b1 b2 : Bool)
   → (a1 ≡Bool a2)
   → (b1 ≡Bool b2)
   → (a1 and b1) ≡Bool (a2 and b2)
--- Exercise:
+-- Exercise: (Just split into lots of cases!)
 and-≡Bool a1 a2 b1 b2 p q = {!!}
 ```
 
@@ -481,7 +485,8 @@ false`. The recursion principle is upgraded to use one element of each
 of these types rather than two elements of the same type:
 
 ```
-Bool-ind : {ℓ : Level} {C : Bool → Type ℓ}
+Bool-ind : {ℓ : Level}
+  → {C : Bool → Type ℓ}
   → C true
   → C false
   → ((x : Bool) → C x)
@@ -490,16 +495,18 @@ Bool-ind c₁ c₂ x = {!!}
 ```
 
 Try writing out the (even simpler) induction principle for the unit
-type.
+type. The result should be a function from ``⊤`` into the type family
+`A`, and the argument should be the data necessary to define that
+function. mvrnote: more hints
 
 ```
 -- Exercise:
 ⊤-ind : {ℓ : Level}
-     → {A : ⊤ → Type ℓ}
+     → {C : ⊤ → Type ℓ}
      → {!!}
      → {!!}
 
-⊤-ind a tt = a
+⊤-ind c tt = c
 ```
 
 The recursion principle for `A ⊎ B` is upgraded to an induction
@@ -594,9 +601,9 @@ numbers `n` to proofs that `evenOrOdd n` holds.
 Try another simple case:
 
 ```
-zeroImpliesEven : (n : ℕ) → (isZeroP n) → (isEvenP n)
+∀-zeroImpliesEven : (n : ℕ) → (isZeroP n) → (isEvenP n)
 -- Exercise:
-zeroImpliesEven n = {!!}
+∀-zeroImpliesEven n = {!!}
 ```
 
 For the proposition `∃ n. P(n)`, the obvious thing to try is a
@@ -710,8 +717,8 @@ Dec-isEvenP : (n : ℕ) → Dec (isEvenP n)
 Dec-isEvenP n = {!!}
 ```
 
-In particular, observational equality of ``Bool`` and ``ℕ``
-is decidable. Just pattern match and observe whether or not they are
+In particular, observational equality of ``Bool`` and ``ℕ`` is
+decidable. Just pattern match and observe whether or not they are
 equal!
 
 ```

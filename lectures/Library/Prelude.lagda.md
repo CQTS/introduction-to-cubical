@@ -14,7 +14,9 @@ First, we import the built-in cubical operations that Agda
 provides, giving them more readable names.
 
 ```
-open import Library.Primitive public
+import Library.Primitive as Prim
+
+open Prim public
   renaming (primINeg to ~_;
             primIMax to _∨_;
             primIMin to _∧_;
@@ -26,12 +28,18 @@ We slightly fiddle the definition of the primitive ``hcomp``, so that
 the base of the composition is included in the partial element rather
 than being provided separately.
 
-```
-hcomp
-  : {ℓ : Level} {A : Type ℓ} (φ : I)
-  → (u : (i : I) → Partial (φ ∨ ~ i) A)
-  → A
-hcomp φ u = primHComp (λ j .o → u j (IsOne-inl φ (~ j) o)) (u i0 IsOne-i1)
+A trick from the 1lab are used to make ``hcomp`` print nicely in goals
+(https://github.com/the1lab/1lab/pull/468).
+
+``` 
+hcomp : {ℓ : Level} {A : Type ℓ} (φ : I) 
+  → (u : (i : I) → Partial (φ ∨ ~ i) A) → A
+hcomp {A = A} φ u = primHComp sys (u i0 IsOne-i1) module hcomp-sys where 
+  sys : ∀ j → Partial φ A 
+  sys j (φ = i1) = u j IsOne-i1
+
+-- mvrnote: pending another Agda release
+-- {-# DISPLAY primHComp {ℓ} {A} {φ} (hcomp-sys.sys _ u) _ = hcomp {ℓ} {A} φ u #-}
 ```
 
 

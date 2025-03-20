@@ -233,51 +233,6 @@ UnivalentStr S ι =
   → ι A B e ≃ PathP (λ i → S (ua e i)) (str A) (str B)
 ```
 
-```
-funexthalf-≃' : {A : Type ℓ} {B : Type ℓ'}
-  {f : A → B} {g : A → B}
-  → ((x₀ : A) → (x₁ : A) → (x₀ ≡ x₁) → (f x₀ ≡ g x₁))
-  ≃ (f ≡ g)
-funexthalf-≃' {A = A} {B = B} {f = f} {g = g} =
-  ((x₀ x₁ : A) → x₀ ≡ x₁ → (f x₀ ≡ g x₁))
-  ≃⟨ Π-map-cod≃ (λ x₀ → J-ump-≃ (λ y _ → (f x₀ ≡ g y))) ⟩
-  ((x : A) → (f x ≡ g x))
-  ≃⟨ funextP-≃ ⟩
-  (f ≡ g) ∎e
-
-funextP-ump-≃' : {A : I → Type ℓ} {B : I → Type ℓ'}
-  {f : A i0 → B i0} {g : A i1 → B i1}
-  → ((x₀ : A i0) (x₁ : A i1) → PathP A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A i → B i) f g
-funextP-ump-≃' {A = A} {B = B} {f = f} {g = g} =
-  J
-  (λ A1 A → {f : _} {g : _} → ((x₀ : A i0) (x₁ : A i1) → PathP (λ i → A i) x₀ x₁ → PathP B (f x₀) (g x₁)) ≃ PathP (λ i → A i → B i) f g)
-  (J (λ B1 B → {f : _} {g : _} → ((x₀ : A i0) (x₁ : A i0) → Path (A i0) x₀ x₁ → PathP (λ i → B i) (f x₀) (g x₁)) ≃ PathP (λ i → A i0 → B i) f g) funexthalf-≃' (λ i → B i))
-  (λ i → A i)
-
-funexthalf-≃ : {A : Type ℓ} {B : I → Type ℓ'}
-  {f : A → B i0} {g : A → B i1}
-  → ((x₀ : A) (x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A → B i) f g
-funexthalf-≃ {A = A} {B = B} {f = f} {g = g} =
-  ((x₀ x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃⟨ Π-map-cod≃ (λ x₀ → J-ump-≃ (λ y _ → PathP B (f x₀) (g y))) ⟩
-  ((x : A) → PathP B (f x) (g x))
-  ≃⟨ funextP-≃ ⟩
-  PathP (λ i → A → B i) f g ∎e
-
-funextP-ump-≃ : {A : I → Type ℓ} {B : I → Type ℓ'}
-  {f : A i0 → B i0} {g : A i1 → B i1}
-  → ((x₀ : A i0) (x₁ : A i1) → PathP A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A i → B i) f g
-funextP-ump-≃ {A = A} {B = B} {f = f} {g = g} =
-  J
-  (λ A1 A → {f : A i0 → B i0} {g : A i1 → B i1}
-  → ((x₀ : A i0) (x₁ : A i1) → PathP (λ i → A i) x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A i → B i) f g)
-  funexthalf-≃ (λ i → A i)
-```
-
 For our ``Magma-EquivNotion``, this is:
 
 ```
@@ -781,7 +736,7 @@ AxiomsUnivalentNotion S ax isP .univalenceNotion {X , s , a} {Y , t , b} e =
   S .equivNotion (X , s) (Y , t) e
     ≃⟨ S .univalenceNotion e ⟩
   PathP (λ i → S .notion (ua e i)) s t
-    ≃⟨ invEquiv (Σ-fst-≃ λ _ → isContr-retract (equiv→retract (PathP≃Path _ _ _)) (isProp→isContr≡ (isP _ _) _ _)) ⟩
+    ≃⟨ invEquiv (Σ-fst-≃ λ _ → isContrRetract (equivRetracts (PathP≃Path _ _ _)) (isProp→isContr≡ (isP _ _) _ _)) ⟩
   Σ[ p ∈ PathP (λ i → S .notion (ua e i)) s t ] PathP (λ i → ax (ua e i) (p i)) a b
     ≃⟨ ΣPath≃PathΣ ⟩
   PathP (λ i → AxiomsUnivalentNotion S ax isP .notion (ua e i)) (s , a) (t , b)
@@ -835,7 +790,8 @@ record TransportNotion (ℓ ℓ' : Level) : Type (ℓ-suc (ℓ-max ℓ ℓ')) wh
   field
     notion : StrNotion ℓ ℓ'
     equivAction : {X Y : Type ℓ} → X ≃ Y → notion X ≃ notion Y
-    transportStr : {X Y : Type ℓ} (e : X ≃ Y) (s : notion X) → equivAction e .map s ≡ subst notion (ua e) s
+    -- transportStr : {X Y : Type ℓ} (e : X ≃ Y) (s : notion X) → equivAction e .map s ≡ subst notion (ua e) s
+    transportStr : {X Y : Type ℓ} (e : X ≃ Y) (s : notion X) → (t : notion Y) → equivAction e .map s ≡ t → PathP (λ i → notion (ua e i)) s t
 open TransportNotion
 
 TransportNotion→UnivalentNotion : TransportNotion ℓ ℓ' → UnivalentNotion ℓ ℓ' ℓ'
@@ -843,7 +799,8 @@ TransportNotion→UnivalentNotion T .notion = T .notion
 TransportNotion→UnivalentNotion T .equivNotion (X , s) (Y , t) e = T .equivAction e .map s ≡ t
 TransportNotion→UnivalentNotion T .univalenceNotion {X , s} {Y , t} e =
   T .equivAction e .map s ≡ t
-    ≃⟨ path→equiv (ap (_≡ t) (T .transportStr e s)) ⟩
+    ≃⟨ {!T .transportStr e s t!} ⟩
+  --   ≃⟨ path→equiv (ap (_≡ t) (T .transportStr e s)) ⟩
   subst (T .notion) (ua e) s ≡ t
     ≃⟨ invEquiv (PathP≃Path _ _ _) ⟩
   PathP (λ i → T .notion (ua e i)) s t
@@ -852,42 +809,45 @@ TransportNotion→UnivalentNotion T .univalenceNotion {X , s} {Y , t} e =
 ConstantTransportNotion : (A : Type ℓ') → TransportNotion ℓ ℓ'
 ConstantTransportNotion A .notion _ = A
 ConstantTransportNotion A .equivAction _ = idEquiv _
-ConstantTransportNotion A .transportStr e _ = sym (transport-refl _)
+ConstantTransportNotion A .transportStr e _ _ p = p
 
 PointedTransportNotion : TransportNotion ℓ ℓ
 PointedTransportNotion .notion X = X
 PointedTransportNotion .equivAction e = e
-PointedTransportNotion .transportStr e _ = sym (transport-refl _)
+PointedTransportNotion .transportStr e _ _ = Path→ua-PathP e
 
 ProductTransportNotion : (S₁ : TransportNotion ℓ ℓ₁) → (S₂ : TransportNotion ℓ ℓ₂) → TransportNotion ℓ (ℓ-max ℓ₁ ℓ₂)
 ProductTransportNotion S₁ S₂ .notion X = S₁ .notion X × S₂ .notion X
 ProductTransportNotion S₁ S₂ .equivAction e = ×-map-≃ (S₁ .equivAction e) (S₂ .equivAction e)
-ProductTransportNotion S₁ S₂ .transportStr e (s₁ , s₂) i = (S₁ .transportStr e s₁ i , S₂ .transportStr e s₂ i)
+ProductTransportNotion S₁ S₂ .transportStr e (s₁ , s₂) (t₁ , t₂) p i = (S₁ .transportStr e s₁ t₁ (ap fst p) i) , (S₂ .transportStr e s₂ t₂ (ap snd p) i)
 
 FunctionUnivalentNotion+ : (S : TransportNotion ℓ ℓ₁) → (T : UnivalentNotion ℓ ℓ₂ ℓ₂') → UnivalentNotion ℓ (ℓ-max ℓ₁ ℓ₂) (ℓ-max ℓ₁ ℓ₂')
 FunctionUnivalentNotion+ S T .notion X = S .notion X → T .notion X
 FunctionUnivalentNotion+ S T .equivNotion (X , f) (Y , g) e =
    (s : S .notion X) → T .equivNotion (X , f s) (Y , g (S .equivAction e .map s)) e
 FunctionUnivalentNotion+ S T .univalenceNotion {X , f} {Y , g} e =
-  ((x : S .notion X) → T .equivNotion (X , f x) (Y , g (S .equivAction e .map x)) e)
+  ((s : S .notion X) → T .equivNotion (X , f s) (Y , g (S .equivAction e .map s)) e)
     ≃⟨ Π-map-cod≃ (λ x → T .univalenceNotion e) ⟩
   ((s : S .notion X) → PathP (λ i → T .notion (ua e i)) (f s) (g (S .equivAction e .map s)))
-    ≃⟨ path→equiv (λ i → ((s : S .notion X) → PathP (λ i → T .notion (ua e i)) (f s) (g (S .transportStr e s i)))) ⟩
+    ≃⟨ Π-map-cod≃ (λ s → {!S .transportStr!}) ⟩
+  --   ≃⟨ Π-map-cod≃ (λ s → path→equiv λ i → PathP (λ i → T .notion (ua e i)) (f s) (g (S .transportStr e s i))) ⟩
   ((s : S .notion X) → PathP (λ i → T .notion (ua e i)) (f s) (g (subst (S .notion) (ua e) s)))
     ≃⟨ Π-map-cod≃ (λ _ → path→equiv (PathP≡Path' _ _ _) ) ⟩
-  ((x : S .notion X) → f x ≡ transport (λ i → T .notion (ua e (~ i))) (g (subst (S .notion) (ua e) x)))
+  ((s : S .notion X) → f s ≡ transport (λ i → T .notion (ua e (~ i))) (g (subst (S .notion) (ua e) s)))
     ≃⟨ funext-≃ ⟩
   f ≡ (λ z → transport (λ i → T .notion (ua e (~ i))) (g (subst (S .notion) (ua e) z)))
     ≃⟨ invEquiv (path→equiv (PathP≡Path' _ f g))  ⟩
   PathP (λ i → S .notion (ua e i) → T .notion (ua e i)) f g
     ∎e
+```
 
-Magma-UnivalentStructure : UnivalentNotion ℓ ℓ ℓ
-Magma-UnivalentStructure = FunctionUnivalentNotion+ PointedTransportNotion (FunctionUnivalentNotion+ PointedTransportNotion PointedUnivalentNotion)
+```
+-- Magma-UnivalentStructure : UnivalentNotion ℓ ℓ ℓ
+-- Magma-UnivalentStructure = FunctionUnivalentNotion+ PointedTransportNotion (FunctionUnivalentNotion+ PointedTransportNotion PointedUnivalentNotion)
 
-_ : (A B : Type-with ℓ Magma-Str) (e : _)
-  → Magma-UnivalentStructure .equivNotion A B e ≡ isMagmaHom A B (e .map)
-_ = λ A B e → refl
+-- _ : (A B : Type-with ℓ Magma-Str) (e : _)
+--   → Magma-UnivalentStructure .equivNotion A B e ≡ isMagmaHom A B (e .map)
+-- _ = λ A B e → refl
 ```
 
 
@@ -901,57 +861,57 @@ MaybeStructure S X = Maybe (S X)
 MaybeTransportNotion : TransportNotion ℓ ℓ' → TransportNotion ℓ ℓ'
 MaybeTransportNotion S .notion X = Maybe (S .notion X)
 MaybeTransportNotion S .equivAction e = ⊎-map-≃ (idEquiv ⊤) (S .equivAction e)
-MaybeTransportNotion S .transportStr e (inl x) = refl
-MaybeTransportNotion S .transportStr e (inr x) = ap inr (S .transportStr e x)
+MaybeTransportNotion S .transportStr e (inl x) = {!!}
+MaybeTransportNotion S .transportStr e (inr x) = {!!} -- ap inr (S .transportStr e x)
 ```
 
-```
-Queue-UnivalentStructure : (A : Type) → UnivalentNotion ℓ ℓ ℓ
-Queue-UnivalentStructure A = ProductUnivalentNotion
-  PointedUnivalentNotion
-  (ProductUnivalentNotion (FunctionUnivalentNotion+ (ConstantTransportNotion A) (FunctionUnivalentNotion+ PointedTransportNotion PointedUnivalentNotion))
-                          (FunctionUnivalentNotion+ PointedTransportNotion (TransportNotion→UnivalentNotion (MaybeTransportNotion (ProductTransportNotion PointedTransportNotion (ConstantTransportNotion A))))))
-```
+-- ```
+-- Queue-UnivalentStructure : (A : Type) → UnivalentNotion ℓ ℓ ℓ
+-- Queue-UnivalentStructure A = ProductUnivalentNotion
+--   PointedUnivalentNotion
+--   (ProductUnivalentNotion (FunctionUnivalentNotion+ (ConstantTransportNotion A) (FunctionUnivalentNotion+ PointedTransportNotion PointedUnivalentNotion))
+--                           (FunctionUnivalentNotion+ PointedTransportNotion (TransportNotion→UnivalentNotion (MaybeTransportNotion (ProductTransportNotion PointedTransportNotion (ConstantTransportNotion A))))))
+-- ```
 
 
-```
--- Now it only remains to prove that this is an equivalence of queue structures
-quot∘emp : quot {A = A} empˢ ≡ empᶠ
-quot∘emp = refl
+-- ```
+-- -- Now it only remains to prove that this is an equivalence of queue structures
+-- quot∘emp : quot {A = A} empˢ ≡ empᶠ
+-- quot∘emp = refl
 
-quot∘enq : (x : A) → (xs : SlowQueue A) → quot (enqˢ x xs) ≡ enqᶠ x (quot xs)
-quot∘enq x xs = refl
+-- quot∘enq : (x : A) → (xs : SlowQueue A) → quot (enqˢ x xs) ≡ enqᶠ x (quot xs)
+-- quot∘enq x xs = refl
 
-quot∘deq : (isSetA : isSet A) → (xs : SlowQueue A) → deqMap quot (deqˢ xs) ≡ deqᶠ isSetA (quot xs)
-quot∘deq isSetA [] = refl
-quot∘deq isSetA (x :: []) = refl
-quot∘deq isSetA (x :: x' :: xs) =
-  deqMap-∘ quot (enqˢ x) (deqˢ (x' :: xs))
-  ∙ sym (deqMap-∘ (enqᶠ x) quot (deqˢ (x' :: xs)))
-  ∙ ap (deqMap (enqᶠ x)) (quot∘deq isSetA (x' :: xs))
-  ∙ lemma x x' (reverse xs)
-  where
-  lemma : ∀ x x' ys → deqMap (enqᶠ x) (deqFlush (ys ++ [ x' ])) ≡ deqFlush ((ys ++ [ x' ]) ++ [ x ])
-  lemma x x' [] i        = inr (tilt [] [] x i , x')
-  lemma x x' (y :: ys) i = inr (tilt [] (ys ++ [ x' ]) x i , y)
+-- quot∘deq : (isSetA : isSet A) → (xs : SlowQueue A) → deqMap quot (deqˢ xs) ≡ deqᶠ isSetA (quot xs)
+-- quot∘deq isSetA [] = refl
+-- quot∘deq isSetA (x :: []) = refl
+-- quot∘deq isSetA (x :: x' :: xs) =
+--   deqMap-∘ quot (enqˢ x) (deqˢ (x' :: xs))
+--   ∙ sym (deqMap-∘ (enqᶠ x) quot (deqˢ (x' :: xs)))
+--   ∙ ap (deqMap (enqᶠ x)) (quot∘deq isSetA (x' :: xs))
+--   ∙ lemma x x' (reverse xs)
+--   where
+--   lemma : ∀ x x' ys → deqMap (enqᶠ x) (deqFlush (ys ++ [ x' ])) ≡ deqFlush ((ys ++ [ x' ]) ++ [ x ])
+--   lemma x x' [] i        = inr (tilt [] [] x i , x')
+--   lemma x x' (y :: ys) i = inr (tilt [] (ys ++ [ x' ]) x i , y)
 
-quotEquivHasQueueEquivStr : (A : Type) → (isSetA : isSet A) → Queue-UnivalentStructure A .equivNotion (SlowQueue-model A) (FastQueue-model A isSetA) (quotEquiv isSetA)
-quotEquivHasQueueEquivStr A isSetA = quot∘emp , quot∘enq , quot∘deq isSetA
-```
+-- quotEquivHasQueueEquivStr : (A : Type) → (isSetA : isSet A) → Queue-UnivalentStructure A .equivNotion (SlowQueue-model A) (FastQueue-model A isSetA) (quotEquiv isSetA)
+-- quotEquivHasQueueEquivStr A isSetA = quot∘emp , quot∘enq , quot∘deq isSetA
+-- ```
 
-Let's get some payoff. There are lots of things we might like to be
-true about queues, and they are easy to prove about our ``SlowQueue``.
+-- Let's get some payoff. There are lots of things we might like to be
+-- true about queues, and they are easy to prove about our ``SlowQueue``.
 
-```
-returnOrEnq : (Q : Type-with ℓ-zero (Queue-Str A)) → A → Maybe (typ Q × A) → typ Q × A
-returnOrEnq (Q , emp , enq , deq) a (inl tt) = emp , a
-returnOrEnq (Q , emp , enq , deq) a (inr (q , b)) = enq a q , b
+-- ```
+-- returnOrEnq : (Q : Type-with ℓ-zero (Queue-Str A)) → A → Maybe (typ Q × A) → typ Q × A
+-- returnOrEnq (Q , emp , enq , deq) a (inl tt) = emp , a
+-- returnOrEnq (Q , emp , enq , deq) a (inr (q , b)) = enq a q , b
 
-QueueAxioms : Type-with ℓ-zero (Queue-Str A) → Type ℓ-zero
-QueueAxioms Q@(A , emp , enq , deq) = (deq emp ≡ inl tt)
-   × (∀ a q → deq (enq a q) ≡ inr (returnOrEnq Q a (deq q)))
-   × (∀ a a' q q' → enq a q ≡ enq a' q' → (a ≡ a') × (q ≡ q'))
-   × (∀ q q' → deq q ≡ deq q' → q ≡ q')
+-- QueueAxioms : Type-with ℓ-zero (Queue-Str A) → Type ℓ-zero
+-- QueueAxioms Q@(A , emp , enq , deq) = (deq emp ≡ inl tt)
+--    × (∀ a q → deq (enq a q) ≡ inr (returnOrEnq Q a (deq q)))
+--    × (∀ a a' q q' → enq a q ≡ enq a' q' → (a ≡ a') × (q ≡ q'))
+--    × (∀ q q' → deq q ≡ deq q' → q ≡ q')
 ```
 
 

@@ -16,11 +16,11 @@ Agda's data-types come in two flavours which are in some sense mirror
 images of each other:
 
 * **Inductive types**: These include Booleans, natural numbers, lists,
-  more generally, anything which is specified by a set of options,
-  and where elements are specified by choosing between those options.
-* **Record types**: These include product and Σ-types, more generally
-  anything where elements are specified by a set of fields, and where
-  elements are specified by choosing a value for each of those fields.
+  more generally, any type which is specified by a set of options,
+  and whose elements are specified by choosing among those options.
+* **Record types**: These include product and Σ-types, more generally,
+  any type specified by a set of fields, and whose elements are
+  specified by choosing a value for each of those fields.
 
 In this Lecture we'll see our first few examples of inductive types.
 We'll return to record types in Lecture 1-X.
@@ -86,7 +86,7 @@ _ = test-identical
 ```
 
 which as you can see does compute to the value ``true``. (Remember you
-can normalise any expression you want typing `C-c C-n` to test things.)
+can normalise any expression you like by typing `C-c C-n`.)
 
 We can construct other functions by nesting this kind of case
 analysis. Here's one way we could write a Boolean ``and``
@@ -105,6 +105,10 @@ _xor_ : Bool → Bool → Bool
 -- Exercise:
 x xor y = {!!}
 ```
+
+mvrnote: recall what xor means here?
+
+mvrnote: multi-line goals are not allowed, consider modifying this exercise
 
 Agda considers definitions with names that contain underscores
 specially, and lets us use them in two ways: either literally like any
@@ -244,7 +248,7 @@ isWeekend saturday  = true
 isWeekend sunday    = true
 
 nextDay : Day → Day
--- Exercise:
+-- Exercise: (Use `C-c C-c` to split into cases for you.)
 nextDay c = {!!}
 ```
 
@@ -335,8 +339,12 @@ The exact definition of ``ℕ``, copy-pasted, is:
 defining a new type with the same name as an existing one.)
 
 Defining functions out of ``ℕ`` is similar to defining functions out
-of ``Bool``, we just have to give cases for the two constructors. The
-difference is that the ``suc`` constructor tells us which natural
+of ``Bool``, we just have to give cases for the two constructors. 
+
+mvrnote: this may be confusing, it could be read as somehow saying
+that `suc` takes the number to a smaller one
+
+The difference is that the ``suc`` constructor tells us which natural
 number the provided argument is the successor of.
 
 Here's a first example:
@@ -373,6 +381,8 @@ second case, $2 × (1 + n) = 2 + (2 × n)$. To achieve the $2 +$ part,
 we use ``suc`` twice, and to achieve the $2 × n$ part, we use a
 recursive call to the ``doubleℕ`` function we are currently defining!
 
+mvrnote: draw a diagram of the recursion, or do the unfolding all the way out
+
 Agda allows this kind of recursion so long as it is convinced that the
 argument that you provide to the recursive call is smaller than the
 argument that you started with. That is certainly the case here,
@@ -404,6 +414,8 @@ zero    +ℕ m = m
 
 _ = test-identical (2 +ℕ 3) 5
 ```
+
+mvrnote: draw a diagram of the recursion, or do the unfolding all the way out
 
 Remember that you can test any piece of code yourself by typing `C-c
 C-n` and then `2 +ℕ 3`, say.
@@ -678,6 +690,7 @@ _ = test-identical (1 +ℤ 0) 1
 _ = test-identical (19 +ℤ 34) 53
 _ = test-identical (-19 +ℤ 34) 15
 ```
+mvrnote: need tests with negative on right
 
 We can negate an integer, and define the subtraction of integers in
 terms of addition and negation.
@@ -782,9 +795,11 @@ not-fromRec x = Bool-rec {!!} {!!} {!!}
 
 -- You will need to use `Bool-rec` twice!
 or-fromRec : Bool → Bool → Bool
--- Exercise: (Don't pattern match on either `x` or `y`!)
+-- Exercise: (Don't pattern match at all!)
 or-fromRec x y = Bool-rec {!!} {!!} {!!}
 ```
+
+mvrnote: add some tests for these two
 
 The recursion principle for the unit type is even simpler. To define a
 function `⊤ → A`, it suffices to give an element of `A` (which is to

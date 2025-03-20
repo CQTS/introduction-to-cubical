@@ -192,7 +192,7 @@ primitive
 ```
 
 Finally, so-called "heterogeneous" composition, which is used behind
-the scenes but which we never have to call on ourselves.
+the scenes but which we don't end up calling on ourselves.
 
 ```
   primComp : {ℓ : _} (A : (i : I) → Type (ℓ i)) {φ : I} (u : (i : I) → Partial φ (A i)) (a : A i0) → A i1

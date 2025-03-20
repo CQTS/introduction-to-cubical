@@ -10,14 +10,14 @@ open import 1--Type-Theory.1-2--Inductive-Types
 
 # Lecture 1-3: Universes and More Inductive Types
 
-There is a lingering question that we've left unanswered from Lecture
-1-1. What is the type of the universe ``Type`` itself?. One option
-that is open to the designer of a type theory is to just declare that
-``Type`` is an element of ``Type``; this is the [approach] taken by the
-[Haskell] programming language. This works fine for practical
-programming but leads to logical contradictions thanks to some
-"Russell-style" paradoxes. (Do some research on [Girard's paradox] if
-you are curious!)
+There is a lingering question that we've left unanswered since Lecture
+1-1. What is the type of the universe ``Type`` itself? One option open
+to the designer of a type theory is to declare that ``Type`` is an
+element of itself; this is the [approach] taken by the [Haskell]
+programming language. This works fine for practical programming but
+leads to logical contradictions thanks to some "Russell-style"
+paradoxes. (Do some research on [Girard's paradox] if you are
+curious!)
 
 [Girard's paradox]: https://en.wikipedia.org/wiki/System_U#Girard's_paradox
 [approach]: https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/poly_kinds.html#overview-of-type-in-type
@@ -29,10 +29,10 @@ To avoid this, Agda stratifies all types into a hierarchy using the
 mechanism of *universe levels*. Roughly speaking, the level of a type
 universe specifies the "bigness" of the types it can contain.
 
-On its own,``Type`` is secretly ``Type₀``, the universe of all types
+On its own, ``Type`` is secretly ``Type₀``, the universe of all types
 of "level zero". But ``Type₀`` itself is too big to be of level zero,
 and lives at level one: `Type₀ : Type₁`. Similarly, `Type₁` is too big
-to be of level one, so `Type₁ : Type₂`, and so on. 
+to be of level one, so `Type₁ : Type₂`, and so on.
 
 ```
 _ = test-type Type₀ Type₁
@@ -136,7 +136,7 @@ infixr 9 _∘_
 ```
 
 The built-in type constructors we have seen are universe polymorphic.
-These type constructors, like functions `→` and products ``×``, are
+These type constructors, like functions `→` and products ``×``, 
 can be thought of as functions that take types as arguments and
 produce types as output. If you type `C-c C-d` and enter `_×_`, you
 will see that it has type
@@ -351,7 +351,6 @@ copies of the natural numbers:
 -- Exercise:
 ℤ→ℕ⊎ℕ z = {!!}
 
-
 ℕ⊎ℕ→ℤ : ℕ ⊎ ℕ → ℤ
 -- Exercise:
 ℕ⊎ℕ→ℤ z = {!!}
@@ -423,6 +422,8 @@ actual natural numbers.
 * $(x × y)^z = (x^z) × (y^z)$,
 * $x^{y + z} = (x^y) × (x^z)$,
 * $(x^y)^z = x^{y×z}$.
+
+(mvrnote: These equations are nicely formatted on the website version.)
 
 ::: Aside:
 In ordinary set-based mathematics, this is sometimes known as

@@ -77,11 +77,11 @@ exactly `y`.
 subst B p b = transport (λ i → B (p i)) b
 ```
 
-Our first application of ``subst``, is showing that there is no path
+Our first application of ``subst`` is showing that there is no path
 from ``true`` to ``false`` in ``Bool``.
 
 ```
-true≢false : ¬ true ≡ false
+true≢false : ¬ (true ≡ false)
 true≢false p = subst (λ b → true ≡Bool b) p tt
 ```
 
@@ -114,20 +114,22 @@ zero≢suc p = {!!}
 ```
 
 While we're here, we can show that the constructors for ``⊎`` are also
-disjoint. These proofs all go roughly the same way.
+disjoint. These proofs all go roughly the same way. You'll first need
+a predicate ``IsInl``, to take the place of ``true ≡Bool b`` in the
+previous proof.
 
 ```
 IsInl : A ⊎ B → Type
 -- Exercise:
 IsInl s = {!!}
 
-inl≠inr : ¬ inl x ≡ inr y
+inl≢inr : ¬ inl x ≡ inr y
 -- Exercise:
-inl≠inr path = {!!}
+inl≢inr path = {!!}
 
-inr≠inl : ¬ inr x ≡ inl y
+inr≢inl : ¬ inr x ≡ inl y
 -- Exercise:
-inr≠inl path = {!!}
+inr≢inl path = {!!}
 ```
 
 
@@ -615,8 +617,8 @@ manually by pattern matching, rather than using ``J``.
 
     encode : (x y : A ⊎ B) → x ≡ y → code x y
     encode (inl _) (inl _) = inl-inj
-    encode (inl _) (inr _) = inl≠inr
-    encode (inr _) (inl _) = inr≠inl
+    encode (inl _) (inr _) = inl≢inr
+    encode (inr _) (inl _) = inr≢inl
     encode (inr _) (inr _) = inr-inj
 
     decode : (x y : A ⊎ B) → code x y → x ≡ y
@@ -652,8 +654,8 @@ xs ≡List ys = {!!}
     IsHead : List A → Type
     IsHead [] = ⊤
     IsHead (_ :: _) = ∅
-    []≠:: : {x : A} → {xs : List A} → ¬ [] ≡ (x :: xs)
-    []≠:: p = subst IsHead p tt
+    []≢:: : {x : A} → {xs : List A} → ¬ [] ≡ (x :: xs)
+    []≢:: p = subst IsHead p tt
     head-inj : {x y : A} → {xs ys : List A} → (x :: xs) ≡ (y :: ys) → x ≡ y
     head-inj {x = x} p = ap head p
       where
@@ -671,8 +673,8 @@ xs ≡List ys = {!!}
     encode-refl (_ :: xs) = refl , encode-refl xs
     encode : (xs ys : List A) → (p : xs ≡ ys) → xs ≡List ys
     encode [] [] p = tt
-    encode [] (x :: ys) p = []≠:: p
-    encode (x :: xs) [] p = []≠:: (sym p)
+    encode [] (x :: ys) p = []≢:: p
+    encode (x :: xs) [] p = []≢:: (sym p)
     encode (x :: xs) (y :: ys) p = (head-inj p) , encode xs ys (tail-inj p)
     decode : (xs ys : List A) → xs ≡List ys → xs ≡ ys
     decode [] [] _ = refl

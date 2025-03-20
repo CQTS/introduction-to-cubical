@@ -1,8 +1,11 @@
 name: cqts-course-0.2
-include:
-  .
+include: .
 depend:
-flags: 
+flags:
   --cubical
   --no-load-primitives
-  --allow-unsolved-metas
+  --no-infer-absurd-clauses
+  --level-universe
+  --exact-split
+  --postfix-projections
+--  -WnoBuiltinDeclaresIdentifier --mvrnote: todo

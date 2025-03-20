@@ -1,6 +1,6 @@
 <!--
 ```
-module 1--Type-Theory.1-X--Record-Types-and-Copatterns where
+module 1--Type-Theory.1-4--Record-Types-and-Copatterns where
 
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
@@ -10,7 +10,7 @@ open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
 -->
 
 
-# Lecture 1-X: Record Types and Copatterns
+# Lecture 1-4: Record Types and Copatterns
 
 mvrnote: somewhat under construction
 
@@ -20,8 +20,8 @@ ordinary programming: think of `struct`s in C or C++, `dataclass`es in
 Python, or simply rows in a database.
 
 We already have a way of doing this by nesting Σ-types, which we have
-had a taste of in ``Σ-assoc-toI`` and ``Σ-assoc-froI``. But Agda
-provides a facility known as *record*x types which make these compound
+had a taste of in ``Σ-assoc-toⁱ`` and ``Σ-assoc-froⁱ``. But Agda
+provides a facility known as *record* types which make these compound
 types much more pleasant to use, and which are the topic of this
 (fairly short) lecture.
 
@@ -37,7 +37,7 @@ Suppose for some reason we want to package a natural number, Boolean,
 and element of the unit type into a single type.
 
 ```
-record Triple : Type where
+record Trio : Type where
   field
     one : ℕ
     two : Bool
@@ -45,25 +45,25 @@ record Triple : Type where
 ```
 
 The following line allows us to refer to ``one``, ``two`` and ``thr``
-without qualifying them as `Triple.one`, `Triple.two` and `Triple.thr`
+without qualifying them as `Trio.one`, `Trio.two` and `Trio.thr`
 everywhere. We will be `open`ing all our records, so we'll have to
 make sure we give the fields descriptive names.
 
 ```
-open Triple
+open Trio
 ```
 
 Accessing the fields of a record is done by using the field names as
 projections, as we saw for Σ-types in Lecture 1-1.
 
 ```
-get-one : Triple → ℕ
+get-one : Trio → ℕ
 get-one p = p .one
 
-get-two : Triple → Bool
+get-two : Trio → Bool
 get-two p = p .two
 
-get-thr : Triple → ⊤
+get-thr : Trio → ⊤
 get-thr p = p .thr
 ```
 
@@ -73,7 +73,7 @@ else or passing it to a higher-order function. This can be done by
 leaving off the dot.
 
 ```
-one-isZero : Triple → Bool
+one-isZero : Trio → Bool
 one-isZero = isZero ∘ one
 ```
 
@@ -89,8 +89,8 @@ process to case-splitting on inductive types. For each field of the
 record, we provide a value for that field.
 
 ```
-favourite-triple : Triple
-favourite-triple = record
+favourite-trio : Trio
+favourite-trio = record
   { one = 19
   ; two = true
   ; thr = tt
@@ -126,11 +126,11 @@ to and from the corresponding Σ-type to make use of those proofs, via
 maps along the lines of the following.
 
 ```
-Triple-to : Triple → ℕ × Bool × ⊤
-Triple-to t = t .one , t .two , t .thr
+Trio-to : Trio → ℕ × Bool × ⊤
+Trio-to t = t .one , t .two , t .thr
 
-Triple-fro : ℕ × Bool × ⊤ → Triple
-Triple-fro s = record
+Trio-fro : ℕ × Bool × ⊤ → Trio
+Trio-fro s = record
   { one = s .fst
   ; two = s .snd .fst
   ; thr = s .snd .snd
@@ -141,25 +141,25 @@ Packing some values into a record like this is a common situation.
 Agda lets us name a constructor for a record type, so that we don't
 have to use non-descriptive `record` keyword each time. This has to be
 done at the moment the record type is declared, so here is a new
-version of ``Triple`` where we have done this:
+version of ``Trio`` where we have done this:
 
 ```
-record Triple' : Type where
-  constructor triple'
+record Trio' : Type where
+  constructor trio'
   field
     one' : ℕ
     two' : Bool
     thr' : ⊤
 
-open Triple'
+open Trio'
 ```
 
-The constructor ``triple'`` is now a function that accepts the fields
-of the ``Triple'`` record one at a time, and gives back a triple.
+The constructor ``trio'`` is now a function that accepts the fields
+of the ``Trio'`` record one at a time, and gives back a trio.
 
 ```
-favourite-triple' : Triple'
-favourite-triple' = triple' 19 true tt
+favourite-trio' : Trio'
+favourite-trio' = trio' 19 true tt
 ```
 
 
@@ -174,7 +174,7 @@ element of a record type: the fields are sufficient to capture
 everything.
 
 ```
-_ = λ (t : Triple) → test-identical
+_ = λ (t : Trio) → test-identical
       t
       record
        { one = t .one
@@ -238,7 +238,7 @@ Let's extend the above table:
 | Record Types                                                   | Function Types                                        |
 |----------------------------------------------------------------|-------------------------------------------------------|
 | Specified by the types of *fields*                             | Specified by the types of *argument and result*       |
-| Created by giving a value for *every* field                    | Created by giving a value for *every* argument        |
+| Created by giving a value for *every* field                    | Created by giving a value for *any possible* argument |
 | Eliminated by choosing *one* field                             | Eliminated by choosing *one* argument                 |
 | Projecting the constructor computes to the corresponding value | Applying a λ computes to the corresponding value      |
 | A record is uniquely determined by its projections             | A function is uniquely determined by its applications |
@@ -250,10 +250,10 @@ when you apply the function, in this style the definition of a record
 gives an equation for what happens when you project the record.
 
 ```
-favourite-triple'' : Triple
-favourite-triple'' .one = 19
-favourite-triple'' .two = true
-favourite-triple'' .thr = tt
+favourite-trio'' : Trio
+favourite-trio'' .one = 19
+favourite-trio'' .two = true
+favourite-trio'' .thr = tt
 ```
 
 Definition clauses like this are called *copatterns*. Ordinary pattern
@@ -267,10 +267,10 @@ to pull apart nested inductive types (look at, for example,
 ``⊎-assoc-to``), copatterns can construct nested record types:
 
 ```
-triple×-again : {A B C : Type} → A → B → C → ((A × B) × C)
-triple×-again a b c .fst .fst = a
-triple×-again a b c .fst .snd = b
-triple×-again a b c .snd      = c
+trio×-again : {A B C : Type} → A → B → C → ((A × B) × C)
+trio×-again a b c .fst .fst = a
+trio×-again a b c .fst .snd = b
+trio×-again a b c .snd      = c
 ```
 
 

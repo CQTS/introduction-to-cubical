@@ -1,13 +1,13 @@
 <!--
 ```
-module 3--Structures.3-2--Modalities where
+module 3--Topics.3-2--Modalities where
 
 -- mvrnote: check redundant imports/variables
 open import Library.Prelude
 open import 1--Type-Theory.1-1--Types-and-Functions
 open import 1--Type-Theory.1-2--Inductive-Types
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
-open import 1--Type-Theory.1-4--Propositions-as-Types
+open import 1--Type-Theory.1-5--Propositions-as-Types
 open import 2--Paths-and-Identifications.2-1--Paths
 open import 2--Paths-and-Identifications.2-2--Equivalences-and-Path-Algebra
 open import 2--Paths-and-Identifications.2-3--Substitution-and-J
@@ -15,7 +15,7 @@ open import 2--Paths-and-Identifications.2-4--Composition-and-Filling
 open import 2--Paths-and-Identifications.2-5--Transport
 open import 2--Paths-and-Identifications.2-6--Univalence
 open import 2--Paths-and-Identifications.2-7--Propositions
-open import 2--Paths-and-Identifications.2-8--Sets
+open import 2--Paths-and-Identifications.2-8--Sets-and-Higher-Types
 open import 2--Paths-and-Identifications.2-9--Contractible-Maps
 
 private
@@ -26,14 +26,6 @@ private
 ```
 -->
 
-```
-funexthalf-≃'' : {A : Type ℓ} {B : I → Type ℓ'}
-  {f : A → B i0} {g : A → B i1}
-  → ((x₀ : A) (x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ ((x₀ : A) → PathP B (f x₀) (g x₀))
-funexthalf-≃'' = Π-map-cod≃ (λ _ → J-ump-≃ _)
-```
-
 
 # Lecture 3-2: Modalities
 
@@ -43,54 +35,54 @@ funexthalf-≃'' = Π-map-cod≃ (λ _ → J-ump-≃ _)
 record Subuniverse (ℓ : Level) : Type (ℓ-suc ℓ) where
   constructor subuniverseData
   field
-    condition : Type ℓ → Type ℓ
-    isProp-condition : (X : Type ℓ) → isProp (condition X)
+    predicate : Type ℓ → Type ℓ
+    isProp-predicate : (X : Type ℓ) → isProp (predicate X)
 open Subuniverse
 
 record Type-in (S : Subuniverse ℓ) : Type (ℓ-suc ℓ) where
   constructor type-in
   field
     type : Type ℓ
-    proof : S .condition type
+    proof : S .predicate type
 open Type-in
 ```
 
 ```
 Contr-Subuniverse : Subuniverse ℓ
-Contr-Subuniverse .condition X = isContr X
-Contr-Subuniverse .isProp-condition X = isProp-isContr
+Contr-Subuniverse .predicate X = isContr X
+Contr-Subuniverse .isProp-predicate X = isProp-isContr
 
 Prop-Subuniverse : Subuniverse ℓ
-Prop-Subuniverse .condition X = isProp X
-Prop-Subuniverse .isProp-condition X = isProp-isProp
+Prop-Subuniverse .predicate X = isProp X
+Prop-Subuniverse .isProp-predicate X = isProp-isProp
 
 Set-Subuniverse : Subuniverse ℓ
-Set-Subuniverse .condition X = isSet X
-Set-Subuniverse .isProp-condition X = isProp-isSet
+Set-Subuniverse .predicate X = isSet X
+Set-Subuniverse .isProp-predicate X = isProp-isSet
 
 Everything-Subuniverse : Subuniverse ℓ-zero -- I don't want to `Lift`
-Everything-Subuniverse .condition X = ⊤
-Everything-Subuniverse .isProp-condition X = isProp-⊤
+Everything-Subuniverse .predicate X = ⊤
+Everything-Subuniverse .isProp-predicate X = isProp-⊤
 
 Nothing-Subuniverse : Subuniverse ℓ-zero
-Nothing-Subuniverse .condition X = ∅
-Nothing-Subuniverse .isProp-condition X = isProp-∅
+Nothing-Subuniverse .predicate X = ∅
+Nothing-Subuniverse .isProp-predicate X = isProp-∅
 
 Inhabited-Subuniverse : Subuniverse ℓ
-Inhabited-Subuniverse .condition X = ∃ X
-Inhabited-Subuniverse .isProp-condition X = isProp-∃
+Inhabited-Subuniverse .predicate X = ∃ X
+Inhabited-Subuniverse .isProp-predicate X = isProp-∃
 
 Decidable-Subuniverse : Subuniverse ℓ
-Decidable-Subuniverse .condition X = ∃ (Dec X)
-Decidable-Subuniverse .isProp-condition X = isProp-∃
+Decidable-Subuniverse .predicate X = ∃ (Dec X)
+Decidable-Subuniverse .isProp-predicate X = isProp-∃
 
 Contradictory-Subuniverse : Subuniverse ℓ
-Contradictory-Subuniverse .condition X = ¬ X
-Contradictory-Subuniverse .isProp-condition X = isProp-¬
+Contradictory-Subuniverse .predicate X = ¬ X
+Contradictory-Subuniverse .isProp-predicate X = isProp-¬
 
 Stable-Subuniverse : Subuniverse ℓ
-Stable-Subuniverse .condition X = isProp X × (¬ ¬ X → X)
-Stable-Subuniverse .isProp-condition X x y = isProp-× isProp-isProp (isProp-→ (x .fst)) x y
+Stable-Subuniverse .predicate X = isProp X × (¬ ¬ X → X)
+Stable-Subuniverse .isProp-predicate X x y = isProp-× isProp-isProp (isProp-→ (x .fst)) x y
 
 
 -- mvrnote: other examples? (even silly ones)
@@ -109,43 +101,47 @@ record Modality (ℓ : Level) : Type (ℓ-suc ℓ) where
   field
     isModal : Type ℓ → Type ℓ
     isProp-isModal : (X : Type ℓ) → isProp (isModal X)
+
     ○ : Type ℓ → Type ℓ
     isModal-○ : (X : Type ℓ) → isModal (○ X)
-    η : (X : Type ℓ) → (X → ○ X)
-    ump : (X : Type ℓ) → ((P : ○ X → Type-in (subuniverseData isModal isProp-isModal)) → isEquiv λ (f : (z : ○ X) → P z .type) → f ∘ η X)
+
+    η   : (X : Type ℓ) → (X → ○ X)
+    ump : (X : Type ℓ) 
+        → ((P : ○ X → Type-in (subuniverseData isModal isProp-isModal))
+        → isEquiv λ (f : (z : ○ X) → P z .type) → f ∘ η X)
 open Modality
 
 Modal-Subuniverse : Modality ℓ → Subuniverse ℓ
-Modal-Subuniverse M .condition = M .isModal
-Modal-Subuniverse M .isProp-condition = M .isProp-isModal
+Modal-Subuniverse M .predicate = M .isModal
+Modal-Subuniverse M .isProp-predicate = M .isProp-isModal
 
 Identity-Modality : Modality ℓ-zero
-Identity-Modality .isModal = Everything-Subuniverse .condition
-Identity-Modality .isProp-isModal = Everything-Subuniverse .isProp-condition
+Identity-Modality .isModal = Everything-Subuniverse .predicate
+Identity-Modality .isProp-isModal = Everything-Subuniverse .isProp-predicate
 Identity-Modality .○ X = X
 Identity-Modality .isModal-○ X = tt
 Identity-Modality .η X = idfun
 Identity-Modality .ump X P = isEquiv-idfun
 
 Contr-Modality : Modality ℓ-zero
-Contr-Modality .isModal = Contr-Subuniverse .condition
-Contr-Modality .isProp-isModal = Contr-Subuniverse .isProp-condition
+Contr-Modality .isModal = Contr-Subuniverse .predicate
+Contr-Modality .isProp-isModal = Contr-Subuniverse .isProp-predicate
 Contr-Modality .○ X = ⊤
 Contr-Modality .isModal-○ X = isContr-⊤
 Contr-Modality .η X x = tt
 Contr-Modality .ump X P = contrEnds→isEquiv (isContr-Π (λ a → P a .proof)) (isContr-Π (λ a → P tt .proof)) (λ g a → g tt)
 
 Prop-Modality : Modality ℓ
-Prop-Modality .isModal = Prop-Subuniverse .condition
-Prop-Modality .isProp-isModal = Prop-Subuniverse .isProp-condition
+Prop-Modality .isModal = Prop-Subuniverse .predicate
+Prop-Modality .isProp-isModal = Prop-Subuniverse .isProp-predicate
 Prop-Modality .○ X = ∃ X
 Prop-Modality .isModal-○ X = isProp-∃
-Prop-Modality .η X = ∣_∣
+Prop-Modality .η X = in-∃
 Prop-Modality .ump X P = invEquiv (∃-ump-≃ λ e → P e .proof) .proof -- mvrnote: this invEquiv is annoying, can we switch the original?
 
 Stable-Modality : Modality ℓ
-Stable-Modality .isModal = Stable-Subuniverse .condition
-Stable-Modality .isProp-isModal = Stable-Subuniverse .isProp-condition
+Stable-Modality .isModal = Stable-Subuniverse .predicate
+Stable-Modality .isProp-isModal = Stable-Subuniverse .isProp-predicate
 Stable-Modality .○ X = ¬ ¬ X
 Stable-Modality .isModal-○ X = isProp-¬ , λ nnnx nx → nnnx (λ nnx → nnx nx)
 Stable-Modality .η X a f = f a
@@ -174,14 +170,14 @@ mvrnote the universal property excludes dumb examples, e.g. a reflector into Set
 ```
 -- mvrnote: move later?
 Open-Subuniverse : Prop ℓ → Subuniverse ℓ
-Open-Subuniverse Q .condition X = isEquiv constX
+Open-Subuniverse Q .predicate X = isEquiv constX
   where constX : X → (Q .witness → X)
         constX x _ = x
-Open-Subuniverse Q .isProp-condition X = isProp-isEquiv _
+Open-Subuniverse Q .isProp-predicate X = isProp-isEquiv _
 
 Open-Modality : Prop ℓ → Modality ℓ
-Open-Modality Q .isModal = Open-Subuniverse Q .condition
-Open-Modality Q .isProp-isModal = Open-Subuniverse Q .isProp-condition
+Open-Modality Q .isModal = Open-Subuniverse Q .predicate
+Open-Modality Q .isProp-isModal = Open-Subuniverse Q .isProp-predicate
 Open-Modality Q .○ X = Q .witness → X
 Open-Modality Q .isModal-○ X = iseq
   where
@@ -219,8 +215,8 @@ mvrnote: lemmas
 
 ```
 Closed-Subuniverse : Prop ℓ → Subuniverse ℓ
-Closed-Subuniverse Q .condition X = Q .witness → isContr X
-Closed-Subuniverse Q .isProp-condition X = isProp-→ isProp-isContr
+Closed-Subuniverse Q .predicate X = Q .witness → isContr X
+Closed-Subuniverse Q .isProp-predicate X = isProp-→ isProp-isContr
 
 data Join (A : Type ℓ) (B : Type ℓ') : Type (ℓ-max ℓ ℓ') where
   inl : A → Join A B
@@ -253,8 +249,8 @@ isContr-Join {A = A} {B} (isContrData c h) = isContrData (inl c) hty
         hty (push a b i) j = J (λ y p → Square (ap inl p) (push c b) refl (push y b)) (λ i j → push c b (i ∧ j)) (h a) i j
 
 Closed-Modality : Prop ℓ → Modality ℓ
-Closed-Modality Q .isModal = Closed-Subuniverse Q .condition
-Closed-Modality Q .isProp-isModal = Closed-Subuniverse Q .isProp-condition
+Closed-Modality Q .isModal = Closed-Subuniverse Q .predicate
+Closed-Modality Q .isProp-isModal = Closed-Subuniverse Q .isProp-predicate
 Closed-Modality Q .○ X = Join (Q .witness) X
 Closed-Modality Q .isModal-○ X q = isContr-Join (isProp-with-point→isContr (Q .witnessIsProp) q)
 Closed-Modality Q .η X = inr
@@ -285,7 +281,7 @@ Closed-Modality Q .ump X P = ○-ump P
 record IsReflection (S : Subuniverse ℓ) (X : Type ℓ) (R : Type ℓ) : Type (ℓ-suc ℓ) where
   constructor isReflection
   field
-    isModal : S .condition R
+    isModal : S .predicate R
     η : X → R
     ump : ((P : R → Type-in S) → isEquiv λ (f : (z : R) → P z .type) → f ∘ η)
 open IsReflection
@@ -334,8 +330,8 @@ isProp-Reflection S X (R₀ , isReflection isModal₀ η₀ ump₀) (R₁ , isRe
         fro-to-η : fro ∘ to ∘ η₀ ≡ η₀
         fro-to-η =
           fro ∘ to ∘ η₀ ≡⟨ ap (fro ∘_) to-η ⟩
-          fro ∘ η₁     ≡⟨ fro-η ⟩
-          η₀           ∎
+          fro ∘ η₁      ≡⟨ fro-η ⟩
+          η₀            ∎
 
         fro-to : isRetract to fro
         fro-to = funext⁻ (ap-≃ ∘-η-≃₁ .proof .section .map fro-to-η)
@@ -346,11 +342,11 @@ isProp-Reflection S X (R₀ , isReflection isModal₀ η₀ ump₀) (R₁ , isRe
         R₀≡R₁ : R₀ ≡ R₁
         R₀≡R₁ = ua R₀≃R₁
 
-        isModal≡isModal₁ : PathP (λ i → S .condition (R₀≡R₁ i)) isModal₀ isModal₁
-        isModal≡isModal₁ = isProp→PathP (λ j → S .isProp-condition (R₀≡R₁ j)) isModal₀ isModal₁
+        isModal≡isModal₁ : PathP (λ i → S .predicate (R₀≡R₁ i)) isModal₀ isModal₁
+        isModal≡isModal₁ = isProp→PathP (λ j → S .isProp-predicate (R₀≡R₁ j)) isModal₀ isModal₁
 
         η≡η₁ : PathP (λ i → X → R₀≡R₁ i) η₀ η₁
-        η≡η₁ = funextP (funexthalf-≃'' .map (λ x₀ x₁ x → Path→ua-PathP R₀≃R₁ (funext⁻ to-η x₀ ∙ ap η₁ x)))
+        η≡η₁ = funextP (λ x → Path→ua-PathP R₀≃R₁ (funext⁻ to-η x))
 
         ump₀≡ump₁ : PathP (λ i → (P : R₀≡R₁ i → Type-in S) → isEquiv (λ (f : (b : R₀≡R₁ i) → P b .type) → f ∘ η≡η₁ i)) ump₀ ump₁
         ump₀≡ump₁ = isProp→PathP (λ _ → isProp-Π λ _ → isProp-isEquiv _) ump₀ ump₁

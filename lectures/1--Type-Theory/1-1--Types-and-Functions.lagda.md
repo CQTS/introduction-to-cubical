@@ -32,7 +32,7 @@ all of mathematics. The basic work of mathematics --- defining
 concepts and structures, constructing examples, stating and proving
 propositions --- can all be expressed in the language of the
 particular type theory we will be using: a variant of [Martin-Löf type
-theory] called "Cubical Type Theory".
+theory] called *Cubical Type Theory*.
 
 [Martin-Löf type theory]: https://plato.stanford.edu/entries/type-theory-intuitionistic/
 
@@ -53,7 +53,7 @@ especially Haskell. (Agda is written in Haskell and its syntax has
 some similarities.)
 :::
 
-The basic statement of any type theory is claims with the form "this
+The basic statement of any type theory is a claim of the form "this
 `a` is a thing of type `A`". We write this symbolically using a colon,
 so `a : A`. In the expression `a : A`, the `a` is an "element" of the
 type `A`.
@@ -164,7 +164,7 @@ constℕ : ℕ → ℕ → ℕ
 constℕ a b = {!!}
 ```
 
-The area contained within the curly brackets is known as a "hole", a
+The area contained within the curly brackets is known as a *hole*, a
 gap in the code where some expression is still required to make the
 definition complete. To fill in the hole, place your cursor between
 the brackets and enter your attempted definition. (Hint: it's `a`). To
@@ -212,6 +212,8 @@ constℕ₂ : ℕ → (ℕ → ℕ)
 constℕ₂ a b = a
 ```
 
+mvrnote: make more clear why we have two different ways of defining the same function
+
 How do we make sense of this? The definitions of the functions
 ``constℕ`` and ``constℕ₂`` are literally identical to Agda,
 but the way we have written them suggests two different ways we can
@@ -232,27 +234,38 @@ constℕ₃ a = λ (b : ℕ) → a
 ```
 
 In a lot of programming languages such expressions are called
-"anonymous functions", so-called because the function doesn't get a
+*anonymous functions*, so-called because the function doesn't get a
 name.
+
+The syntax `λ (x : A) → t` defines the function of type `A → B` which
+sends `x` to `t`, where `t : B` is some expression potentially
+involving the variable `x`. The `λ` (Greek letter lambda) comes to us
+from Church's λ-calculus, an early formal system for defining
+functions intended as a model of general computability. Notice also
+that we are re-using the `→` symbol: in `A → B` this symbol forms a
+new type out of `A` and `B`, and in `λ (x : A) → t` it introduces a
+function given a term `t` with a free variable `x`.
 
 ``constℕ₃`` is now a function of a *single* argument that gives back a
 function of type `ℕ → ℕ`. This general technique of describing
 functions of multiple arguments via functions that return functions is
-called "currying", after the computer scientist Haskell Curry (whose
+called *currying*, after the computer scientist Haskell Curry (whose
 name is also immortalized in the programming language Haskell).
 
-The syntax `λ (x : A) → t` defines the function `A → B` which sends
-`x` to `t`, where `t : B` is some expression potentially involving the
-variable `x`. The `λ` (Greek letter lambda) comes to us from Church's
-λ-calculus, an early formal system for defining functions intended as
-a model of general computability. Notice also that we are re-using the
-`→` symbol: in `A → B` this symbol forms a new type out of `A` and `B`
-and in `λ (x : A) → t` this introduces a function given a term `t`
-with a free variable `x`.
+Providing the type of the argument is optional in a λ-abstraction,
+so we could just as well have written:
 
-To write the `λ` symbol in Emacs or VSCode, type `\Gl` (for "Greek
-l"), or `\lam`, or if you like, `\lambda`. And by the way, you can
-type the arrow `→` by typing `\to`. We will use a lot of Unicode
+```
+constℕ₄ : ℕ → (ℕ → ℕ)
+constℕ₄ a = λ b → a
+```
+
+Agda knows from the type of ``constℕ₄`` that the type of `b` must be
+``ℕ``.
+
+To input the `λ` symbol in Emacs or VSCode yourself, use `\Gl` (for
+"Greek l"), or `\lam`, or if you like, `\lambda`. And by the way, you
+can type the arrow `→` by typing `\to`. We will use a lot of Unicode
 symbols in these notes, and it will be useful to know how to type them
 quickly! The file `UNICODE_DICITONARY.md` contains all the symbols we
 use and how to input them.
@@ -268,9 +281,10 @@ symbol here: `⊗`.
 :::
 
 Let's test out this perspective on functions by defining another
-function in two different ways. Try writing a function that adds one
-to a natural number, where the argument is accepted to the left of the
-`=` symbol.
+function in these two different ways. Try writing a function that adds
+one to a natural number, where the argument is accepted to the left of
+the `=` symbol. As before, place your cursor in the goal, type your
+definition, and press `C-c C-space` to give it to Agda.
 
 ```
 add-one₁ : ℕ → ℕ
@@ -278,8 +292,9 @@ add-one₁ : ℕ → ℕ
 add-one₁ x = {!!}
 ```
 
-Now write it again but using a `λ` on the right of the `=`, in the
-same style as ``constℕ₂``.
+Now write it again but using a λ-abstraction on the right of the
+`=`. You can give the type of the argument explicitly, or let Agda
+figure it out itself, to your taste.
 
 ```
 add-one₂ : ℕ → ℕ
@@ -287,8 +302,8 @@ add-one₂ : ℕ → ℕ
 add-one₂ = {!!}
 ```
 
-When applied to an argument, a function defined by λ-abstraction is
-computed in exactly the same way as an ordinary definition: the
+When applied to an argument, a function defined by λ-abstraction
+computes in exactly the same way as an ordinary definition: the
 argument is substituted in for the variable wherever it appears.
 
 ```
@@ -315,9 +330,8 @@ flipℕ₂ f = {!!}
 ```
 
 ::: Aside:
-We've broken the type declaration over multiple lines. This is also
-fine by Agda, as long as the subsequent lines begin with some
-whitespace.
+We've broken the type declarations over multiple lines. This is fine
+by Agda, as long as the subsequent lines begin with some whitespace.
 :::
 
 ::: Aside:
@@ -328,10 +342,10 @@ pick up the new arguments, otherwise you will get errors claiming that
 the new variables are "not in scope".
 :::
 
-Having λ-abstraction available actually exposes a new concern. From
-any function `f : ℕ → ℕ` (or really any function between any two
-types), we can define a new function `ℕ → ℕ` which accepts a `ℕ` as
-input, and then immediately applies `f` to that input. Really, this a
+Having λ-abstraction available exposes a new concern. From any
+function `f : ℕ → ℕ` (or really any function between any two types),
+we can define a new function `ℕ → ℕ` which accepts a `ℕ` as input, and
+then immediately applies `f` to that input. Really, this a
 λ-abstraction version of ``applyℕ`` from above.
 
 ```
@@ -339,14 +353,14 @@ applyℕ₂ : (ℕ → ℕ) → ℕ → ℕ
 applyℕ₂ f = λ x → f x
 ```
 
-And there's nothing stopping us from chaining this to produce more and
-more functions:
+And there's nothing stopping us from repeating this process to produce
+more and more functions `ℕ → ℕ`:
 
     f  ~>  (λ x → f x)  ~>  (λ y → (λ x → f x) y)  ~>  ...
 
 The *uniqueness principle* for functions expresses that any function
-is identical to the expanded version of it that uses a λ. So in fact,
-all these functions are equal.
+is identical to its expanded version that uses a `λ` in this way. So
+in fact, all these functions are equal.
 
 ```
 _ = test-identical double   (λ (x : ℕ) → double x)
@@ -358,13 +372,13 @@ _ = test-identical add-one₁ (λ (y : ℕ) → (λ (x : ℕ) → add-one₁ x) 
 
 This shouldn't be too surprising. If we apply `(λ x → f x)` to some
 argument `n`, first we substitute in for `x`, giving `f n`, which is
-exactly what we get if we use `f` directly.
+exactly what we get if we apply `f` to `n` directly.
 
 
 ## Generic Definitions
 
 The functions we have written so far are all specialised to work with
-elements of the type ``ℕ``. For example, we have the "identity"
+elements of the type ``ℕ``. For example, we have the *identity*
 (i.e. do-nothing) function
 
 ```
@@ -393,11 +407,11 @@ variable `A`, which is a type. When applied, `idfunᵉ A` gives
 back the identity function `A → A` for that type.
 
 Like every variable in Agda, `A` itself has a type, in this case the
-type ``Type``. This is a type whose elements themselves are
-types, things like this are often called "type universes".
+type ``Type``. This is a type whose elements themselves are types,
+typically these are *type universes*. We will have more to say about
+them in Lecture 1-X.
 
-We can reconstruct ``idfunℕ`` back by providing `ℕ` to
-``idfunᵉ``:
+We can reconstruct ``idfunℕ`` back by providing `ℕ` to ``idfunᵉ``:
 
 ```
 idfunℕ₂ : ℕ → ℕ
@@ -456,12 +470,13 @@ composeᵉ : (A : Type) → (B : Type) → (C : Type)
 composeᵉ A B C g f = {!!}
 ```
 
-You may be able to fill this in immediately, but try the following.
-Place your cursor in the goal and type `C-c C-,`. Agda will show you
-the type of the goal, in this case `A → C`, and all of the variables
-you have available to construct it. Because the type of a goal is a
-function, Agda knows that a `λ` expression can go here. Type `C-c C-r`
-to "refine" the goal; this will automatically insert a `λ`:
+You may be able to fill this in immediately, but for some more Agda
+practice try the following. Place your cursor in the goal and type
+`C-c C-,`. Agda will show you the type of the goal, in this case `A →
+C`, and all of the variables you have available to construct it.
+Because the type of a goal is a function, Agda knows that a `λ`
+expression can go here. Type `C-c C-r` to "refine" the goal; this will
+automatically insert a `λ`:
 
     composeᵉ A B C g f = λ x → {!!}
 
@@ -521,27 +536,27 @@ as arguments: these arguments are just invisible in the code. This is
 just a cosmetic difference compared to ``idfunᵉ``, but these implicit
 arguments save a huge amount of typing in the long run.
 
-One more time, we can get ``idfunℕ`` by having Agda realise what
-the type `A` has to be:
+One more time, we can reproduce ``idfunℕ`` by letting Agda realise
+what the type `A` has to be:
 
 ```
 idfunℕ₃ : ℕ → ℕ
 idfunℕ₃ = idfunⁱ
 ```
 
-Agda will complain if it fails to reconstruct an implicit argument from
-the other arguments you provide, though if we choose carefully which
-arguments to make implicit then this will rarely happen. We can force it to
-use a particular choice of implicit argument by providing it also surrounded by
-curly braces, as follows:
+Agda will complain if it fails to reconstruct an implicit argument
+from the other arguments you provide, though if we choose carefully
+which arguments to make implicit then this will rarely happen. We can
+force it to use a particular choice of implicit argument by providing
+that argument surrounded by curly braces, as follows:
 
 ```
 idfunℕ₄ : ℕ → ℕ
 idfunℕ₄ = idfunⁱ {A = ℕ}
 ```
 
-Here is round 3 of defining our favourite functions (with `ⁱ` for
-"implicit"):
+Here is round 3 of defining our favourite functions (with `ⁱ` standing
+for "implicit"):
 
 ```
 constⁱ : {A : Type} → {B : Type} → A → B → A
@@ -685,15 +700,19 @@ pattern-snd× (a , b) = b
 ×-assoc-toⁱ (a , (b , c)) = (a , b) , c
 
 ×-assoc-froⁱ : {A B C : Type} → (A × B) × C → A × (B × C)
--- Exercise: (Remember to put a spaces around the comma in a pair!)
-×-assoc-froⁱ = {!!}
+-- Exercise: (Replace `t` with an appropriate pattern as above.)
+×-assoc-froⁱ t = {!!}
 
 ×-commⁱ : {A B C : Type} → (A × B) → (B × A)
 -- Exercise:
-×-commⁱ = {!!}
+×-commⁱ p = {!!}
 ```
 
-mvrnote: functorial
+mvrnote: say something about not including `=` in a goal
+
+Forming the product type is *functorial*, which means that if we have
+separate functions that transform the sides of a ``×``, we can put
+them together to transform the pair type directly.
 
 ```
 ×-mapⁱ : {A B C D : Type}

@@ -33,7 +33,7 @@ In this Lecture we prove three crucial facts about equivalences:
 
       isProp-isEquiv : (f : A → B) → isProp (isEquiv f)
 
-* The funciton ``path→equiv`` is an equivalence, completing the proof
+* The function ``path→equiv`` is an equivalence, completing the proof
   of the univalence principle that we started in Lecture 2-X:
 
       univalence : (A ≡ B) ≃ (A ≃ B)
@@ -107,9 +107,9 @@ Now, because a type being contractible is a proposition, a map being
 contractible is also a proposition.
 
 ```
-isPropIsContractibleMap : (f : A → B) → isProp (isContractibleMap f)
+isProp-isContractibleMap : (f : A → B) → isProp (isContractibleMap f)
 -- Exercise:
-isPropIsContractibleMap f = {!!}
+isProp-isContractibleMap f = {!!}
 ```
 
 
@@ -352,8 +352,8 @@ isProp-isEquiv f = with-point-isContr→isProp {!!}
 As we showed in ``≡-in-subtype`` at the end of Lecture 2-X, paths in
 subtypes can be calculated in the underlying type. Since the type `A ≃
 B` of equivalences is a subtype of the type of functions `A → B`
-(because now know``isEquiv`` is a proposition), we can compute paths
-between equivalences on their underlying functions.
+(because we have just shown ``isEquiv`` is a proposition), we can
+compute paths between equivalences on their underlying functions.
 
 ```
 equiv≡ : {e f : A ≃ B} → (h : e .map ≡ f .map) → e ≡ f
