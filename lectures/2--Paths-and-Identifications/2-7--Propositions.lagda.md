@@ -279,19 +279,12 @@ consider the unique map `∅ → ⊤`. But if there are maps both ways, then
 that's enough. This is known as "proposition extensionality".
 
 ```
-propEnds→isEquiv : isProp A → isProp B
-  → (f : A → B)
-  → (g : B → A)
-  → isEquiv f
--- Exercise:
-propEnds→isEquiv pA pB f g .section .map = g
-
 propExt : isProp A → isProp B
   → (f : A → B)
   → (g : B → A)
   → A ≃ B
 -- Exercise:
-propExt pA pB f g = equiv f g {!!} {!!}
+propExt pA pB f g = inv→equiv f g {!!} {!!}
 ```
 
 The converse of ``isContr→≃⊤`` is true: if `A` is equivalent to ``⊤``,
@@ -546,7 +539,7 @@ isProp→isProp-PathP : {A : I → Type ℓ}
   → (a0 : A i0) (a1 : A i1)
   → isProp (PathP A a0 a1)
 -- Exercise: (Hint: Piggyback on `isProp→isProp≡`)
-isProp→isProp-PathP pA x y = isProp-equiv {!!} {!1}
+isProp→isProp-PathP pA x y = isProp-equiv {!!} {!!}
 ```
 
 We can use what we've proven so far to bootstrap the process of
@@ -589,7 +582,7 @@ that `A`... is a proposition.
 ```
 isProp-isProp : isProp (isProp A)
 -- Exercise:
-isProp-isProp pA₀ pA₁ i a b j = {!!}
+isProp-isProp pA₀ pA₁ = {!!}
 ```
 
 And `isContr A` is always a proposition; the proposition that `A` has
@@ -598,8 +591,7 @@ a unique element.
 ```
 isProp-isContr : isProp (isContr A)
 -- Exercise:
-isProp-isContr cA₀ cA₁ i .center = {!!}
-isProp-isContr cA₀ cA₁ i .contraction x j = {!!}
+isProp-isContr cA₀ cA₁ = {!!}
 ```
 
 There's another important type that is a proposition: the fact that a
@@ -631,16 +623,15 @@ equivalent to `a1 ≡ a2` whenever `B` is a family of propositions.
   where
     to : x .fst ≡ y .fst → x ≡ y
     -- Exercise: (Hint: `isProp→PathP`)
-    to e i .fst = {!!}
-    to e i .snd = {!!}
+    to e = {!!}
 
     to-fro : isSection to (ap fst)
     -- Exercise: (Hint: `isProp→SquareP`)
-    to-fro e i j .fst = {!!}
-    to-fro e i j .snd = {!!}
+    to-fro e = {!!}
 
     fro-to : isRetract to (ap fst)
-    fro-to p i j = p j
+    -- Exercise:
+    fro-to p = {!!}
 ```
 
 To foreshadow Lecture 3-X, this is extremely useful when we start
@@ -787,9 +778,8 @@ we can get an implication `∃ A → P` whenever `P` is a proposition.
 ∃-rec : (isProp P)
       → (A → P)
       → (∃ A → P)
--- Exercise:
-∃-rec pP f (in-∃ x) = {!!}
-∃-rec pP f (squash x y i) = pP {!!} {!!} {!!}
+-- Exercise: (Case-split, then use `pP` in the `squash` case.)
+∃-rec pP f e = {!!}
 ```
 
 ::: Aside:
@@ -810,9 +800,8 @@ types, each of which is a proposition.
       → ((e : ∃ A) → isProp (P e))
       → ((a : A) → P (in-∃ a))
       → ((e : ∃ A) → P e)
--- Exercise:
-∃-ind pP f (in-∃ x) = {!!}
-∃-ind pP f (squash x y i) = isProp→PathP {!!} {!!} {!!} {!!}
+-- Exercise: (Hint: `isProp→PathP`)
+∃-ind pP f e = {!!}
 ```
 
 In fact, all maps into a proposition are of this form, that is,

@@ -380,7 +380,7 @@ curry-≃ : {ℓ₁ ℓ₂ ℓ₃ : Level}
 -- We don't have to give names to the section and retract proofs at
 -- all, if we prefer.
 -- Exercise:
-curry-≃ = equiv Σ-curry Σ-uncurry (λ x → {!!}) (λ x → {!!})
+curry-≃ = int→equiv Σ-curry Σ-uncurry (λ x → {!!}) (λ x → {!!})
 
 -- mvrnote: put somewhere?
 funext-≃ : {A : Type ℓ} {B : A → Type ℓ'}
@@ -480,7 +480,7 @@ The next few are similar.
 --  Hint: You will need to case-split on the element of `A ⊎ B`, so
 --  you can't use `refl` here immediately.
 --  Exercise:
-    to-fro f i (inl x) = f (inl x)
+    to-fro f = {!!}
 
     fro-to : isRetract ⊎-ump-to ⊎-ump-fro
 --  Exercise:

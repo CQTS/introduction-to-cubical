@@ -124,7 +124,7 @@ Try using ``transport-fixing`` to prove that that transporting an element
 ```
 transport-refl : (a : A) → transport (λ i → A) a ≡ a
 -- Exercise:
-transport-refl {A = A} a i = transport-fixing {!!} {!!} {!!}
+transport-refl {A = A} a i = {!!}
 ```
 
 An important application of ``transport-fixing`` is showing that
@@ -406,9 +406,14 @@ module _ {A : I → Type} {B : (i : I) → A i → Type} where private
     → transport (λ i → Σ[ x ∈ A i ] B i x) (x₀ , y₀)
     -- Exercise:
     ≡ let
-          -- This is just the same as in the non-dependent case
-          x₁ : A i1
-          x₁ = {!!}
+        -- This is just the same as in the non-dependent case
+        x₁ : A i1
+        x₁ = {!!}
+        -- Here we need a path from `B i0 x₀` to `B i1 x₁`
+        x₀≡x₁ : PathP (λ i → A i) x₀ x₁
+        x₀≡x₁ = {!!}
+        y₁ = transport (λ i → B i (x₀≡x₁ i)) y₀
+      in (x₁ , y₁)
 
   _ = refl
 
@@ -416,9 +421,14 @@ module _ {A : I → Type} {B : (i : I) → A i → Type} where private
     → transport (λ i → (x : A i) → B i x) f
     -- Exercise:
     ≡ λ (x₁ : A i1) →
-        let
-          x₀ : A i0
-          x₀ = transport (λ i → A (~ i)) x₁
+      let
+        x₀ : A i0
+        x₀ = {!!}
+        x₀≡x₁ : PathP (λ i → A i) x₀ x₁
+        x₀≡x₁ j = {!!}
+        fx₁ : B i1 x₁
+        fx₁ = {!!}
+      in fx₁
 
   _ = refl
 ```

@@ -331,7 +331,7 @@ just have to use ``ua-comp`` on both sides to clear up those transports.
 ×-map-≃-underlying : {A A' B B' : Type ℓ} → (f : A ≃ A') → (g : B ≃ B')
   → (×-map-≃-ua f g) .map ≡ ×-map (f .map) (g .map)
 -- Exercise:
-×-map-≃-uat f g = {!!}
+×-map-≃-underlying f g = {!!}
 ```
 
 Then, we can transport the map proof that ``×-map-≃-ua`` is an
@@ -709,7 +709,9 @@ in one of the directions.
 ```
       decode-faces : (i : I) → (y : sucℤ-≡ i) → (j k : I) → Partial (∂ i ∨ ∂ j ∨ ~ k) S¹
       -- Exercise:
-      decode-faces i y j k (i = i1) = loopⁿ y j
+      decode-faces i y j k (i = i1) = {!!}
+      decode-faces i y j k (j = i0) = {!!}
+      decode-faces i y j k (j = i1) = {!!}
 ```
 
 The `(i = i0)` face is slightly more interesting, here it is written
@@ -770,7 +772,7 @@ the input path `p` is ``refl``:
 ```
     to-fro : isSection (decode base) (encode base)
     -- Exercise:
-    to-fro p = J {!!} {!!} {!!}
+    to-fro p = {!!}
 ```
 
 And the other way can be verified by induction on ``ℤ``.
@@ -834,7 +836,7 @@ loop back into an element of ``ℤ``.
 ```
 _+ℤᵐ_ : ℤ → ℤ → ℤ
 -- Exercise:
-x +ℤᵐ y = equivFun ΩS¹≃ℤ {!!}
+x +ℤᵐ y = ΩS¹≃ℤ .map {!!}
 
 _ = test-identical (0 +ℤᵐ 0) 0
 _ = test-identical (0 +ℤᵐ 1) 1

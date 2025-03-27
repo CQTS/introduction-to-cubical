@@ -436,8 +436,8 @@ This works for functions with any number of arguments:
 
 ```
 funext2 : {f g : A → B → C}
-       (p : (x : A) (y : B) → f x y ≡ g x y)
-       → f ≡ g
+  → (p : (x : A) (y : B) → f x y ≡ g x y)
+  → f ≡ g
 -- Exercise:
 funext2 p i x y = {!!}
 ```
@@ -538,16 +538,12 @@ module _ {A : Type ℓ} {B : A → Type ℓ₂}
   -- Exercise:
   ΣPathP→PathPΣ' : Σ[ p ∈ (fst x ≡ fst y) ] PathP {!!} {!!} {!!}
          → x ≡ y
-
-  ΣPathP→PathPΣ' eq i .fst = eq .fst i
-  ΣPathP→PathPΣ' eq i .snd = eq .snd i
+  ΣPathP→PathPΣ' t = {!!}
 
   -- Exercise:
   PathPΣ→ΣPathP' : x ≡ y
          → Σ[ p ∈ (fst x ≡ fst y) ] PathP {!!} {!!} {!!}
-
-  PathPΣ→ΣPathP' eq .fst i = eq i .fst
-  PathPΣ→ΣPathP' eq .snd i = eq i .snd
+  PathPΣ→ΣPathP' s = {!!}
 ```
 
 There is a second possible notion of dependency: it could be that the
@@ -563,16 +559,12 @@ module _ {A : I → Type ℓ} {B : (i : I) → A i → Type ℓ₂}
   -- Exercise:
   ΣPathP→PathPΣ : Σ[ p ∈ PathP {!!} {!!} {!!} ] PathP {!!} {!!} {!!}
          → PathP (λ i → Σ[ a ∈ A i ] B i a) x y
-
-  ΣPathP→PathPΣ p i .fst = p .fst i
-  ΣPathP→PathPΣ p i .snd = p .snd i
+  ΣPathP→PathPΣ t = {!!}
 
   -- Exercise:
   PathPΣ→ΣPathP : PathP (λ i → Σ[ a ∈ A i ] B i a) x y
          → Σ[ p ∈ PathP {!!} {!!} {!!} ] PathP {!!} {!!} {!!}
-
-  PathPΣ→ΣPathP p .fst i = p i .fst
-  PathPΣ→ΣPathP p .snd i = p i .snd
+  PathPΣ→ΣPathP s = {!!}
 ```
 
 And now dependent functions. Similarly to what we have just seen for
@@ -617,9 +609,9 @@ that point to itself, lying over the path of types `A ∘ loop`.
 
 ```
 S¹-ind-≡ : {A : S¹ → Type ℓ}
-       → (a : A base)
-       → PathP (λ i → A (loop i)) a a
-       → (s : S¹) → A s
+  → (a : A base)
+  → PathP (λ i → A (loop i)) a a
+  → (s : S¹) → A s
 S¹-ind-≡ a l base = a
 S¹-ind-≡ a l (loop i) = l i
 ```
@@ -702,19 +694,15 @@ Elements of the `Square A` type are squares exist in a constant type
 the type `A` can vary over the path, we can upgrade ``Square`` to
 ``SquareP`` where the type can vary over the square.
 
-We will fill in the definition, but try filling in the types of the
-sides of the square.
-
 ```
--- Exercise:
 SquareP :
-     (A : I → I → Type ℓ)
-     {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
-     (a₀- : {!!})
-     (a₁- : {!!})
-     (a-₀ : {!!})
-     (a-₁ : {!!})
-     → Type ℓ
+  (A : I → I → Type ℓ)
+  {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
+  (a₀- : PathP (λ j → A i0 j) a₀₀ a₀₁)
+  (a₁- : PathP (λ j → A i1 j) a₁₀ a₁₁)
+  (a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀)
+  (a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁)
+  → Type ℓ
 
 SquareP A a₀- a₁- a-₀ a-₁
   = PathP (λ i → PathP (λ j → A i j) (a-₀ i) (a-₁ i))
@@ -775,8 +763,8 @@ flipSquareP :
   {a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀}
   {a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁}
   -- Exercise:
-  → SquareP {!!} a₀- a₁- a-₀ a-₁
-  → SquareP {!!} a-₀ a-₁ a₀- a₁-
+  → SquareP {!!} {!!} {!!} {!!} {!!}
+  → SquareP {!!} {!!} {!!} {!!} {!!}
 
 flipSquareP A s = λ i j → s j i
 ```
@@ -816,19 +804,19 @@ type to use here, but as a one-off just writing the ``PathP`` manually
 will do.
 
 ```
-homotopy-natural-cube : {f g : A → B}
-  → (H : (x : A) → (f x ≡ g x))
-  → {a b c d : A}
-  → {r : a ≡ c} {s : b ≡ d}
-  → {t : a ≡ b} {u : c ≡ d}
-  → (sq : Square t u r s)
-  → PathP (λ k → Square (homotopy-natural H t k) 
-                        (homotopy-natural H u k) 
-                        (homotopy-natural H r k) 
-                        (homotopy-natural H s k))
-    (ap-Square f sq) 
-    (ap-Square g sq)
-homotopy-natural-cube H sq k i j = H (sq i j) k
+-- homotopy-natural-cube : {f g : A → B}
+--   → (H : (x : A) → (f x ≡ g x))
+--   → {a b c d : A}
+--   → {r : a ≡ c} {s : b ≡ d}
+--   → {t : a ≡ b} {u : c ≡ d}
+--   → (sq : Square t u r s)
+--   → PathP (λ k → Square (homotopy-natural H t k)
+--                         (homotopy-natural H u k)
+--                         (homotopy-natural H r k)
+--                         (homotopy-natural H s k))
+--     (ap-Square f sq)
+--     (ap-Square g sq)
+-- homotopy-natural-cube H sq k i j = H (sq i j) k
 ```
 
 

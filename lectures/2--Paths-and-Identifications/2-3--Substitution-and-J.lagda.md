@@ -160,8 +160,7 @@ expresses this principle.
 J-line : (Q : (y : A) → x ≡ y → Type ℓ)
   → (p : x ≡ y)
   → Q x refl ≡ Q y p
--- Exercise:
-J-line Q p i = Q {!!} {!!}
+J-line Q p i = Q (p i) (connection∧ p i)
 
 J : (Q : (y : A) → x ≡ y → Type ℓ) 
   → (r : Q x refl)
@@ -229,7 +228,7 @@ J-ump-≃ {A = A} {x = x} Q = inv→equiv to fro to-fro fro-to
 
     fro-to : isRetract to fro
 --  Exercise: (Hint: use `J` again!)
-    fro-to f i y p = J (λ y' p' → fro (to f) y' p' ≡ f y' p') ? ? ?
+    fro-to f = {!!}
 ```
 
 When the type family used in ``J`` ignores the path, then we recover
@@ -647,50 +646,8 @@ _≡List_ : List A → List A → Type ℓ-zero
 xs ≡List ys = {!!}
 
 ≡≃≡List : (xs ys : List A) → (xs ≡ ys) ≃ (xs ≡List ys)
--- Exsercise:
--- ≡≃≡List {A = A} xs ys = {!!}
-≡≃≡List {A = A} xs ys = inv→equiv (encode xs ys) (decode xs ys) (to-fro xs ys) (fro-to xs ys)
-  where
-    IsHead : List A → Type
-    IsHead [] = ⊤
-    IsHead (_ :: _) = ∅
-    []≢:: : {x : A} → {xs : List A} → ¬ [] ≡ (x :: xs)
-    []≢:: p = subst IsHead p tt
-    head-inj : {x y : A} → {xs ys : List A} → (x :: xs) ≡ (y :: ys) → x ≡ y
-    head-inj {x = x} p = ap head p
-      where
-        head : List A → A
-        head [] = x
-        head (h :: hs) = h
-    tail-inj : {x y : A} → {xs ys : List A} → (x :: xs) ≡ (y :: ys) → xs ≡ ys
-    tail-inj {xs = xs} p = ap tail p
-      where
-        tail : List A → List A
-        tail [] = xs
-        tail (h :: hs) = hs
-    encode-refl : (xs : List A) → xs ≡List xs
-    encode-refl [] = tt
-    encode-refl (_ :: xs) = refl , encode-refl xs
-    encode : (xs ys : List A) → (p : xs ≡ ys) → xs ≡List ys
-    encode [] [] p = tt
-    encode [] (x :: ys) p = []≢:: p
-    encode (x :: xs) [] p = []≢:: (sym p)
-    encode (x :: xs) (y :: ys) p = (head-inj p) , encode xs ys (tail-inj p)
-    decode : (xs ys : List A) → xs ≡List ys → xs ≡ ys
-    decode [] [] _ = refl
-    decode [] (_ :: _) ()
-    decode (x :: xs) [] ()
-    decode (x :: xs) (y :: ys) (p , c) = ap-bin _::_ p (decode xs ys c)
-    to-fro : (xs ys : List A) → isSection (encode xs ys) (decode xs ys)
-    to-fro [] [] tt = refl
-    to-fro [] (x :: ys) c = ∅-rec c
-    to-fro (x :: xs) [] c = ∅-rec c
-    to-fro (x :: xs) (y :: ys) (p , q) i = p , to-fro xs ys q i
-    fro-to-refl : (x : List A) → decode x x (encode x x refl) ≡ refl
-    fro-to-refl [] = refl
-    fro-to-refl (x :: xs) i = ap (x ::_) (fro-to-refl xs i) 
-    fro-to : (xs ys : List A) → isRetract (encode xs ys) (decode xs ys)
-    fro-to xs ys = J (λ c p → decode xs c (encode xs c p) ≡ p) (fro-to-refl xs)
+-- Exercise:
+≡≃≡List {A = A} xs ys = {!!}
 ```
 
 ## References and Further Reading

@@ -562,7 +562,7 @@ diamond-tube p q i j k (j = i1) = {!!}
 diamond-tube p q i j k (k = i0) = {!!}
 
 -- Exercise:
-diamond p q i j = hcomp {!!} {!!}
+diamond p q i j = {!!}
 ```
 
 The composition problems that result in some desired square are not
@@ -904,6 +904,12 @@ path composition to combine the provided proofs.
     to-fro b = f₁ (f₂ (g₂ (g₁ b))) ≡⟨ {!!} ⟩
                f₁         (g₁ b)   ≡⟨ {!!} ⟩
                               b    ∎
+
+    fro-to : isRetract (f₁ ∘ f₂) (g'₂ ∘ g'₁)
+    -- Exercise:
+    fro-to a = g'₂ (g'₁ (f₁ (f₂ a))) ≡⟨ {!!} ⟩
+               g'₂          (f₂ a)   ≡⟨ {!!} ⟩
+                                a    ∎
 
 _∘e_ : (B ≃ C) → (A ≃ B) → (A ≃ C)
 (e₁ ∘e e₂) .map = e₁ .map ∘ e₂ .map

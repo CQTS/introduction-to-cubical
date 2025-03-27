@@ -48,7 +48,7 @@ in Lecture 2-X, and from these it is easy to show they are all sets.
 ```
 isSet-⊤ : isSet ⊤
 -- Exercise: (Hint: `≡≃≡⊤`)
-isSet-⊤ x y = isPropEquiv {!!} {!!}
+isSet-⊤ x y = isProp-equiv {!!} {!!}
 
 isSet-Bool : isSet Bool
 -- Exercise:
@@ -494,12 +494,12 @@ as we prove with a lot more effort in Lecture 2-X, but it is easy
 enough to prove directly for the case we need it here.)
 
 ```
-
 -- isProp-isEquiv-for-Props : isProp P → isProp Q → (f : P → Q) → isProp (IsEquiv f)
--- -- Exercise: (Hint: Combine `isProp-Σ` and `isProp-Π` a few times.)
--- isProp-isEquiv-for-Props pP pQ f = {!!}
-isProp-isEquiv-for-Props pP pQ f = isProp× (isPropΣ (isProp→ pP) (λ s → isPropΠ λ b → isProp→isSet pQ _ _))
-                                              (isPropΣ (isProp→ pP) (λ r → isPropΠ λ a → isProp→isSet pP _ _))
+-- -- (Hint: Combine `isProp-Σ` and `isProp-Π` a few times.)
+-- -- isProp-isEquiv-for-Props pP pQ f = {!!}
+-- isProp-isEquiv-for-Props pP pQ f = isProp× (isPropΣ (isProp→ pP) (λ s → isPropΠ λ b → isProp→isSet pQ _ _))
+--                                            (isPropΣ (isProp→ pP) (λ r → isPropΠ λ a → isProp→isSet pP _ _))
+
 ```
 mvrnote: missing?
 
