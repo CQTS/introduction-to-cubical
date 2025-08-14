@@ -21,6 +21,7 @@ open import 2--Paths-and-Identifications.2-9--Contractible-Maps public
 open import 3--Topics.3-1--Structure-Identity-Principle public
 open import 3--Topics.3-2--Modalities public
 open import 3--Topics.3-3--Constructive-Logic public
+open import 3--Topics.Lemmas public
 
 open import Library.Prelude public
 open import Library.Primitive public

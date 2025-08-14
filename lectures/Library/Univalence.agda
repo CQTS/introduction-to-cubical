@@ -1,8 +1,5 @@
 module Library.Univalence where
 
--- mvrnote: we should add some commentary to this file, because you
--- can easily get here by clicking `Glue` for example.
-
 import Library.Primitive
 open import Library.Prelude
 open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
@@ -15,9 +12,8 @@ private
     ℓ ℓ' : Level
     A B C : Type ℓ
 
--- We prove Equiv→Bijection in Section 2-X, but we don't have it at
+-- We prove Equiv→Bijection in Section 2-9, but we don't have it at
 -- this point. We copy the proof here.
--- mvrnote: cleanup
 private
   isContr : Type ℓ → Type ℓ
   isContr A = Σ[ x ∈ A ] (∀ y → x ≡ y)
@@ -166,8 +162,7 @@ Glue A {φ} Te = primGlue A tys eqvs module glue-sys where
   eqvs : PartialP φ (λ .o → tys _ ≃ A)
   eqvs (φ = i1) = Te IsOne-i1 .snd
 
--- mvrnote: pending another Agda release
--- {-# DISPLAY primGlue A (glue-sys.tys _ Te) (glue-sys.eqvs _ Te) = Glue A Te #-}
+{-# DISPLAY primGlue A (glue-sys.tys _ Te) (glue-sys.eqvs _ Te) = Glue A Te #-}
 
 -- Make the φ argument of prim^unglue explicit
 unglue

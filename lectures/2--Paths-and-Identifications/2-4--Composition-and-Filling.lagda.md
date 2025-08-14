@@ -16,6 +16,7 @@ private
     ℓ ℓ' ℓ'' : Level
     A B C D : Type ℓ
     x y z w : A
+    x' y' z' w' : A
 ```
 -->
 
@@ -26,10 +27,24 @@ Cubical Agda adds a number of primitive notions that make working with
 paths-between-paths easier. To understand how they work, we will
 really have to start putting the "cubical" in Cubical Agda.
 
-In this lecture, we will learn about partial elements (open boxes) and
-composition (filling those open boxes). Before we dive into all these
-cubical features, it will be worth exploring an analogue in the more
-familiar Boolean world.
+In this Lecture, we will learn about partial elements (open boxes) and
+composition (filling in those open boxes). This sounds a little
+baroque, but operations like this give us easy access to a lot of
+homotopy theory. In the simplest case, filling an open box
+
+
+          w         z                   w ∙ ∙ ∙ > z
+          ^         ^                   ^         ^
+    sym r |         | q     ~>    sym r |         | q
+          |         |                   |         |
+          x — — — > y                   x — — — > y
+               p                             p
+
+gives us a path `w ≡ z`, the composition of the paths around the other
+three sides.
+
+Before we introduce these new cubical features, it will be worth
+exploring an analogue in the more familiar Boolean world.
 
 
 ## Warm-up: Boolean Partial Elements
@@ -144,14 +159,14 @@ take : (n : ℕ) (L : List A) → BooleanPartial (n ≤ length L) (List A)
 -- Exercise:
 take n L = {!!}
 
--- mvrnote: tests
+_ = test-identical (take {A = ℕ} 2 (1 :: 2 :: 3 :: [])) (just (1 :: 2 :: []))
 ```
 
 
 ## Cubical Partial Elements
 
 Now we come to partial elements defined on intervals. As we saw in
-Lecture 2-X, the interval ``I`` has the structure of a De Morgan
+Lecture 2-2, the interval ``I`` has the structure of a De Morgan
 algebra. This lets us write down logical formulas with cubical
 variables, like `i ∨ (j ∧ ~ k)`. Thinking of ``I`` as the
 topological unit interval $[0, 1]$, this formula is meant to represent
@@ -160,22 +175,23 @@ to say "`i` or (`j` and not `k`)". It will be useful to take both
 perspectives.
 
 Similarly to the Booleans, we will say that a formula like `i ∨ (j ∧ ~
-k)` is "true" when it equals `i1`. This corresponds to a subset of the
-cube $[0, 1]³$, namely, the set $$\{ (x, y, z) ∣ \max(x, \min(y, 1 -
-z)) = 1 \}.$$ We can therefore think of these interval formulas as
-describing "subsets of cubes $I^n$", even though ``I`` isn't actually
-a set that we can take subsets of.
+k)` is "true" when it equals ``i1``. This corresponds to a subset of
+the cube $[0, 1]³$, namely, the set $$\{ (x, y, z) ∣ \max(x, \min(y, 1
+- z)) = 1 \}.$$ So, we think of each interval formula as describing a
+subset of the cube $I^n$ (though ``I`` isn't truly a set that we can
+take subsets of.)
 
-For example, the formula `i ∨ ~ i` (which can be read "`i` or not
-`i`") should correspond to the subset $\{ x ∈ [0, 1] ∣ \max(x, 1-x) =
-1 \}$, which a bit of thinking shows is the subset of the interval
-consisting of the endpoints $\{0, 1\} ⊆ [0 , 1]$. We will therefore
-think of the formula `i ∨ ~ i` as defining the part of the interval
-consisting only of the endpoints ``i0`` and ``i1``.
+For example, the formula `i ∨ ~ i` (which can be read logically as
+"`i` or not `i`") should correspond to the subset $\{ x ∈ [0, 1] ∣
+\max(x, 1-x) = 1 \}$, which after a bit of thinking you should see is
+just the endpoints $\{0, 1\} ⊆ [0, 1]$. We might depict this as the
+one-dimensional diagram
 
-Since `i ∨ ~ i` is a common pattern, it's reasonable to give it a
-name. We call it `∂ i`, since ``∂`` typically means "boundary" in
-mathematics.
+        ∙         ∙              ∙ — >
+        0         1                i
+
+The pattern `i ∨ ~ i` is going to come up often, so we'll call it `∂
+i`, since ``∂`` typically means "boundary" in mathematics.
 
 ```
 ∂ : I → I
@@ -183,51 +199,45 @@ mathematics.
 ```
 
 Corresponding to ``IsTrue`` for Booleans, Agda uses a built-in type
-family `I → Type` called ``IsOne`` (roughly). And corresponding to
+family `I → Type` called ``IsOne``. And corresponding to
 ``BooleanPartial``, Agda provides a primitive type former `Partial φ
 A` where `φ : I` is an element of the interval --- thought of as a
-formula --- and `A` is a type. Interpreting the formula `φ` as
-describing part of a cube, the type `Partial φ A` is then functions
-from that piece of the cube to `A`.
+formula describing a subcube --- and `A` is a type. Interpreting the
+formula `φ` as describing part of a cube, the type `Partial φ A` is
+then functions from that piece of the cube to `A`.
 
 We can see that `i ∨ ~ i` really behaves like the endpoints of the
 interval by defining a ``Partial`` element on it which sends ``i0`` to
 ``true`` and ``i1`` to ``false``:
 
 ```
-trueOrFalse : (i : I) → Partial (i ∨ ~ i) Bool
-trueOrFalse i (i = i0) = true
-trueOrFalse i (i = i1) = false
+true-false-Partial : (i : I) → Partial (i ∨ ~ i) Bool
+true-false-Partial i (i = i0) = true
+true-false-Partial i (i = i1) = false
 ```
 
+        ∙         ∙              ∙ — >
+       true     false              i
+
 This uses some built-in Agda syntax to "pattern match" on the hidden
-element of `IsOne (i ∨ ~ i)`. Agda checks that all of the formula is
-covered, so the above definition fails if one of the lines is omitted.
-And in more complicated situations, Agda makes sure that the different
-cases are exactly equal wherever they overlap. (We'll see this below.)
+element of `IsOne (i ∨ ~ i)`. Agda checks that all of the formula `φ`
+is covered, so the above definition fails if one of the lines is
+omitted. And in more complicated situations, Agda makes sure that the
+different cases are exactly equal wherever they overlap. (We'll see
+this below.)
 
-We can't turn ``trueOrFalse`` into a *total* element of
-``Bool`` which is ``true`` on ``i0`` and ``false``
-on ``i1``; there is no way to jump from ``true`` to
-``false`` as we move along the interval. (We proved this in
-``true≢false``).
-
-But because the partial element only has to be defined on the
-endpoints, we can say what the values of ``trueOrFalse`` on those
-endpoints are and not worry about what happens in between.
-
-For a more interesting partial element, consider an open box:
+For a more interesting partial element, let's move up a dimension and
+consider an open box:
 
         ∙         ∙
-        ^         ^              ^    
-        |         |            j |        
-        |         |              ∙ — >    
-        ∙ — — — > ∙                i      
+        ^         ^              ^
+        |         |            j |
+        |         |              ∙ — >
+        ∙ — — — > ∙                i
 
 This open box is part of a square, so we are in the context of two
-interval variables `i j : I`. Now we need to figure out how to
-describe the open box as a formula, which is to say, as a function
-into `I`.
+interval variables `i j : I`. Let's figure out how to describe the
+open box as a formula, which is to say, as a function into `I`.
 
 ```
 open-box : I → I → I
@@ -322,15 +332,15 @@ exercise-shape i j k = {!!}
 
 Just as we did for Boolean partial elements, we can ask whether a
 partial element defined on some part of a cube can be extended to the
-whole cube. The partial element ``trueOrFalse`` above definitely
+whole cube. The partial element ``true-false-Partial`` above definitely
 cannot extend to a whole element, since a whole element `p i : Bool`
 for `i : I` for which `p i0 = true` and `p i1 = false` would be a path
 `true ≡ false`, something we've already checked is contradictory in
 ``true≢false``.
 
-However, Agda bakes in guarantees that certain partial elements can be
-extended to total ones. In short, Agda allows us to "close off open
-boxes" using an operation called ``hcomp`` (which stands for
+However, Agda guarantees that *certain* partial elements can be
+extended to total ones. In short, Agda allows us to close off open
+boxes using an operation called ``hcomp`` (which stands for
 "homogeneous composition"). An open box is a part of the cube which
 contains the entire bottom face and some pieces of the side walls.
 
@@ -424,7 +434,7 @@ This guarantee is the reason Agda knows that our definition is
 actually a path `w ≡ z`!
 
 ::: Aside:
-We can use a pattern-matching `λ` to inline the definition of the
+We can use a pattern matching `λ` to inline the definition of the
 sides of the box when doing an ``hcomp``. This is the same as
 defining the sides separately, it just avoids giving them a name.
 
@@ -480,6 +490,55 @@ transporting over ``refl`` does not give us the identity function
 definitionally.
 :::
 
+Using composition of paths, we can we can juxtapose squares both
+horizontally or vertically to get a larger, overall square:
+
+             s'
+        y' — — — >z'
+        ^         ^
+     p' |         | q'
+        |    s    |              ^
+        y — — — > z            j |
+        ^         ^              ∙ — >
+     p  |         | q              i
+        |         |
+        x — — — > w
+             r
+
+For this, think about how to write `p ∙ p'` only mentioning `sq1` and
+`sq2`, and similarly for `p ∙ p'`. Then it should be clear how to make
+a general definition that applies for any `i`.
+
+```
+∙-juxtapose-vertical :
+  {p : x ≡ y} {q : w ≡ z} {r : x ≡ w} {s : y ≡ z}
+  {p' : y ≡ y'} {q' : z ≡ z'} {s' : y' ≡ z'}
+  → Square p q r s
+  → Square p' q' s s'
+  → Square (p ∙ p') (q ∙ q') r s'
+-- Exercise:
+∙-juxtapose-vertical sq1 sq2 i = {!!}
+```
+
+             s         s'
+        y — — — > z — — — > z'
+        ^         ^         ^             ^
+     p  |         | q       | q'        j |
+        |         |         |             ∙ — >
+        x — — — > w — — — > w'              i
+             r         r'
+
+```
+∙-juxtapose-horizontal :
+  {p : x ≡ y} {q : w ≡ z} {r : x ≡ w} {s : y ≡ z}
+  {q' : w' ≡ z'} {r' : w ≡ w'} {s' : z ≡ z'}
+  → Square p q r s
+  → Square q q' r' s'
+  → Square p q' (r ∙ r') (s ∙ s')
+-- Exercise: (Use `flip-square` and `∙-juxtapose-vertical` to save effort!)
+∙-juxtapose-horizontal sq1 sq2 = {!!}
+```
+
 
 ## Constructing Cubes
 
@@ -488,11 +547,11 @@ construct this square:
 
             q
        y — — — > z
-       ^         ^
-     p |         | q            ^
-       |         |            j |
-       x — — — > y              ∙ — >
-            p                     i
+       ^         ^               ^
+     p |         | q           j |
+       |         |               ∙ — >
+       x — — — > y                 i
+            p
 
 ```
 diamond : (p : x ≡ y) (q : y ≡ z) → Square p q p q
@@ -529,7 +588,6 @@ Finally, if the bottom-right corner is `z`, then the bottom face is
 exactly the thing we are trying to construct, so to make any progress
 we must go with `y`:
 
-
                           q
                 y — — — — — — — — > z
           p   / ^             q   / ^
@@ -547,8 +605,21 @@ we must go with `y`:
         x — — — — — — — — > y
                   p
 
-Now we have, in fact, seen all of these faces before! (Review the
-interval algebra in Lecture 2-X if necessary.)
+Now we have, in fact, seen all of these faces before! You'll have to
+visualise how each square looks when angled flat. For example, in the
+`(i = i0)` case the square on the left, when hinged towards us, is
+
+            p
+       x — — — > y
+       ^         ^               ^
+       |         |             k |
+       |         |               ∙ — >
+       x — — — > y                 j
+            p
+
+which we can identify as simply `p j`. Remember that you can press
+`C-c C-,` in a goal to have Agda tell you what it expects to see
+there.
 
 ```
 diamond-tube : {x y z : A} 
@@ -664,11 +735,11 @@ path `r` to ``refl``.
 
                q
           y — — — > z
-          ^         ^                   ^    
-       p  |         | p ∙ q           j |       
-          |         |                   ∙ — >   
-          x — — — > x                     i     
-             refl                        
+          ^         ^                   ^
+       p  |         | p ∙ q           j |
+          |         |                   ∙ — >
+          x — — — > x                     i
+             refl
 
 ```
 ∙-filler : (p : x ≡ y) (q : y ≡ z) → Square p (p ∙ q) refl q
@@ -686,11 +757,11 @@ First, ``refl`` is the unit for path composition. The fact that
 
            refl
         y — — — > z
-        ^         ^                     ^      
-     p  |         | p ∙ refl          j |       
-        |         |                     ∙ — >   
-        x — — — > w                       i     
-           refl                       
+        ^         ^                     ^
+     p  |         | p ∙ refl          j |
+        |         |                     ∙ — >
+        x — — — > w                       i
+           refl
 
 ```
 ∙-idr : (p : x ≡ y) → p ≡ p ∙ refl
@@ -741,9 +812,9 @@ Next, that composing a path with its inverse is equal to ``refl``.
                     x — — — — — — — — > x
                   / ^                 / ^
      p ∙ sym p  /   |               /
-              /     |             /     |
+              /     | sym p       /     |
             x — — — — — — — — > x       |
-            ^       | sym p     ^       |                    ^   j
+            ^       |           ^       |                    ^   j
             |       |           |       |                  k | /
             |       |           |       |                    ∙ — >
             |       |    sym p  |       |                      i
@@ -793,7 +864,7 @@ Finally, that composition is associative via one final cube.
 ```
 ∙-assoc-tube : {w x y z : A} (r : w ≡ x) (p : x ≡ y) (q : y ≡ z)
   → (i j k : I) → Partial (∂ i ∨ ∂ j ∨ ~ k) A
--- Exercise: (Hint: a couple of cases use ``∙-filler``)
+-- Exercise: (Hint: `∙-juxtapose-horizontal` and `∙-filler` will be useful)
 ∙-assoc-tube {w = w} r p q i j k (i = i0) = {!!}
 ∙-assoc-tube {w = w} r p q i j k (i = i1) = {!!}
 ∙-assoc-tube {w = w} r p q i j k (j = i0) = {!!}
@@ -896,7 +967,8 @@ path composition to combine the provided proofs.
 
 ```
 ∘-isEquiv : (e₁ : B ≃ C) (e₂ : A ≃ B) → isEquiv (e₁ .map ∘ e₂ .map)
-∘-isEquiv (packEquiv f₁ g₁ s₁ g'₁ r₁) (packEquiv f₂ g₂ s₂ g'₂ r₂) 
+∘-isEquiv (equiv f₁ (isEquivData (sectionData g₁ s₁) (retractData g'₁ r₁)))
+          (equiv f₂ (isEquivData (sectionData g₂ s₂) (retractData g'₂ r₂)))
   = packIsEquiv (g₂ ∘ g₁) to-fro (g'₂ ∘ g'₁) fro-to
   where
     to-fro : isSection (f₁ ∘ f₂) (g₂ ∘ g₁)
@@ -935,13 +1007,13 @@ infix   1 _∎e
 Composition of paths is also enough to let us invert equivalences. The first
 step is showing that in the data of an equivalence, the section and
 retract functions are in fact equal. Again, we'll explain in
-Lecture 2-X why we need to have two different functions in the first
+Lecture 2-9 why we need to have two different functions in the first
 place!
 
 ```
 sec≡ret : (e : A ≃ B) → (b : B) 
   → e .proof .section .map b ≡ e .proof .retract .map b
-sec≡ret (packEquiv f g s g' r) b =
+sec≡ret (equiv f (isEquivData (sectionData g s) (retractData g' r))) b =
   -- Exercise:
          g b   ≡⟨ {!!} ⟩
   g' (f (g b)) ≡⟨ {!!} ⟩
@@ -955,7 +1027,8 @@ proof. Showing that it is a section will require a use of ``sec≡ret``.
 
 ```
 invEquiv : A ≃ B → B ≃ A
-invEquiv (packEquiv f g s g' r) = inv→equiv g f newIsSection s
+invEquiv (equiv f (isEquivData (sectionData g s) (retractData g' r)))
+  = inv→equiv g f newIsSection s
   where
     newIsSection : isSection g f
     -- Exercise:
@@ -964,5 +1037,13 @@ invEquiv (packEquiv f g s g' r) = inv→equiv g f newIsSection s
 
 
 ## References and Further Reading
+
+* Agda Documentation
+  * [Composition](https://agda.readthedocs.io/en/latest/language/cubical.html#homogeneous-composition)
+* HoTTEST Summer School 2022
+  * [Composition](https://github.com/martinescardo/HoTTEST-Summer-School/blob/main/Agda/Cubical/Lecture8-notes.lagda.md)
+  * [More on Composition](https://github.com/martinescardo/HoTTEST-Summer-School/blob/main/Agda/Cubical/Lecture9-notes.lagda.md)
+* Tutorial for `cubicaltt`, an early cubical proof assistant
+  * [Composition](https://github.com/mortberg/cubicaltt/blob/master/lectures/lecture2.ctt)
 
 https://agda.readthedocs.io/en/latest/language/sort-system.html

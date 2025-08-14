@@ -29,7 +29,7 @@ the base of the composition is included in the partial element rather
 than being provided separately.
 
 A trick from the 1lab are used to make ``hcomp`` print nicely in goals
-(https://github.com/the1lab/1lab/pull/468).
+<https://github.com/the1lab/1lab/pull/468>.
 
 ``` 
 hcomp : {ℓ : Level} {A : Type ℓ} (φ : I) 
@@ -38,8 +38,7 @@ hcomp {A = A} φ u = primHComp sys (u i0 IsOne-i1) module hcomp-sys where
   sys : ∀ j → Partial φ A 
   sys j (φ = i1) = u j IsOne-i1
 
--- mvrnote: pending another Agda release
--- {-# DISPLAY primHComp {ℓ} {A} {φ} (hcomp-sys.sys _ u) _ = hcomp {ℓ} {A} φ u #-}
+{-# DISPLAY primHComp {ℓ} {A} {φ} (hcomp-sys.sys _ u) _ = hcomp {ℓ} {A} φ u #-}
 ```
 
 
@@ -47,7 +46,7 @@ hcomp {A = A} φ u = primHComp sys (u i0 IsOne-i1) module hcomp-sys where
 
 Although in Lecture 1-1 we treat Σ-types as a built-in type
 constructor, we in fact define them manually as a "record" type, which
-we discuss in Lecture 1-X.
+we discuss in Lecture 1-4.
 
 ```
 record Σ {ℓ ℓ' : Level} (A : Type ℓ) (B : A → Type ℓ') : Type (ℓ-max ℓ ℓ') where
@@ -106,7 +105,7 @@ _≡_ {A = A} = Path A
 
 ## Case Analysis
 
-The notion of pattern-matching λ-abstractions is built into Agda. The
+The notion of pattern matching λ-abstractions is built into Agda. The
 following mixfix definition gives some nicer syntax for case analysis,
 making it look more like the case splitting notation used in other
 functional languages. See the top of Lecture 1-2 for examples.

@@ -17,6 +17,8 @@ open import 2--Paths-and-Identifications.2-7--Propositions
 open import 2--Paths-and-Identifications.2-8--Sets-and-Higher-Types
 open import 2--Paths-and-Identifications.2-9--Contractible-Maps
 
+open import 3--Topics.Lemmas
+
 private
   variable
     ℓ ℓ' ℓ'' ℓ''' : Level -- mvrnote: standardise
@@ -29,9 +31,11 @@ private
 
 # Lecture 3-1: The Structure Identity Principle
 
+## Introduction
+
 mvrnote: a lot of the definition names in this file could be improved.
 
-In Lecture 2-X we saw how univalence can be used to show that paths
+In Lecture 2-6 we saw how univalence can be used to show that paths
 between types the same as equivalences between those types. But what
 if our types have extra structure, like algebraic operations or
 axioms? In this Lecture, we extend univalence to the *Structure
@@ -317,27 +321,6 @@ we'll just do it for you.
 
 <!--
 ```
-funexthalf-≃ : {A : Type ℓ} {B : I → Type ℓ'}
-  {f : A → B i0} {g : A → B i1}
-  → ((x₀ : A) (x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A → B i) f g
-funexthalf-≃ {A = A} {B = B} {f = f} {g = g} =
-  ((x₀ x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃⟨ Π-map-cod≃ (λ x₀ → J-ump-≃ (λ y _ → PathP B (f x₀) (g y))) ⟩
-  ((x : A) → PathP B (f x) (g x))
-  ≃⟨ funextP-≃ ⟩
-  PathP (λ i → A → B i) f g ∎e
-
-funextP-ump-≃ : {A : I → Type ℓ} {B : I → Type ℓ'}
-  {f : A i0 → B i0} {g : A i1 → B i1}
-  → ((x₀ : A i0) (x₁ : A i1) → PathP A x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A i → B i) f g
-funextP-ump-≃ {A = A} {B = B} {f = f} {g = g} =
-  J
-  (λ A1 A → {f : A i0 → B i0} {g : A i1 → B i1}
-  → ((x₀ : A i0) (x₁ : A i1) → PathP (λ i → A i) x₀ x₁ → PathP B (f x₀) (g x₁))
-  ≃ PathP (λ i → A i → B i) f g)
-  funexthalf-≃ (λ i → A i)
 
 ≃[Magma]-univalent {A = A} {B = B} e = step1 ∘e step2 ∘e invEquiv step3
   where
@@ -436,7 +419,7 @@ Bool-or≡Bool-and : Bool-or-Magma ≡ Bool-and-Magma
 Bool-or≡Bool-and = sip ≃[Magma]-univalent Bool-or-Magma Bool-and-Magma not-[Magma]≃
 ```
 
-Way back in Lecture 2-X, we showed that ``or`` is an associative
+Way back in Lecture 2-1, we showed that ``or`` is an associative
 operation. We can use this path that we just proved to transfer this
 proof over to ``and``.
 
@@ -1234,6 +1217,12 @@ Product-TrStr : (S₁ : TransportNotion ℓ ℓ₁) → (S₂ : TransportNotion 
 Product-TrStr S₁ S₂ .str-for X = S₁ .str-for X × S₂ .str-for X
 Product-TrStr S₁ S₂ .equivAction e = ×-map-≃ (S₁ .equivAction e) (S₂ .equivAction e)
 Product-TrStr S₁ S₂ .transportStr e (s₁ , s₂) i = (S₁ .transportStr e s₁ i , S₂ .transportStr e s₂ i)
+
+-- mvrnote: can this be avoided?
+PathP≡Path' : (A : I → Type ℓ) (a₀ : A i0) (a₁ : A i1)
+  → PathP A a₀ a₁ ≡ Path (A i0) a₀ (transport (λ i → A (~ i)) a₁)
+PathP≡Path' A a₀ a₁ i =
+  PathP (λ j → A (~ (i ∨ ~ j))) a₀ (transport-filler (λ j → A (~ j)) a₁ i)
 
 Function-UStr+ : (S : TransportNotion ℓ ℓ₁) → (T : UnivalentNotion ℓ ℓ₂ ℓ₂') → UnivalentNotion ℓ (ℓ-max ℓ₁ ℓ₂) (ℓ-max ℓ₁ ℓ₂')
 Function-UStr+ S T .str-for X = S .str-for X → T .str-for X

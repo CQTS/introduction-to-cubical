@@ -23,17 +23,29 @@ private
 
 # Lecture 2-7: Propositions
 
-In Lecture 1-X, we saw how to use types to represent propositions. But
+In Lecture 1-5, we saw how to use types to represent propositions. But
 not all types have a sensible interpretation as propositions: an
 element of ``ℕ`` in some sense contains more information than the mere
-fact that a proposition being true. How can we characterise which
-types should be thought of as propositions?
+fact of a proposition being true. How can we characterise which types
+should be thought of as propositions?
+
+Let's recall from Lecture 1-5 that when considering a type `A` as a
+proposition, we think of an element `a : A` as a witness to the fact
+that the proposition `A` is true. Once we've constructed at least one
+witness like this, we don't particularly care about the details of the
+construction: we don't want there to more than one way that the
+proposition `1 + 1 ≡ 2` can be true.
+
+We turn this observation into a definition: propositions are types
+that have *at most* one element. This Lecture will be spent discussing
+this notion of proposition and some of its properties.
 
 
 ## Contractible Types
 
-Before we get to defining propositions properly, we'll start with a
-class of types that is even simpler.
+Before we get to propositions, we'll start with a class of types that
+is even simpler: types that are not just propositions, but *true*
+propositions.
 
 A *singleton* is a type consisting of exactly one element. In ordinary
 set theory, if $a$ is an element of a set $A$, then the singleton
@@ -44,18 +56,18 @@ singleton we are going to use as our definition in type theory. For an
 element of a type `a : A`, the singleton type at `a` is:
 
 ```
-singl : {A : Type ℓ} → (a : A) → Type ℓ
-singl {A = A} a = Σ[ x ∈ A ] a ≡ x
+singleton : {A : Type ℓ} → (a : A) → Type ℓ
+singleton {A = A} a = Σ[ x ∈ A ] a ≡ x
 ```
 
-There is a unique element of `singl a`, namely the pair `(a, refl)`.
+There is a unique element of `singleton a`, namely the pair `(a, refl)`.
 
 ```
-singl-center : (a : A) → singl a
-singl-center a = (a , refl)
+singleton-center : (a : A) → singleton a
+singleton-center a = (a , refl)
 ```
 
-We would like to say in type theory that `singl a` has a unique
+We would like to say in type theory that `singleton a` has a unique
 element, so we need a way of expressing "has a unique element"
 type-theoretically. For this, we use: 
 
@@ -95,9 +107,9 @@ isContr-⊤ = {!!}
 Singletons should also have a unique element. 
 
 ```
-isContr-singl : (a : A) → isContr (singl a)
+isContr-singleton : (a : A) → isContr (singleton a)
 -- Exercise: (Hint: You will need to use `J` or a connection.)
-isContr-singl a = {!!}
+isContr-singleton a = {!!}
 ```
 
 There are inductive types other than ``⊤`` that we can show are
@@ -115,23 +127,17 @@ This interval contains no interesting information at all:
 
 ```
 isContr-Interval : isContr Interval
--- Exercise: (Hint: You will need to use a connection square.)
+-- Exercise:
 isContr-Interval = {!!}
 ```
 
 ::: Aside:
-This ``Interval`` is an ordinary type, in contrast to the
-built-in interval ``I``. We can therefore use it like any other
-type; form functions into it, look at paths in it, and so on. It does
-not contain any of the magic that ``I`` does, however, so we
-can't make a corresponding ``Path`` or ``hcomp``.
+This ``Interval`` is an ordinary type, in contrast to the built-in
+interval ``I``. We can therefore use it like any other type; form
+functions into it, look at paths in it, and so on. It does not contain
+any of the magic that ``I`` does, however, so we can't define a
+corresponding ``Path`` or ``hcomp``.
 :::
-
-mvrnote: needed later
-```
-Σ-fst-≃ : {B : A → Type ℓ} → ((a : A) → isContr (B a)) → (Σ[ a ∈ A ] B a) ≃ A
-Σ-fst-≃ c = inv→equiv fst (λ a → a , c a .center) (λ _ → refl) (λ (a , b) → ap (a ,_) (c a .contraction b))
-```
 
 The empty type ``∅`` is not contractible: it doesn't have any elements
 at all.
@@ -154,26 +160,23 @@ exist, they're not unique.
 
 ## Propositions
 
-Let's recall from Lecture 1-X that when considering a type `A` as a
-proposition, we think of an element `a : A` as a witness to the fact
-that the proposition `A` is true. Once we've constructed at least one
-witness like this, we don't particularly care about the details of the
-construction: we don't want there to more than one way that the
-proposition `1 + 1 ≡ 2` can be true.
-
-We turn this observation into a definition: propositions are types
-which have *at most* one element. A type is a proposition when, for
-any two elements, there is a path between them.
+Now for general propositions. A type is a proposition when it has at
+most one element. That is, for any two elements, there is a path
+between them.
 
 ```
 isProp : Type ℓ → Type ℓ
 isProp A = (x y : A) → x ≡ y
 ```
 
+This definition doesn't actually promise that there are any elements
+of `A`, just that if we *did* have two elements, they would be equal.
+This is just as well, because not every proposition has a proof.
+
 The type ``⊤`` is a proposition that has a proof ``tt`` --- truth.
 Because its induction principle lets us assume any element of ``⊤`` is
-exactly ``tt``, it's easy to show this is a proposition in this new
-sense by pattern-matching.
+exactly ``tt``, it's easy to show ``⊤`` is a proposition in this new
+sense, by pattern matching.
 
 ```
 isProp-⊤ : isProp ⊤
@@ -181,12 +184,9 @@ isProp-⊤ : isProp ⊤
 isProp-⊤ = {!!}
 ```
 
-The definition of ``isProp`` doesn't actually promise that there are
-any elements of `A`, just that if we *did* have two elements, they
-would be equal. This is just as well, because not every proposition
-has a proof. As we saw in Lecture 1-X, ``∅`` represents a proposition
-with no proof --- falsity. If a type has no elements at all then it
-certainly has at most one element:
+As we saw in Lecture 1-5, ``∅`` represents a proposition with no
+proof --- falsity. If a type has no elements at all then it certainly
+has at most one element:
 
 ```
 isProp-∅ : isProp ∅
@@ -194,8 +194,22 @@ isProp-∅ : isProp ∅
 isProp-∅ = {!!}
 ```
 
-Using these two facts, we can show that the observational equality
-types defined in Lecture 1-X are all propositions.
+We can piggyback on these to prove that many of the types we defined
+in Lecture 1-5 as "propositions" in fact are propositions in our new,
+refined sense.
+
+```
+isProp-isOddP : (n : ℕ) → isProp (isOddP n)
+isProp-isEvenP : (n : ℕ) → isProp (isEvenP n)
+
+isProp-isOddP zero = isProp-∅
+isProp-isOddP (suc n) = isProp-isEvenP n
+
+isProp-isEvenP zero = isProp-⊤
+isProp-isEvenP (suc n) = isProp-isOddP n
+```
+
+And observational equality:
 
 ```
 isProp-≡Bool : (a b : Bool) → isProp (a ≡Bool b)
@@ -381,20 +395,10 @@ same as being equivalent to ``⊤``.
 ≃⊤→isContr = {!!}
 ```
 
-mvrnote:sort
-```
-¬→≃∅ : ¬ A → (A ≃ ∅)
-¬→≃∅ p .map = p
-¬→≃∅ p .proof .section .map ()
-¬→≃∅ p .proof .section .proof ()
-¬→≃∅ p .proof .retract .map ()
-¬→≃∅ p .proof .retract .proof a = ∅-rec (p a)
-```
-
 
 ## Closure Properties of Propositions
 
-Back in Lecture 1-X, we used ordinary type constructors to represent
+Back in Lecture 1-5, we used ordinary type constructors to represent
 logical operations on propositions. We had better make sure that our
 new notion of proposition is preserved by these type constructors!
 
@@ -468,20 +472,31 @@ proposition, then we can fill any shape at all.
 
 ## Filling Shapes in Propositions
 
-mvrnote: this section needs rationalising
-
 If a type is a proposition we can use the element of ``isProp`` to
-find a path between any two points. Not only that, but this path we
-are given is unique; all path between those points are equal.
+find a path between any two points. But in fact more is true: that
+path between the points is itself unique. All ways of connecting those
+points by a path are equal.
 
 This is a priori surprising: the definition of ``isProp`` gives us
 paths between points, but says nothing about cubes of higher
 dimension.
 
-mvrnote: draw cube
+                          s
+                b — — — — — — — — > d
+              / ^                 / ^
+         t  /   |            u  /   |
+          /     |   r         /     |
+        a — — — — — — — — > c       |
+        ^       |           ^       |                    ^   j
+        |       |           |       |                  k | /
+        |       |           |       |                    ∙ — >
+        |       |           |       |                      i
+        |       a — — — — — | — — > a
+        |     /             |     /
+        |   /               |   /
+        | /                 | /
+        a — — — — — — — — > a
 
-mvrnote: out of date:
-<iframe class="quiver-embed" src="https://q.uiver.app/#q=WzAsMTIsWzEsMCwiXFxtYXRodHR7YzF9Il0sWzMsMCwiXFxtYXRodHR7eX0iXSxbMCwxLCJcXG1hdGh₀dHtjMH₀iXSxbMiwxLCJcXG1hdGh₀dHt5fSJdLFswLDMsIlxcbWF0aHR0e2MwfSJdLFsyLDMsIlxcbWF0aHR0e2MwfSJdLFsxLDIsIlxcbWF0aHR0e2MwfSJdLFszLDIsIlxcbWF0aHR0e2MwfSJdLFs0LDIsIlxcLCJdLFs1LDIsIlxcLCJdLFs0LDEsIlxcLCJdLFs1LDEsIlxcLCJdLFswLDEsIlxcbWF0aHR0e2gxfVxcLCBcXG1hdGh₀dHt5fSJdLFsyLDMsIlxcbWF0aHR0e2gwfVxcLCBcXG1hdGh₀dHt5fSIsMCx7ImxhYmVsX3Bvc2l0aW9uIjo3MH₁dLFszLDEsIlxcbWF0aHR0e3l9IiwwLHsibGFiZWxfcG9zaXRpb24iOjQwfV0sWzIsMCwiXFxtYXRodHR7aDB9XFwsIFxcbWF0aHR0e2MxfSIsMCx7ImxhYmVsX3Bvc2l0aW9uIjozMH₁dLFs0LDJdLFs1LDNdLFs2LDBdLFs1LDddLFs0LDZdLFs0LDVdLFs2LDddLFs3LDFdLFs4LDksImkiLDJdLFs4LDEwLCJrIl0sWzgsMTEsImoiLDAseyJsYWJlbF9wb3NpdGlvbiI6NDAsInNob3J0ZW4iOnsidGFyZ2V0IjozMH₁9XV0=&embed" width="816" height="560" style="border-radius: 8px; border: none;"></iframe>
 
 ```
 isProp→Square : isProp A
@@ -489,14 +504,14 @@ isProp→Square : isProp A
   → (r : a ≡ c) (s : b ≡ d)
   → (t : a ≡ b) (u : c ≡ d)
   → Square t u r s
--- Exercise:
+-- Exercise: (Hint: Use `pA` to create each side.)
 isProp→Square pA {a = a} r s t u i j = {!!}
 ```
 
-A special case of ``isProp→Square`` is when we fix two sides of the
-square to be ``refl``, resulting in an ordinary path between paths.
-There's another way to read this: for `x` and `y` elements of a
-proposition, `x ≡ y` is also a proposition.
+An important special case of ``isProp→Square`` is when we fix two
+sides of the square to be ``refl``, resulting in an ordinary path
+between paths. There's another way to read this: for `x` and `y`
+elements of a proposition, `x ≡ y` is also a proposition.
 
 ```
 isProp→isProp≡ : isProp A → (x y : A) → isProp (x ≡ y)
@@ -523,16 +538,16 @@ isContr≡→isProp f x y = {!!}
 ```
 
 There's a another way we can generalise ``isProp``. If we have a path
-of types which are all propositions, we can produce a path-over that
-path between any endpoints.
+of types where every type along the path is a proposition, we can
+produce a path-over that path between any endpoints.
 
 ```
-isProp→PathP : {A : I → Type ℓ} 
+isProp→any-PathP : {A : I → Type ℓ}
   → ((i : I) → isProp (A i))
   → (a0 : A i0) (a1 : A i1)
   → PathP A a0 a1
 -- Exercise: (Hint: `toPathP`)
-isProp→PathP {A = A} hB a0 a1 = {!!}
+isProp→any-PathP {A = A} hB a0 a1 = {!!}
 
 isProp→isProp-PathP : {A : I → Type ℓ}
   → ((i : I) → isProp (A i))
@@ -544,13 +559,11 @@ isProp→isProp-PathP pA x y = isProp-equiv {!!} {!!}
 
 We can use what we've proven so far to bootstrap the process of
 filling more interesting shapes. For example, any ``SquareP`` can be
-filled. We prove this in full, painful generality, because we will
+filled. We write this out in full, painful generality, because we will
 need to use it shortly.
 
-mvrnote: draw square
-
 ```
-isProp→SquareP : {A : I → I → Type ℓ} 
+isProp→any-SquareP : {A : I → I → Type ℓ}
   → ((i j : I) → isProp (A i j))
   
   → {a : A i0 i0} {b : A i0 i1} {c : A i1 i0} {d : A i1 i1}
@@ -560,7 +573,7 @@ isProp→SquareP : {A : I → I → Type ℓ}
 
   → SquareP A t u r s
 -- Exercise:
-isProp→SquareP pA r s t u = {!!}
+isProp→any-SquareP pA r s t u = {!!}
 ```
 
 We can prove similar facts for contractibility. These can be done
@@ -595,8 +608,8 @@ isProp-isContr cA₀ cA₁ = {!!}
 ```
 
 There's another important type that is a proposition: the fact that a
-map is an equivalence. We will prove this a little later in Lecture
-2-X.
+map is an equivalence. This is surprisingly involved, so we will prove
+it a little later in Lecture 2-9.
 
 
 ## Subtypes
@@ -605,10 +618,16 @@ Our definition of proposition leads to a good notion of "subtype". If
 `P : A → Type` is a family of propositions depending on a type `A`,
 then the *subtype* of `A` carved out by `P` is simply the type of
 pairs `Σ[ a ∈ A ] P a`. So, an element of the subtype is pair `(a ,
-p)` of an `a : A` and a witness `p : P a` that `P` is true about `a`.
+p)` of an `a : A` and a witness `p : P a` that the proposition `P` is
+true about `a`.
 
-mvrnote: examples, isEven etc
-mvrnote: union/intersection etc
+```
+Even-subtype : Type
+Even-subtype = Σ[ n ∈ ℕ ] isEvenP n
+
+Zero-subtype : Type
+Zero-subtype = Σ[ n ∈ ℕ ] (n ≡ℕ zero)
+```
 
 The main fact to prove about subtypes is that they have the same paths
 as the types they came from. That is, `(a1 , b1) ≡ (a2 , b2)` is
@@ -622,11 +641,11 @@ equivalent to `a1 ≡ a2` whenever `B` is a family of propositions.
 ≡-in-subtype pB x y = inv→equiv to (ap fst) to-fro fro-to
   where
     to : x .fst ≡ y .fst → x ≡ y
-    -- Exercise: (Hint: `isProp→PathP`)
+    -- Exercise: (Hint: `isProp→any-PathP`)
     to e = {!!}
 
     to-fro : isSection to (ap fst)
-    -- Exercise: (Hint: `isProp→SquareP`)
+    -- Exercise: (Hint: `isProp→any-SquareP`)
     to-fro e = {!!}
 
     fro-to : isRetract to (ap fst)
@@ -634,7 +653,7 @@ equivalent to `a1 ≡ a2` whenever `B` is a family of propositions.
     fro-to p = {!!}
 ```
 
-To foreshadow Lecture 3-X, this is extremely useful when we start
+To foreshadow Lecture 3-1, this is extremely useful when we start
 looking at algebraic structures such as groups, rings, and so on.
 These come with some data, like addition and multiplication operators,
 together with a bunch of axioms, like associativity, commutativity,
@@ -658,14 +677,14 @@ isProp-Σ : {A : Type ℓ} {P : A → Type ℓ'}
   → isProp A
   → ((a : A) → isProp (P a))
   → isProp (Σ[ a ∈ A ] P a)
--- Exercise: (Hint: use ``isProp→PathP``.)
+-- Exercise: (Hint: use ``isProp→any-PathP``.)
 isProp-Σ pA pP (a₀ , b₀) (a₁ , b₁) i = {!!}
 ```
 
 And similarly for contractibility. If `A` is contractible and `P : A →
 Type` is a family of contractible types, then the entire Σ-type is
 contractible. This is similar to the ``isContr-×`` case, but will
-require ``isProp→PathP`` or ``transport-fixing`` in the second
+require ``isProp→any-PathP`` or ``transport-fixing`` in the second
 component.
 
 ```
@@ -704,7 +723,7 @@ isContr-Π c = {!!}
 ## Propositional Truncation
 
 We are still missing two important logical operations, the same two
-that we had trouble with back in Lecture 1-X: "or" and "exists".
+that we had trouble with back in Lecture 1-5: "or" and "exists".
 
 Our guess for "or" was disjoint union ``⊎``, but the disjoint union of
 two propositions is not necessarily a proposition. We checked in
@@ -762,7 +781,7 @@ have type `isProp (∃ A)`, and realise by unfolding the definition that
 this is asking for a path constructor.
 :::
 
-::: Warning:
+::: Caution:
 The usual terminology for propositional truncation in Homotopy Type
 Theory is `∥ A ∥`, but this can get confusing if we are doing
 mathematics where the same double-bars denote the norm of a vector or
@@ -800,7 +819,7 @@ types, each of which is a proposition.
       → ((e : ∃ A) → isProp (P e))
       → ((a : A) → P (in-∃ a))
       → ((e : ∃ A) → P e)
--- Exercise: (Hint: `isProp→PathP`)
+-- Exercise: (Hint: `isProp→any-PathP`)
 ∃-ind pP f e = {!!}
 ```
 
@@ -867,6 +886,23 @@ orP-ump-≃ pP pQ pR = {!!}
 
 ## References and Further Reading
 
-mvrnote:
-* The General Universal Property of the Propositional Truncation, Nicolai Kraus:
-  https://arxiv.org/abs/1411.2682
+* The original *[Homotopy Type Theory]* book:
+  * Contractible Types: Chapter 3.11
+  * Propositions: Chapter 3.3
+  * Subtypes: Chapter 3.5
+  * Propositional Truncation: Chapter 3.7
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Contractible Types: Chapter 10.1
+  * Propositions: Chapter 12.1
+  * Propositional Truncation: Chapter 14
+* Martin Escardo's [Lecture Notes]:
+  * [Contractible Types](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#singleton-types)
+  * [Propositions](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#subsingleton-types)
+  * [Propositional Truncation](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#truncation) (using a different approach)
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
+
+* [The General Universal Property of the Propositional
+  Truncation](https://arxiv.org/abs/1411.2682), Nicolai Kraus

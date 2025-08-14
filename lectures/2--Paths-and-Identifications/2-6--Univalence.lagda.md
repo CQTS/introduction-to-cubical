@@ -25,7 +25,7 @@ private
 
 We've spent a lot of time characterising paths in the various types we
 have available. The one type we haven't done this for is the universe
-of types ``Type``.
+``Type``.
 
 Transport turns any path into an equivalence, as we showed in
 ``path→equiv``. But can every equivalence be produced this way? The
@@ -51,11 +51,13 @@ Cubical Type Theory's central accomplishment is allowing the
 univalence principle to compute in situations like this.
 
 ::: Aside:
-Really, the original univalence axiom is defined in a setting that
-uses "identity types" mvrnote: link (defined as the
+Really, the original univalence axiom is defined in a version of
+Homotopy Type Theory that uses ["identity types"] (defined as the
 inductive type that has the ``J`` rule as its eliminator) as its
 notion of equality, rather than the cubical path types we have been
 using. But the spirit is the same.
+
+["identity types"]: https://ncatlab.org/nlab/show/identity+type
 :::
 
 
@@ -93,7 +95,7 @@ type `T` is only defined when `φ` holds, so on the left and right
 sides.
 
 This picture a lot like the kind of thing we were ``hcomp``ing over in
-Lecture 2-X, except that it is open on the bottom rather than the top.
+Lecture 2-4, except that it is open on the bottom rather than the top.
 (This is a conventional choice --- the equivalences go into `A`,
 rather than out of it.)
 
@@ -292,7 +294,7 @@ _ = λ (e : S¹ ≃ S¹) (x : S¹)
 ```
 
 Finally, univalence is inverse to ``path→equiv``. We show one half of
-this now using ``J``, but will need to wait until Lecture 2-X to show
+this now using ``J``, but will need to wait until Lecture 2-9 to show
 the other direction.
 
 ```
@@ -323,7 +325,7 @@ Univalence gives us a second, much easier way to prove this:
 
 This is nice, but we now have to check that the underlying function of
 this equivalence is the function we expect; that is, ``×-map``.
-Thankfully, we checked in Lecture 2-X that transporting over a path
+Thankfully, we checked in Lecture 2-5 that transporting over a path
 like ``×-map-≡`` computes to a transport in each of the components, so we
 just have to use ``ua-comp`` on both sides to clear up those transports.
 
@@ -348,84 +350,6 @@ There is a downside to proving this kind of equivalence using
 univalence: ``×-map-≃-ua`` only works for types that all lie in the
 same universe, whereas our original ``×-map`` is completely universe
 polymorphic.
-
-
-## Dependent Univalence
-
-mvrnote: useful anywhere?
-
-from Cubical.Foundations.Univalence.Dependent
-```
--- module _
-  -- {A B : Type ℓ} {P : A → Type ℓ'} {Q : B → Type ℓ'}
-  -- (e : A ≃ B) (F : (a : A) → P a → Q (e .map a))
-  -- (iseq : (a : A) → isEquiv (F a))
-  -- where
-  -- private
-  --   -- Bundle `F` and `equiv` into a pointwise equivalence of `P` and `Q`:
-  --   Γ : (a : A) → P a ≃ Q (e .map a)
-  --   Γ a = equiv (F a) (iseq a)
-
-  -- uaP : PathP (λ i → ua e i → Type ℓ') P Q
-  -- uaP i x = Glue Base {∂ i} equiv-boundary where
-  --   -- Like `ua`, `uaOver` is obtained from a line of
-  --   -- Glue-types, except that they are glued
-  --   -- over a line dependent on `ua e : A ≡ B`.
-
-  --   -- `x` is a point along the path `A ≡ B` obtained
-  --   -- from univalence, i.e. glueing over `B`:
-  --   --
-  --   --  A = = (ua e) = = B
-  --   --  |                |
-  --   -- (e)          (idEquiv B)
-  --   --  |                |
-  --   --  v                v
-  --   --  B =====(B)====== B
-  --   _ : Glue B {φ = i ∨ ~ i} (λ { (i = i0) → A , e ; (i = i1) → B , idEquiv B })
-  --   _ = x
-
-  --   -- We can therefore `unglue` it to obtain a term in the base line of `ua e`,
-  --   -- i.e. term of type `B`:
-  --   b : B
-  --   b = unglue (∂ i) x
-
-  --   -- This gives us a line `(i : I) ⊢ Base` in the universe of types,
-  --   -- along which we can glue the equivalences `Γ x` and `idEquiv (Q x)`:
-  --   --
-  --   -- P (e x) = = = = = = Q x
-  --   --    |                |
-  --   --  (Γ x)        (idEquiv (Q x))
-  --   --    |                |
-  --   --    v                v
-  --   --   Q x ===(Base)=== Q x
-  --   Base : Type ℓ'
-  --   Base = Q b
-
-  --   equiv-boundary : Partial (∂ i) (Σ[ T ∈ Type ℓ' ] T ≃ Base)
-  --   equiv-boundary (i = i0) = P x , Γ x
-  --   equiv-boundary (i = i1) = Q x , idEquiv (Q x)
-
-  --   -- Note that above `(i = i0) ⊢ x : A` and `(i = i1) ⊢ x : B`,
-  --   -- thus `P x` and `Q x` are well-typed.
-  --   _ : Partial i B
-  --   _ = λ { (i = i1) → x }
-
-  --   _ : Partial (~ i) A
-  --   _ = λ { (i = i0) → x }
-```
-
-```
--- module _ {A A' : Type ℓ} {B : A → Type ℓ'} {B' : A' → Type ℓ'} (e₁ : A ≃ A') (e₂ : (x : A) → B x ≃ B' (e₁ .map x)) where
---   Σ-map-ua : (Σ[ a ∈ A ] B a) ≃ (Σ[ a' ∈ A' ] B' a')
---   Σ-map-ua = au λ i → Σ[ a ∈ ua e₁ i ] uaP e₁ (λ x → e₂ x .map) (λ x → e₂ x .proof) i a
-
---   Σ-map-ua-step1 : Σ-map-ua .map ≡ λ (a , b) → (transport (ua e₁) a) , transport (λ i → uaP {P = B} {Q = B'} e₁ (λ x → e₂ x .map) (λ x → e₂ x .proof) i (transport-filler (ua e₁) a i)) b
---   Σ-map-ua-step1 = refl
-
---   Σ-map-ua-underlying : Σ-map-ua .map ≡ Σ-map (e₁ .map) (λ a → e₂ a .map)
---   Σ-map-ua-underlying i (a , b) .fst = ua-comp e₁ a i
---   Σ-map-ua-underlying i (a , b) .snd = {!!}
-```
 
 
 ## Addition as Path Composition
@@ -537,8 +461,6 @@ double-cover base = Bool
 double-cover (loop i) = not-Path i
 ```
 
-mvrnote: picture is mandatory here from hott game?
-
 This type family lets us show that the circle is non-trivial, which is
 a fact we didn't know for sure previously!
 
@@ -574,7 +496,7 @@ loopⁿ : ℤ → base ≡ base
 loopⁿ = iterateⁿ loop
 ```
 
-This will be an encode-decode proof like those we did in Lecture 2-X,
+This will be an encode-decode proof like those we did in Lecture 2-3,
 with some slight differences which we will discuss when we encounter
 them.
 
@@ -593,8 +515,10 @@ It can be constructed pretty easily by induction on `n`.
 
 ```
 iterateⁿ-predℤ-square : {x : A} → (p : x ≡ x) → (n : ℤ) → Square (iterateⁿ p (predℤ n)) (iterateⁿ p n) refl p
--- Exercise: (Hint: `∙-filler`.)
-iterateⁿ-predℤ-square p n i j = {!!}
+-- Exercise:
+iterateⁿ-predℤ-square p (pos zero)    i j = {!!} -- Use a connection
+iterateⁿ-predℤ-square p (pos (suc n)) i j = {!!} -- Try `∙-filler` for `p`
+iterateⁿ-predℤ-square p (negsuc n)    i j = {!!} -- Try `∙-filler` for `sym p`
 ```
 
 Now let's jump straight into the proof.
@@ -810,7 +734,7 @@ starting and ending at some point other than ``base``.)
 
 ```
 rotate-loop : (y : S¹) → y ≡ y
--- Exercise: (Hint: We built the necessary square in Lecture 2-X!)
+-- Exercise: (Hint: We built the necessary square in Lecture 2-4!)
 rotate-loop base       = loop
 rotate-loop (loop i) j = {!!}
 ```
@@ -848,9 +772,24 @@ _ = test-identical (-19 +ℤᵐ 34) 15
 
 ## References and Further Reading
 
-mvrnote: original proof for  S^1
-proof of S^1 in other libraries
-* https://arxiv.org/abs/1611.02108
-  Cubical Type Theory: a constructive interpretation of the univalence axiom
-  Cyril Cohen, Thierry Coquand, Simon Huber, Anders Mörtberg
+These use a different notion of path, but many properties are similar.
+* The original *[Homotopy Type Theory]* book:
+  * Univalence: Chapter 2.10
+  * Paths in the Circle: Chapter 8.1
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Univalence: Chapter 17
+  * Multiplication on the Circle: Chapter 21.3
+  * Paths in the Circle: Chapter 22
+* Martin Escardo's [Lecture Notes]:
+  * [Univalence](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#univalence)
+* HoTTEST Summer School 2022
+  * [Univalence and Paths in the Circle](https://github.com/martinescardo/HoTTEST-Summer-School/blob/main/Agda/HITs/Lecture6-notes.lagda.md)
 
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
+
+* Agda Documentation
+  * [Glue Types](https://agda.readthedocs.io/en/latest/language/cubical.html#glue-types)
+* Tutorial for `cubicaltt`, an early cubical proof assistant
+  * [Glue and Univalence](https://github.com/mortberg/cubicaltt/blob/master/lectures/lecture4.ctt)

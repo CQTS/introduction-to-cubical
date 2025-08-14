@@ -4,8 +4,8 @@
 <div style="flex: 50%; align-self: center;">
 
 *by David Jaz Myers and Mitchell Riley, with contributions from Wen
-Rahme and Zyad Yasser Hassan. Supported by [Tamkeen] under the [NYUAD
-Research Institute] grant `CG008`.*
+Rahme. Supported by [Tamkeen] under the [NYUAD Research Institute]
+grant `CG008`.*
 
 </div>
 <div style="flex: 50%;">
@@ -62,9 +62,9 @@ The course has three parts.
 - **Part 2:** A tutorial on the cubical features of Cubical Agda,
   covering paths, higher inductive types, transport, composition and
   univalence.
-- **Part 3:** Lectures on topics at the frontier of HoTT research,
-  which can be read and completed independently of each other. There
-  are currently three topics covered.
+- **Part 3:** (Under construction.) Lectures on topics at the frontier
+  of HoTT research, which can be read and completed independently of
+  each other. There are currently three topics covered.
     - **The Structure Identity Principle**, following [Angiuli,
       Cavallo, Mörtberg and Zeuner]
     - **Modalities**, following [Rijke, Shulman and Spitters]
@@ -99,6 +99,11 @@ open the file
 
 in your editor to get started.
 
+Each section ends with links and references to other resources. There
+is a good chance these other sources present topics in a different
+order to the one we have chosen, but it may still come in handy to see
+the content presented in a different way.
+
 ::: Caution:
 The notes are intended to be read either on the website or in your
 editor. Reading directly on GitHub is not recommended; the formatting
@@ -112,8 +117,8 @@ and code highlighting does not work correctly.
 
 ## Goals of this Course
 
-These notes were written with the following goals in mind. These notes
-should:
+These notes were written with the following goals in mind. The
+lectures should:
 
 * **Be readable linearly**: Concepts introduced in this course are
   carefully sequenced so that nothing is used before it can be
@@ -132,7 +137,7 @@ should:
   forefront of research in Homotopy Type Theory and Cubical Agda. We
   believe that the topics lectures in Part 3 will get them there.
 
-On the other hand, we are not concerned with any of the following
+On the other hand, we are not focused on any of the following goals
 goals. These notes:
 
 * **Don't cover implementation details**: We consider Cubical Type
@@ -141,35 +146,17 @@ goals. These notes:
   filling problems in the maximum possible generality.
 * **Don't stay compatible with other Agda libraries**: We use
   different names and different definitions to existing Agda
-  libraries, whenever this improves readability.
+  libraries whenever this improves readability.
 * **Don't showcase Agda's features**: We don't discuss Agda's powerful
-  module system, typeclasses, modalities, reflection faculties.
+  module system, typeclasses, modalities, reflection features.
 * **Don't optimise performance**: The definitions we use are not
-  chosen with either type-checking or normalisation performance in
-  mind. In some places faster options are available, but were avoided
-  for complexity or sequencing reasons.
+  chosen with type-checking or normalisation performance in mind. In
+  some places faster options are available, but were avoided for
+  complexity or sequencing reasons.
 
-<!-- ## License -->
+## License
 
-<!-- ??? -->
+This work is licensed under a
+[Creative Commons Attribution-NonCommercial 4.0 International License][cc-by-nc].
 
-## Comparison with other Cubical Agda libraries
-
-For the experts:
-
-* We use biinvertible map for equivalence
-* ``fiber`` has the path flipped to usual
-* ``∘e`` a.k.a. `compEquiv` uses non-diagrammatic order
-* We don't go into detail on cubical subtypes
-* Consequently, we don't prove `hfill` in general, just the special
-  cases that we need
-* The type used in ``idfun`` is implicit
-* ``→-map-≃`` takes the domain equivalence flipped to avoid some path
-  algebra, letting us introduce it earlier
-* We use ``⊤`` and ``∅`` for the unit type and empty type respectively
-* We use "1-lab style" ``hcomp``, so that the bottom face is provided
-  as part of the partial element.
-* In the SIP section, ``FunctionEquivStr`` doesn't use implicit
-  arguments, so we don't have to fuss around with an implicit version
-  of ``Π-map-cod≃``
-* `transp` renamed to ``transport-fixing``
+[cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/

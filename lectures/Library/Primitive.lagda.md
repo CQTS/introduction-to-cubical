@@ -15,14 +15,14 @@ in `Library.Prelude`.
 ## Universes
 
 We declare we will be using ``Type`` as the name for the universes of
-types.
+ntypes.
 
 ```
 {-# BUILTIN TYPE           Type             #-}
 ```
 
 We also have the universe hierarchy of "strict sets", which are
-mentioned very briefly in Lecture 2-X.
+mentioned very briefly in Lecture 2-4.
 
 ```
 {-# BUILTIN STRICTSET      SSet             #-}
@@ -38,7 +38,7 @@ provided by Agda, even though we never use them.
 {-# BUILTIN PROPOMEGA      Unused-Propω     #-}
 ```
 
-Now, our notation for universe levels which we discuss in Lecture 1-X.
+Now, our notation for universe levels which we discuss in Lecture 1-3.
 
 ```
 {-# BUILTIN LEVELUNIV      LevelUniv        #-}
@@ -88,7 +88,7 @@ primitive
     primINeg : I → I     -- ~
 ```
 
-And the primitive notion of ``PathP``, discussed in Lecture 2-X.
+And the primitive notion of ``PathP``, discussed in Lecture 2-1.
 
 ```
 postulate
@@ -182,8 +182,8 @@ primitive
 
 ## Composition and Transport
 
-Here we have ``transport-fixing`` operation, discussed in Lecture 2-X
-and ``hcomp``, discussed in Lecture 2-X.
+Here we have ``transport-fixing`` operation, discussed in Lectures 2-3
+and 2-5, and ``hcomp`` discussed in Lecture 2-4.
 
 ```
 primitive

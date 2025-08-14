@@ -23,6 +23,7 @@ curious!)
 [approach]: https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/poly_kinds.html#overview-of-type-in-type
 [Haskell]: https://www.haskell.org/
 
+
 ## Universe Levels
 
 To avoid this, Agda stratifies all types into a hierarchy using the
@@ -197,7 +198,7 @@ the "empty type":
 
 ```
 data ∅ : Type where
--- Nothing!
+  -- Nothing!
 ```
 
 We want to define functions out of this inductive type by pattern
@@ -211,6 +212,12 @@ on here would be absurd.
 impossible-Bool : ∅ → Bool
 impossible-Bool ()
 ```
+
+How have we defined a function into ``Bool`` without actually
+mentioning a ``Bool``? Well, this is a function that accepts an
+argument that it's impossible to actually give an example of. Because
+we can't ever provide an element of type ``∅``, this function never
+needs to actually do anything. Its definition is vacuously complete.
 
 And so, the recursion principle of the empty type is a version of the
 "ex falso quodlibet" principle that we mentioned when defining
@@ -251,7 +258,7 @@ mapping property, our claim is that the following maps are inverses.
 
 ## Disjoint Unions
 
-Next let's define the disjoint union of two types. An element of a
+Next let's define the *disjoint union* of two types. An element of a
 disjoint union `A ⊎ B` should either be an element of `A` or an
 element of `B`. We can turn this into the definition of an inductive
 type. Like ``List``, this is an indexed inductive type. This time, it
@@ -264,6 +271,12 @@ data _⊎_ {ℓ ℓ' : Level} (A : Type ℓ) (B : Type ℓ') : Type (ℓ-max ℓ
 ```
 
 The names of the constructors are short for "in-left" and "in-right".
+
+::: Caution:
+Other resources may call this type the *coproduct* or *binary sum* of
+two types.
+:::
+
 Here's a very simple example which just identifies which side the
 input is on.
 
@@ -300,7 +313,7 @@ those tests.)
 
 The recursion principle for the disjoint union is "dual" to the
 universal mapping property of the product that we saw at the end of
-Lecture 1-X. There, we had that from a pair of functions `C → A` and
+Lecture 1-1. There, we had that from a pair of functions `C → A` and
 `C → B` we could get a function `C → A × B`. Here, from a pair of
 functions `A → C` and `B → C` we can build a map `A ⊎ B → C`.
 
@@ -398,7 +411,7 @@ count-Bool⊎Day (inr sunday)    = 9
 ```
 
 We even have exponentiation provided by `→`, so that $n^m$. We can't verify this by
-pattern-matching (because functions are not inductive types that can
+pattern matching (because functions are not inductive types that can
 be pattern matched on), but we can reason through why this might be
 the case. Consider the type of functions `Bool → Day`. We argued in
 ``Bool-rec`` that a function out of ``Bool`` is determined by its
@@ -423,7 +436,8 @@ actual natural numbers.
 * $x^{y + z} = (x^y) × (x^z)$,
 * $(x^y)^z = x^{y×z}$.
 
-(mvrnote: These equations are nicely formatted on the website version.)
+(These equations are a bit hard to read in the editor, but they're
+nicely formatted on the website version.)
 
 ::: Aside:
 In ordinary set-based mathematics, this is sometimes known as
@@ -557,12 +571,29 @@ have to be:
 
 ## References and Further Reading
 
-Girard's paradox
-https://www.cse.chalmers.se/~coquand/girard.pdf
-https://www.cs.cmu.edu/~kw/scans/hurkens95tlca.pdf
-https://cs.brown.edu/courses/cs1951x/docs/logic/girard.html
+* The original *[Homotopy Type Theory]* book:
+  * Universes: Chapter 1.3
+  * Empty Type: Chapter 1.7
+  * Disjoint Unions: Chapter 1.7
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Universes: Chapter 6
+  * Empty Type: Chapter 4.3
+  * Disjoint Unions: Chapter 4.4
+* Martin Escardo's [Lecture Notes]:
+  * [Universes](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#universes)
+  * [Empty Type](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#emptytype)
+  * [Disjoint Unions](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#binarysum)
+* Agda Documentation
+  * [Sorts and Universes](https://agda.readthedocs.io/en/latest/language/sort-system.html)
+  * [Universe Levels](https://agda.readthedocs.io/en/latest/language/universe-levels.html)
 
-Categorifying cardinal arithmetic
-https://math.jhu.edu/~eriehl/arithmetic.pdf
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
 
-https://ncatlab.org/nlab/show/groupoid+cardinality
+* Talk slides by Emily Riehl on [Categorifying cardinal arithmetic]
+* [An Analysis of Girard's Paradox] by Thierry Coquand
+* [A Simplification of Girard's Paradox] by Antonius J.C. Hurkens
+
+[Categorifying cardinal arithmetic]: https://math.jhu.edu/~eriehl/arithmetic.pdf
+[An Analysis of Girard's Paradox]: https://www.cse.chalmers.se/~coquand/girard.pdf

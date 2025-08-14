@@ -25,25 +25,29 @@ private
 
 # Lecture 2-8: Sets and Higher Types
 
-We saw in Lecture 2-X that paths in inductive types like ``Bool``,
-``ℕ`` and ``ℤ`` are equalities between elements. As a consequence, for
-any two elements `x` and `y`, the type of paths `x ≡ y` is always a
+We saw in Lecture 2-3 that paths in types like ``Bool``, ``ℕ`` and
+``ℤ`` are equalities between elements. As a consequence, for any two
+elements `x` and `y`, the type of paths `x ≡ y` is always a
 proposition --- specifically, the proposition that `x` equals `y`.
 
-We call types with this property *sets*.
+We call types with this property *sets*. Sets represent the
+mathematical objects we're most familiar with from classical
+mathematics: discrete structures whose equality is unambiguous.
 
 ```
 isSet : Type ℓ → Type ℓ
 isSet A = (x y : A) → isProp (x ≡ y)
 ```
 
-mvrnote: more intuition, uip, axiom k, etc
+As we did for propositions, we'll spend some time proving closure
+properties for sets.
 
 
 ## Basic Examples
 
 We characterised the types of paths in ``⊤``, ``Bool`` and ``ℕ`` back
-in Lecture 2-X, and from these it is easy to show they are all sets.
+in Lecture 2-3, and from those characterisations it is easy to show
+these types are sets.
 
 ```
 isSet-⊤ : isSet ⊤
@@ -68,7 +72,7 @@ isSet-∅ = {!!}
 ```
 
 For ``⊎``, we will need a helper that relates paths in the two sides
-to the characterisation ``≡⊎`` from back in Lecture 2-X.
+to the characterisation ``≡⊎`` from back in Lecture 2-3.
 
 ```
 isProp-≡⊎ : {A B : Type} → isSet A → isSet B → (a b : A ⊎ B) → isProp (a ≡⊎ b)
@@ -153,7 +157,7 @@ isProp-isSet = {!!}
 ## Closure Properties
 
 We can show a number of closure properties of sets like those for
- propositions and contractible types.
+propositions and contractible types.
 
 First, if `A` and `B` are sets, then `A × B` is a set, and for `A → B`
 it is sufficient for just `B` to be a set.
@@ -170,42 +174,34 @@ isSet-→ pB = {!!}
 
 Similarly to contractible types and propositions, any retract of a set
 is a set. This follows easily from the following general about fact
-about homotopies.
+about homotopies, which is a higher-dimensional generalisation of
+``homotopy-Path``. On its own, a homotopy lets us
 
-mvrnote: do we need a "functions are functors" section?
-mvrnote: what's a good name for this?
-mvrnote: draw cube?
+               g b — — — — — — — > g d
+              / ^                 / ^
+            /   |               /   |
+          /     |             /     |
+       g a — — — — — — — > g c      |
+        ^       |           ^       |                    ^   j
+        |       |           |       |                  k | /
+        |       |           |       |                    ∙ — >
+        |       |           |       |                      i
+        |      f b — — — —  |— — > f d
+        |     /             |     /
+        |   /               |   /
+        | /                 | /
+       f a — — — — — — — — f c
 
 ```
-homotopy-conjugate : {f g : A → B}
-  → (H : (x : A) → (f x ≡ g x))
-  → {a b : A}
-  → {r : a ≡ b}
-  → f a ≡ f b
-  → g a ≡ g b
-homotopy-conjugate {B = B} H {a = a} {b} p i = hcomp (∂ i) faces
-  where 
-    faces : (k : I) → Partial (∂ i ∨ ~ k) B
-    faces k (i = i0) = H a k
-    faces k (i = i1) = H b k
-    faces k (k = i0) = p i
-
-homotopy-conjugate-Square : {f g : A → B}
+homotopy-Square : {f g : A → B}
   → (H : (x : A) → (f x ≡ g x))
   → {a b c d : A}
   → {r : a ≡ c} {s : b ≡ d}
   → {t : a ≡ b} {u : c ≡ d}
   → Square (ap f t) (ap f u) (ap f r) (ap f s)
   → Square (ap g t) (ap g u) (ap g r) (ap g s)
-homotopy-conjugate-Square {B = B} H {r = r} {s} {t} {u} sq i j 
-  = hcomp (∂ i ∨ ∂ j) faces
-  where
-    faces : (k : I) → Partial (∂ i ∨ ∂ j ∨ ~ k) B
-    faces k (j = i0) = H (r i) k
-    faces k (j = i1) = H (s i) k
-    faces k (i = i0) = H (t j) k
-    faces k (i = i1) = H (u j) k
-    faces k (k = i0) = sq i j
+-- Exercise: (Hint: Use an `hcomp` with `sq` as the base and `homotopy-Square` on all sides.)
+homotopy-Square {B = B} H {r = r} {s} {t} {u} sq i j = {!!}
 ```
 
 ::: Aside:
@@ -220,18 +216,18 @@ and apply ``transport``.
 ```
 isSet-retract : B RetractOnto A → isSet B → isSet A
 isSet-retract r sB x y p q 
-  = homotopy-conjugate-Square (r .section .proof) (ap-Square (r .map) (sB _ _ _ _))
+  = homotopy-Square (r .section .proof) (ap-Square (r .map) (sB _ _ _ _))
 
 isSet-equiv : A ≃ B → isSet B → isSet A
 isSet-equiv = isSet-retract ∘ equiv→retract
 ```
 
 And ``isSet-equiv`` lets us easily clear up ``ℤ``, without fussing
-with defining an observational equality type `≡ℤ`:
+about with defining an observational equality type `≡ℤ`:
 
 ```
 isSet-ℤ : isSet ℤ
--- Exercise: (Hint: Find a useful equivalence in Lecture 2-X)
+-- Exercise: (Hint: Find a useful equivalence in Lecture 2-2)
 isSet-ℤ = isSet-equiv {!!} {!!}
 ```
 
@@ -239,7 +235,11 @@ isSet-ℤ = isSet-equiv {!!} {!!}
 ## Hedberg's Theorem
 
 There's a very slick criterion for when a type is a set: Hedberg's
-Theorem, which states that any type with *decidable equality* is a
+Theorem. Recall the notion of decidable type from the end of Lecture
+1-5. A type `A` is decidable when we have an inhabitant of `A ⊎ ¬ A`,
+which we packaged into the ``Dec`` inductive type.
+
+Hedberg's Theorem states that any type with *decidable equality* is a
 set. A type has decidable equality whenever the type of paths between
 any two points is decidable:
 
@@ -248,15 +248,13 @@ Dec≡ : Type ℓ → Type ℓ
 Dec≡ A = (x y : A) → Dec (x ≡ y)
 ```
 
-We are assuming that the path types are all decidable, but
-not that they are decidable *propositions*. (After all, if we already
-knew they were propositions then we would already know our type is a
-set.)
+We are assuming that the path types in `A` are all decidable, but not
+that they are decidable *propositions*. (After all, if we already knew
+they were propositions then we would already know our type is a set.)
 
-Here's a simple example. We have seen that not all propositions are
-decidable, but all propositions have decidable equality. Given two
-elements of a proposition it is easy to decide whether they are equal,
-the answer is always ``yes``!
+Here's a simple example. All propositions have decidable equality.
+Given two elements of a proposition it is easy to decide whether they
+are equal, the answer is always ``yes``!
 
 ```
 isProp→Dec≡ : isProp A → Dec≡ A
@@ -267,7 +265,7 @@ isProp→Dec≡ pA = {!!}
 Inductive types often have decidable equality. The proofs are much
 like the (very similarly named) ``Dec-≡Bool`` and ``Dec-≡ℕ``
 definitions from earlier, which we wrote before we had the notion of
-paths.
+path types.
 
 ```
 Dec≡-Bool : Dec≡ Bool
@@ -323,7 +321,7 @@ Dec≡-replacement-undo dec {x} {y} p = J (λ y p → Dec≡-good-replacement de
 
 The final lemma is that these good replacements are all equal to each
 other, regardless of what path you start with. This is easy after
-pattern-matching on `Dec (x ≡ y)`.
+pattern matching on `Dec (x ≡ y)`.
 
 ```
 Dec≡-replacement-same : (dec : Dec≡ A) → {x y : A} → (p₁ p₂ : x ≡ y)
@@ -354,16 +352,22 @@ hedberg dec x y p₁ p₂ =
 ## Higher Types
 
 You may have noticed a pattern developing in the last couple of
-Lectures. We start with the simplest possible types, the ones
-satisfying ``isContr``. These contain no information at all.
+Lectures. We started with the simplest possible types, contractible
+types, and have gradually considered types that contain more and more
+interesting paths.
 
-More complicated are the propositions identified by ``isProp``. In
-``isProp→isContr≡`` and ``isContr≡→isProp``, we observed that these
-are the types whose path types are contractible. More complicated
-again are the sets, identified by ``isSet``. By definition these are
-the types whose path types are propositions. We can continue this
-pattern inductively, stratifying types by what is known as their
-*h-level*.
+* Contractible types contain no information at all. We'll declare
+  these to have "h-level 0".
+* Propositions are exactly the types whose path types are
+  contractible, as we checked in ``isProp→isContr≡`` and
+  ``isContr≡→isProp``. We'll declare these to have "h-level 1".
+* Sets we are now defining to be the types whose path types are
+  propositions, and so we will say have "h-level 2".
+* Continuing this way, types with "h-level 3" are those whose path
+  types are sets. We have already seen a nontrivial example: ``S¹``,
+  as we proved in Lecture 2-6.
+
+And so on, with higher and higher types.
 
 ```
 isHLevel : ℕ → Type ℓ → Type ℓ
@@ -371,9 +375,29 @@ isHLevel zero    X = isContr X
 isHLevel (suc n) X = (x y : X) → isHLevel n (x ≡ y)
 ```
 
-So types with h-level 0 are contractible, with h-level 1 are
-propositions, and with h-level 2 are sets.
+The h-level of a type is one way to measure the complexity of its path
+spaces: a type with a known h-level has all its interesting
+information *below* a certain dimension. Inspecting higher dimensional
+paths eventually reaches path types that are contractible, and all
+higher dimensional path types from that point on remain contractible
+(thanks to ``isContr→isContr≡``).
 
+There is a dual way of measuring the complexity of a type that instead
+specifies that a type has all its interesting paths *above* a certain
+dimension. This is known as "connectedness", and we discuss it further
+in Lecture 3-2.
+
+::: Caution:
+In homotopy theory, a different numbering system is used for h-levels,
+so that the hierarchy shifted down by two. A set, i.e. a type with
+h-level 2, is said to have "truncation level 0", and a proposition has
+"truncation level -1". Sometimes this is shortened even further, so
+that a set is a "0-type" and a proposition is a "(-1)-type". This is
+just a difference in conventions, but will be necessary to keep in
+mind when reading other sources.
+:::
+
+::: Aside:
 This definition doesn't exactly match ``isProp`` when `n = 1`, but as
 we saw in ``isProp→isContr≡`` and ``isContr≡→isProp``, it is
 equivalent. An alternative definition would specify
@@ -382,7 +406,8 @@ equivalent. An alternative definition would specify
 
 directly rather than leaving that to the inductive case. We'll stick
 with the simpler definition so that we have one fewer case to deal
-with in our proofs. It is easy enough to patch over the difference.
+with in our proofs. It is easy enough to patch over the difference
+using what we've proven already:
 
 ```
 isProp→isHLevel1 : isProp A → isHLevel 1 A
@@ -397,35 +422,42 @@ isSet→isHLevel2 sA x y = isProp→isHLevel1 (sA x y)
 isHLevel2→isSet : isHLevel 2 A → isSet A
 isHLevel2→isSet hA x y = isHLevel1→isProp (hA x y)
 ```
-
-::: Caution:
-In homotopy theory, a different numbering system is used for h-levels,
-so that the hierarchy shifted down by two. A set, i.e. a type with
-h-level 2, is said to have "truncation level 0", and a proposition has
-"truncation level -1". Sometimes this is shortened even further, so
-that a set is a "0-type" and a proposition is a "(-1)-type". This is
-just a difference in conventions, but will be necessary to keep in
-mind when reading other resources.
 :::
+
+
+We can systematise some of the results we've seen in this Lecture and
+the previous. First up, ``isContr→isProp`` and ``isProp→isSet``:
 
 ```
 isHLevel-suc : (n : ℕ) → isHLevel n A → isHLevel (suc n) A
 -- Exercise:
 isHLevel-suc n = {!!}
+```
 
+Next, ``isProp-isContr``, ``isProp-isProp`` and ``isProp-isSet``:
+
+```
 isProp-isHLevel : (n : ℕ) → isProp (isHLevel n A)
 -- Exercise:
 isProp-isHLevel n = {!!}
 ```
 
+Finally, the many closure properties we've seen so far. You'll find
+``isHLevel-equiv`` useful for both ``isHLevel-Σ`` and ``isHLevel-Π``.
+
 ```
+isHLevel-≡ : (n : ℕ)
+  → isHLevel n A
+  → (x y : A) → isHLevel n (x ≡ y)
+-- Exercise: (This one is easier than it sounds!)
+isHLevel-≡ n = {!!}
+
 isHLevel-retract : (n : ℕ) → B RetractOnto A → isHLevel n B → isHLevel n A
 -- Exercise:
 isHLevel-retract n = {!!}
 
 isHLevel-equiv : (n : ℕ) → (A ≃ B) → isHLevel n B → isHLevel n A
--- Exercise:
-isHLevel-equiv = {!!}
+isHLevel-equiv n = isHLevel-retract n ∘ equiv→retract
 
 isHLevel-Σ : {A : Type ℓ} → {B : A → Type ℓ'} 
   → (n : ℕ) 
@@ -441,230 +473,47 @@ isHLevel-Π : {B : A → Type ℓ}
   → isHLevel n ((x : A) → B x)
 -- Exercise:
 isHLevel-Π n = {!!}
-
-isHLevel-≡ : (n : ℕ)
-  → isHLevel n A
-  → (x y : A) → isHLevel n (x ≡ y)
-isHLevel-≡ zero hA = isContr→isContr≡ hA
-isHLevel-≡ (suc n) hA x y = isHLevel-suc n (hA x y)
-
-isHLevel-PathP : {A : I → Type ℓ}
-  → (n : ℕ)
-  → ((i : I) → isHLevel n (A i))
-  → (x : A i0) → (y : A i1) → isHLevel n (PathP A x y)
-isHLevel-PathP zero hA = isContr→isContr-PathP (hA i1)
-isHLevel-PathP (suc n) hA x y = isHLevel-equiv (suc n) (PathP≃Path _) (isHLevel-≡ n (hA i1 _ _))
 ```
 
-```
-isConnected-S¹ : (s : S¹) → ∃ (base ≡ s)
-isConnected-S¹ base = in-∃ refl 
-isConnected-S¹ (loop i) = squash (in-∃ λ j → loop (i ∧ j)) (in-∃ λ j → loop (i ∨ ~ j)) i
+This is all well and good, but do we have concrete examples of types
+with a h-level higher than that of sets? We saw in ``¬isSet-S¹`` that
+``S¹`` is not a set, but it does have the next h-level beyond that.
+(Such types are often called "groupoids".)
 
-isHLevel3-S¹ : isHLevel 3 S¹
-isHLevel3-S¹ = step-3
-  where 
-    step-1 : isHLevel 2 (base ≡ base)
-    step-1 = isSet→isHLevel2 (isSet-equiv ΩS¹≃ℤ isSet-ℤ)
-
-    step-2 : (y : S¹) → isHLevel 2 (base ≡ y)
-    step-2 y = ∃-rec (isProp-isHLevel 2) (λ q → subst (λ t → isHLevel 2 (base ≡ t)) q step-1) (isConnected-S¹ y)
-
-    step-3 : (x y : S¹) → isHLevel 2 (x ≡ y)
-    step-3 x y = ∃-rec (isProp-isHLevel 2) (λ p → subst (λ x → isHLevel 2 (x ≡ y)) p (step-2 y)) (isConnected-S¹ x)
-```
+All the hard work was done back in Lecture 2-6. We know that
+`base ≡ base` is equivalent to ``ℤ``, a set, and so has h-level 2. It
+just takes a little futzing around to show the same is true for any
+endpoints `x` and `y`.
 
 ```
-record Prop (ℓ : Level) : Type (ℓ-suc ℓ) where
-  constructor propData
-  field
-    witness : Type ℓ
-    witnessIsProp : isProp witness
-open Prop public
-```
-
-mvrnote: good examples?
-
-
-Univalence allows us to prove that the type of propositions is a set.
-
-First, being an equivalence between propositions it itself a
-proposition. (In fact, this is true for functions between any types,
-as we prove with a lot more effort in Lecture 2-X, but it is easy
-enough to prove directly for the case we need it here.)
-
-```
--- isProp-isEquiv-for-Props : isProp P → isProp Q → (f : P → Q) → isProp (IsEquiv f)
--- -- (Hint: Combine `isProp-Σ` and `isProp-Π` a few times.)
--- -- isProp-isEquiv-for-Props pP pQ f = {!!}
--- isProp-isEquiv-for-Props pP pQ f = isProp× (isPropΣ (isProp→ pP) (λ s → isPropΠ λ b → isProp→isSet pQ _ _))
---                                            (isPropΣ (isProp→ pP) (λ r → isPropΠ λ a → isProp→isSet pP _ _))
-
-```
-mvrnote: missing?
-
-
-
-## Suspensions
-
-mvrnote: where should this go? all the suspension examples work fine once we have composition
-
-```
-data Susp {ℓ : Level} (A : Type ℓ) : Type ℓ where
-  north : Susp A
-  south : Susp A
-  merid : (a : A) → north ≡ south
-
-Susp-map : {ℓ : Level} {X Y : Type ℓ} → (f : X → Y) → Susp X → Susp Y
-Susp-map f north = north
-Susp-map f south = south
-Susp-map f (merid a i) = merid (f a) i
-```
-
-The simplest example is when we feed ``Susp`` the empty type
-``∅``. You can use an absurd pattern in the ``merid`` case.
-
-```
-Susp∅≃Bool : Susp ∅ ≃ Bool
--- Exercise (trivial):
--- Susp∅≃Interval = {!!}
-Susp∅≃Bool = inv→equiv fun inv to-fro fro-to
+isHLevel3-S¹' : isHLevel 3 S¹
+isHLevel3-S¹' = isHLevel-2-x≡y
   where
-    fun : Susp ∅ → Bool
-    fun north = true
-    fun south = false
-    fun (merid () i)
-    inv : Bool → Susp ∅
-    inv true = north
-    inv false = south
-    to-fro : isSection fun inv
-    to-fro true = refl
-    to-fro false = refl
-    fro-to : isRetract fun inv
-    fro-to north = refl
-    fro-to south = refl
-    fro-to (merid () i)
+  isHLevel-2-base≡base : isHLevel 2 (base ≡ base)
+  -- Exercise:
+  isHLevel-2-base≡base = {!!}
+
+  isHLevel-2-base≡y : (y : S¹) → isHLevel 2 (base ≡ y)
+  isHLevel-2-base≡y = S¹-ind isHLevel-2-base≡base (isProp→any-PathP (λ _ → isProp-isHLevel 2) _ _)
+
+  isHLevel-2-x≡y : (x y : S¹) → isHLevel 2 (x ≡ y)
+  isHLevel-2-x≡y = S¹-ind isHLevel-2-base≡y (isProp→any-PathP (λ _ → isProp-Π λ _ → isProp-isHLevel 2) _ _)
 ```
-
-Next simplest is the unit type ``⊤``, where the result looks like
-the following:
-
-```
-Susp⊤≃Interval : Susp ⊤ ≃ Interval
--- Exercise (also trivial):
--- Susp⊤≃Interval = {!!}
-Susp⊤≃Interval = inv→equiv fun inv to-fro fro-to
-  where
-    fun : Susp ⊤ → Interval
-    fun north = zero
-    fun south = one
-    fun (merid tt i) = seg i
-    inv : Interval → Susp ⊤
-    inv zero = north
-    inv one = south
-    inv (seg i) = merid tt i
-    to-fro : isSection fun inv
-    to-fro zero = refl
-    to-fro one = refl
-    to-fro (seg i) = refl
-    fro-to : isRetract fun inv
-    fro-to north = refl
-    fro-to south = refl
-    fro-to (merid tt i) = refl
-```
-
-And we have seen that the ``Interval`` type is contractible.
-
-```
-isContr→isContr-Susp : isContr A → isContr (Susp A)
-isContr→isContr-Susp cA .center = north
-isContr→isContr-Susp cA .contraction north = refl ∙ refl
-isContr→isContr-Susp cA .contraction south = (merid (cA .center)) ∙ refl
-isContr→isContr-Susp cA .contraction (merid a i) = connection∧ (merid (cA .center)) i ∙ ap (λ t → merid t i ) (cA .contraction a)
-```
-
-```
--- eg: https://1lab.dev/Homotopy.Space.Suspension.Properties.html
--- isProp→isSet-Susp : isProp A → isSet (Susp A)
--- isProp→isSet-Susp pA x y p q = {!!}
-```
-
-Finally something interesting happens once we try ``Bool``.
-
-```
-SuspBool≃S¹ : Susp Bool ≃ S¹
--- Exercise:
-SuspBool≃S¹ = {!!}
-```
-
-
-```
-data S∞ : Type where
-  snorth : S∞
-  ssouth : S∞
-  smerid : S∞ → snorth ≡ ssouth
-
-S∞SelfSusp : S∞ ≃ Susp S∞
-S∞SelfSusp = inv→equiv to fro to-fro fro-to
-  where
-    to : S∞ → Susp S∞
-    to snorth = north
-    to ssouth = south
-    to (smerid s i) = merid s i
-    fro : Susp S∞ → S∞
-    fro north = snorth
-    fro south = ssouth
-    fro (merid a i) = smerid a i
-    to-fro : isSection to fro
-    to-fro north = refl
-    to-fro south = refl
-    to-fro (merid a i) = refl
-    fro-to : isRetract to fro
-    fro-to snorth = refl
-    fro-to ssouth = refl
-    fro-to (smerid a i) = refl
-
-isContr-S∞ : isContr S∞
-isContr-S∞ .center = snorth
-isContr-S∞ .contraction = go
-  where go : (y : S∞) → snorth ≡ y
-        go snorth = refl ∙ refl
-        go ssouth = smerid snorth ∙ refl
-        go (smerid s i) = connection∧ (smerid snorth) i ∙ ap (λ t → smerid t i) (go s)
-```
-
-## Even Higher types
-
-```
-EH-base : {ℓ : Level} {A : Type ℓ} {x : A}
-  → (α β : refl {x = x} ≡ refl)
-  → Square (λ i → refl ∙ β i) 
-           (λ i → refl ∙ β i) 
-           (λ i → α i ∙ refl) 
-           (λ i → α i ∙ refl)
-EH-base α β i j = α i ∙ β j
-
-EH : {ℓ : Level} {A : Type ℓ} {x : A}
-  → (α β : refl {x = x} ≡ refl)
-  → Square β β α α
-EH α β i j = hcomp (∂ i ∨ ∂ j) (λ k → λ
-    { (i = i0) → ∙-idl (β j) (~ k)
-    ; (i = i1) → ∙-idl (β j) (~ k)
-    ; (j = i0) → ∙-idr (α i) (~ k)
-    ; (j = i1) → ∙-idr (α i) (~ k)
-    ; (k = i0) → EH-base α β i j})
-```
-
-Egbert exercises:
-
-Show that a type 𝑋 is a set if and only if the map
-𝜆𝑥. 𝜆𝑡. 𝑥 : 𝑋 → (S1 → 𝑋)
-is an equivalence.
-
-mvrnote: general hlevels?
 
 ## References and Further Reading
 
-mvrnote:
+* The original *[Homotopy Type Theory]* book:
+  * Sets: Chapter 3.1
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Sets: Chapter 12.3
+  * Higher Types: Chapter 12.4
+* Martin Escardo's [Lecture Notes]:
+  * [Sets](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#set-types)
+  * [Hedberg's Theorem](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#hedberg)
 
-Hedberg's Theorem: https://doi.org/10.1017/S0956796898003153
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
+
+* Original paper presenting Hedberg's Theorem: [A coherence theorem for Martin-Löf's type theory](https://doi.org/10.1017/S0956796898003153) by Michael
+  Hedberg

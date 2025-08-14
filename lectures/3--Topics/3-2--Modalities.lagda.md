@@ -18,6 +18,8 @@ open import 2--Paths-and-Identifications.2-7--Propositions
 open import 2--Paths-and-Identifications.2-8--Sets-and-Higher-Types
 open import 2--Paths-and-Identifications.2-9--Contractible-Maps
 
+open import 3--Topics.Lemmas
+
 private
   variable
     ℓ ℓ' ℓ'' : Level
@@ -60,13 +62,16 @@ Set-Subuniverse : Subuniverse ℓ
 Set-Subuniverse .predicate X = isSet X
 Set-Subuniverse .isProp-predicate X = isProp-isSet
 
-Everything-Subuniverse : Subuniverse ℓ-zero -- I don't want to `Lift`
-Everything-Subuniverse .predicate X = ⊤
-Everything-Subuniverse .isProp-predicate X = isProp-⊤
+isProp-Lift : isProp A → isProp (Lift ℓ A)
+isProp-Lift pA (lift x) (lift y) = ap lift (pA x y)
 
-Nothing-Subuniverse : Subuniverse ℓ-zero
-Nothing-Subuniverse .predicate X = ∅
-Nothing-Subuniverse .isProp-predicate X = isProp-∅
+Everything-Subuniverse : Subuniverse ℓ
+Everything-Subuniverse .predicate X = Lift _ ⊤
+Everything-Subuniverse .isProp-predicate X = isProp-Lift isProp-⊤
+
+Nothing-Subuniverse : Subuniverse ℓ
+Nothing-Subuniverse .predicate X = Lift _ ∅
+Nothing-Subuniverse .isProp-predicate X = isProp-Lift isProp-∅
 
 Inhabited-Subuniverse : Subuniverse ℓ
 Inhabited-Subuniverse .predicate X = ∃ X
@@ -84,16 +89,32 @@ Stable-Subuniverse : Subuniverse ℓ
 Stable-Subuniverse .predicate X = isProp X × (¬ ¬ X → X)
 Stable-Subuniverse .isProp-predicate X x y = isProp-× isProp-isProp (isProp-→ (x .fst)) x y
 
-
 -- mvrnote: other examples? (even silly ones)
 ```
 
 ```
--- _ : Prop ℓ ≡ Type-in Prop-Subuniverse
--- _ = refl
+record Prop (ℓ : Level) : Type (ℓ-suc ℓ) where
+  constructor propData
+  field
+    witness : Type ℓ
+    isProp-witness : isProp witness
+open Prop public
+
+Prop≃Prop-Subuniverse : Prop ℓ ≃ Type-in {ℓ} Prop-Subuniverse
+Prop≃Prop-Subuniverse .map P .type = P .witness
+Prop≃Prop-Subuniverse .map P .proof = P .isProp-witness
+Prop≃Prop-Subuniverse .proof .section .map T .witness = T .type
+Prop≃Prop-Subuniverse .proof .section .map T .isProp-witness = T .proof
+Prop≃Prop-Subuniverse .proof .section .proof b = refl
+Prop≃Prop-Subuniverse .proof .retract .map T .witness = T .type
+Prop≃Prop-Subuniverse .proof .retract .map T .isProp-witness = T .proof
+Prop≃Prop-Subuniverse .proof .retract .proof b = refl
 ```
 
--- mvrnote: Careful: there are two very similar unicode symbols \cw: ○ and \bigcirc: ◯, I'm using the former because it's shorter to type
+::: Caution:
+There are two very similar unicode symbols `\cw`: ○ and `\bigcirc`: ◯,
+I'm using the former because it's shorter to type.
+:::
 
 ```
 record Modality (ℓ : Level) : Type (ℓ-suc ℓ) where
@@ -119,7 +140,7 @@ Identity-Modality : Modality ℓ-zero
 Identity-Modality .isModal = Everything-Subuniverse .predicate
 Identity-Modality .isProp-isModal = Everything-Subuniverse .isProp-predicate
 Identity-Modality .○ X = X
-Identity-Modality .isModal-○ X = tt
+Identity-Modality .isModal-○ X = lift tt
 Identity-Modality .η X = idfun
 Identity-Modality .ump X P = isEquiv-idfun
 
@@ -183,17 +204,17 @@ Open-Modality Q .isModal-○ X = iseq
   where
     iseq : isEquiv (λ (x : Q .witness → X) (q : Q .witness) → x)
     iseq .section .map f q = f q q
-    iseq .section .proof f i q q' = f (Q .witnessIsProp q' q i) q'
+    iseq .section .proof f i q q' = f (Q .isProp-witness q' q i) q'
     iseq .retract .map f q = f q q
     iseq .retract .proof b = refl
 Open-Modality Q .η X = const
 Open-Modality Q .ump X P = ○-ump P
   where
     ○-ump-for-○P : (P : Open-Modality Q .○ X → Type _) → isEquiv λ (f : (z : Open-Modality Q .○ X) → Open-Modality Q .○ (P z)) → f ∘ const
-    ○-ump-for-○P P .section .map g z q = subst P (λ i q' → z (Q .witnessIsProp q q' i)) (g (z q) q)
+    ○-ump-for-○P P .section .map g z q = subst P (λ i q' → z (Q .isProp-witness q q' i)) (g (z q) q)
     ○-ump-for-○P P .section .proof g i x q = transport-refl (g x q) i
     ○-ump-for-○P P .retract .map = ○-ump-for-○P P .section .map
-    ○-ump-for-○P P .retract .proof f i z q = fromPathP (λ j → f (λ q' → z (Q .witnessIsProp q q' j)) q) i
+    ○-ump-for-○P P .retract .proof f i z q = fromPathP (λ j → f (λ q' → z (Q .isProp-witness q q' j)) q) i
 
     ○-ump-path : (P : Open-Modality Q .○ X → Type-in (Open-Subuniverse Q)) → Path (Open-Modality Q .○ X → Type _) (λ z → Open-Modality Q .○ (P z .type)) (λ z → P z .type)
     ○-ump-path P i z = ua (equiv _ (P z .proof)) (~ i)
@@ -242,17 +263,30 @@ Join-ump-≃ {A = A} {B} {C} = inv→equiv to fro to-fro fro-to
     fro-to f i (push a b j) = f (push a b j)
 
 isContr-Join : {A B : Type ℓ} → isContr A → isContr (Join A B)
-isContr-Join {A = A} {B} (isContrData c h) = isContrData (inl c) hty
-  where hty : (y : Join A B) → inl c ≡ y
-        hty (inl a) = ap inl (h a)
-        hty (inr b) = push c b
-        hty (push a b i) j = J (λ y p → Square (ap inl p) (push c b) refl (push y b)) (λ i j → push c b (i ∧ j)) (h a) i j
+isContr-Join cA .center = inl (cA .center)
+isContr-Join cA .contraction (inl a) = ap inl (cA .contraction a)
+isContr-Join cA .contraction (inr b) = push (cA .center) b
+isContr-Join cA .contraction (push a b i) j
+  = J (λ y p → Square (ap inl p) (push (cA .center) b) refl (push y b))
+      (λ i j → push (cA .center) b (i ∧ j))
+      (cA .contraction a) i j
+
+∅-Join : {B : Type ℓ} → (Join ∅ B) ≃ B
+∅-Join .map (inl ())
+∅-Join .map (inr b) = b
+∅-Join .map (push () b i)
+∅-Join .proof .section .map = inr
+∅-Join .proof .section .proof b = refl
+∅-Join .proof .retract .map = inr
+∅-Join .proof .retract .proof (inl ())
+∅-Join .proof .retract .proof (inr b) = refl
+∅-Join .proof .retract .proof (push () b i)
 
 Closed-Modality : Prop ℓ → Modality ℓ
 Closed-Modality Q .isModal = Closed-Subuniverse Q .predicate
 Closed-Modality Q .isProp-isModal = Closed-Subuniverse Q .isProp-predicate
 Closed-Modality Q .○ X = Join (Q .witness) X
-Closed-Modality Q .isModal-○ X q = isContr-Join (isProp-with-point→isContr (Q .witnessIsProp) q)
+Closed-Modality Q .isModal-○ X q = isContr-Join (isProp-with-point→isContr (Q .isProp-witness) q)
 Closed-Modality Q .η X = inr
 Closed-Modality Q .ump X P = ○-ump P
   where
@@ -294,29 +328,30 @@ Modal-Reflection M X .ump = M .ump X
 isProp-Reflection : (S : Subuniverse ℓ) → (X : Type ℓ) → isProp (Σ[ R ∈ Type ℓ ] IsReflection S X R)
 isProp-Reflection S X (R₀ , isReflection isModal₀ η₀ ump₀) (R₁ , isReflection isModal₁ η₁ ump₁) i 
   = R₀≡R₁ i , isReflection (isModal≡isModal₁ i) (η≡η₁ i) (ump₀≡ump₁ i)
-  where ∘-η-≃ : (R₀ → R₁) ≃ (X → R₁)
-        ∘-η-≃ = equiv (λ f → f ∘ η₀) (ump₀ (λ _ → type-in R₁ isModal₁))
+  where
+        ∘-η₀-≃₀ : (R₀ → R₀) ≃ (X → R₀)
+        ∘-η₀-≃₀ = equiv (λ f → f ∘ η₀) (ump₀ (λ _ → type-in R₀ isModal₀))
 
-        ∘-η-≃₁ : (R₀ → R₀) ≃ (X → R₀)
-        ∘-η-≃₁ = equiv (λ f → f ∘ η₀) (ump₀ (λ _ → type-in R₀ isModal₀))
+        ∘-η₀-≃₁ : (R₀ → R₁) ≃ (X → R₁)
+        ∘-η₀-≃₁ = equiv (λ f → f ∘ η₀) (ump₀ (λ _ → type-in R₁ isModal₁))
 
-        ∘-η₁-≃ : (R₁ → R₀) ≃ (X → R₀)
-        ∘-η₁-≃ = equiv (λ f → f ∘ η₁) (ump₁ (λ _ → type-in R₀ isModal₀))
+        ∘-η₁-≃₀ : (R₁ → R₀) ≃ (X → R₀)
+        ∘-η₁-≃₀ = equiv (λ f → f ∘ η₁) (ump₁ (λ _ → type-in R₀ isModal₀))
 
         ∘-η₁-≃₁ : (R₁ → R₁) ≃ (X → R₁)
         ∘-η₁-≃₁ = equiv (λ f → f ∘ η₁) (ump₁ (λ _ → type-in R₁ isModal₁))
 
         to : R₀ → R₁
-        to = ∘-η-≃ .proof .section .map η₁
+        to = ∘-η₀-≃₁ .proof .section .map η₁
 
         to-η : to ∘ η₀ ≡ η₁
-        to-η = ∘-η-≃ .proof .section .proof η₁
+        to-η = ∘-η₀-≃₁ .proof .section .proof η₁
 
         fro : R₁ → R₀
-        fro = ∘-η₁-≃ .proof .section .map η₀
+        fro = ∘-η₁-≃₀ .proof .section .map η₀
 
         fro-η : fro ∘ η₁ ≡ η₀
-        fro-η = ∘-η₁-≃ .proof .section .proof η₀
+        fro-η = ∘-η₁-≃₀ .proof .section .proof η₀
 
         to-fro-η₁ : to ∘ fro ∘ η₁ ≡ η₁
         to-fro-η₁ =
@@ -334,7 +369,7 @@ isProp-Reflection S X (R₀ , isReflection isModal₀ η₀ ump₀) (R₁ , isRe
           η₀            ∎
 
         fro-to : isRetract to fro
-        fro-to = funext⁻ (ap-≃ ∘-η-≃₁ .proof .section .map fro-to-η)
+        fro-to = funext⁻ (ap-≃ ∘-η₀-≃₀ .proof .section .map fro-to-η)
 
         R₀≃R₁ : R₀ ≃ R₁
         R₀≃R₁ = inv→equiv to fro to-fro fro-to
@@ -343,13 +378,13 @@ isProp-Reflection S X (R₀ , isReflection isModal₀ η₀ ump₀) (R₁ , isRe
         R₀≡R₁ = ua R₀≃R₁
 
         isModal≡isModal₁ : PathP (λ i → S .predicate (R₀≡R₁ i)) isModal₀ isModal₁
-        isModal≡isModal₁ = isProp→PathP (λ j → S .isProp-predicate (R₀≡R₁ j)) isModal₀ isModal₁
+        isModal≡isModal₁ = isProp→any-PathP (λ j → S .isProp-predicate (R₀≡R₁ j)) isModal₀ isModal₁
 
         η≡η₁ : PathP (λ i → X → R₀≡R₁ i) η₀ η₁
         η≡η₁ = funextP (λ x → Path→ua-PathP R₀≃R₁ (funext⁻ to-η x))
 
         ump₀≡ump₁ : PathP (λ i → (P : R₀≡R₁ i → Type-in S) → isEquiv (λ (f : (b : R₀≡R₁ i) → P b .type) → f ∘ η≡η₁ i)) ump₀ ump₁
-        ump₀≡ump₁ = isProp→PathP (λ _ → isProp-Π λ _ → isProp-isEquiv _) ump₀ ump₁
+        ump₀≡ump₁ = isProp→any-PathP (λ _ → isProp-Π λ _ → isProp-isEquiv _) ump₀ ump₁
 
 
 -- todo: rename variables to use A, a instead of X, x
@@ -368,14 +403,6 @@ module _ (M : Modality ℓ) where
       → (a : A) → ○-ind B-modal f (M .η A a) ≡ f a
   ○-ind-comp {A = A} {B = B} B-modal f a i = M .ump A (λ x → type-in (B x) (B-modal x)) .section .proof f i a
 
---   modal-lemma : M .isModal A → isEquiv (η A)
---   modal-lemma {X} isM = subst (λ r → isEquiv (r .snd .η)) (isProp-Reflection (Modal-Subuniverse M) X idfun-reflection η-reflection) isEquiv-idfun
---     where η-reflection : Σ[ R ∈ Type ℓ ] IsReflection (Modal-Subuniverse M) X R
---           η-reflection = (M .○ X , isReflection ○-isModal (η X) (○-ump X))
-
---           idfun-reflection : Σ[ R ∈ Type ℓ ] IsReflection (Modal-Subuniverse M) X R
---           idfun-reflection = X , (isReflection isM idfun (λ _ → isEquiv-idfun))
-
   modal-lemma' : isEquiv (M .η A) → M .isModal A
   modal-lemma' isE = subst (λ A → M .isModal A) (sym (ua (equiv (M .η _) isE))) (M .isModal-○ _)
 
@@ -388,23 +415,6 @@ module _ (M : Modality ℓ) where
   retract→isModal = modal-lemma' ∘ sectionequiv
 
   -- Closure properties
-
-  -- more general, maybe not used?
-  -- retractIsModal : {A B : Type ℓ} (w : isModal A)
-  --     (f : A → B) (g : B → A) (r : (b : B) → f (g b) ≡ b) →
-  --     isModal B
-  -- retractIsModal {A} {B} w f g r = {!!}
-
-    -- isEquivToIsModal
-    --   (isoToIsEquiv (iso η η-inv inv-l inv-r))
-    -- where η-inv : ◯ B → B
-    --       η-inv = f ∘ (◯-rec w g)
-
-    --       inv-r : (b : B) → η-inv (η b) ≡ b
-    --       inv-r b = ap f (◯-rec-β w g b) ∙ r b
-
-    --       inv-l : (b : ◯ B) → η (η-inv b) ≡ b
-    --       inv-l = ◯-elim (λ b → ◯-=-isModal _ _) (λ b → ap η (inv-r b))
 
   ⊤-isModal : M .isModal (Lift _ ⊤) -- Pity to use Lift
   ⊤-isModal = retract→isModal (retractData (λ _ → lift tt) isR)
@@ -478,3 +488,31 @@ RSS
 CORS https://arxiv.org/abs/1807.04155
 Cubical
 agda-unimath
+
+
+--   modal-lemma : M .isModal A → isEquiv (η A)
+--   modal-lemma {X} isM = subst (λ r → isEquiv (r .snd .η)) (isProp-Reflection (Modal-Subuniverse M) X idfun-reflection η-reflection) isEquiv-idfun
+--     where η-reflection : Σ[ R ∈ Type ℓ ] IsReflection (Modal-Subuniverse M) X R
+--           η-reflection = (M .○ X , isReflection ○-isModal (η X) (○-ump X))
+
+--           idfun-reflection : Σ[ R ∈ Type ℓ ] IsReflection (Modal-Subuniverse M) X R
+--           idfun-reflection = X , (isReflection isM idfun (λ _ → isEquiv-idfun))
+
+
+
+  -- more general, maybe not used?
+  -- retractIsModal : {A B : Type ℓ} (w : isModal A)
+  --     (f : A → B) (g : B → A) (r : (b : B) → f (g b) ≡ b) →
+  --     isModal B
+  -- retractIsModal {A} {B} w f g r = {!!}
+
+    -- isEquivToIsModal
+    --   (isoToIsEquiv (iso η η-inv inv-l inv-r))
+    -- where η-inv : ○ B → B
+    --       η-inv = f ∘ (○-rec w g)
+
+    --       inv-r : (b : B) → η-inv (η b) ≡ b
+    --       inv-r b = ap f (○-rec-β w g b) ∙ r b
+
+    --       inv-l : (b : ○ B) → η (η-inv b) ≡ b
+    --       inv-l = ○-elim (λ b → ○-=-isModal _ _) (λ b → ap η (inv-r b))

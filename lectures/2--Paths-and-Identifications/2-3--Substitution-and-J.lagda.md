@@ -21,23 +21,38 @@ private
 
 # Lecture 2-3: Substitution and J
 
-A fundamental principle of equality is that we may substitute equal
-things for equal things. Consider a predicate like ``isEvenP``.
-If `x` and `y` are natural numbers so that `x ≡ y`, and we know that
-`isEvenP x`, then we should certainly be able to conclude that
-`isEvenP y`.
+One of the fundamental principles of equality is that we may
+substitute equal things for equal things. Consider a predicate like
+``isEvenP``: if `x` and `y` are natural numbers with `x ≡ y` and we
+know that `isEvenP x`, then we should certainly be able to conclude
+that `isEvenP y`.
 
-There is nothing we've seen that lets us do this, so we'll need a new
-primitive notion. 
+This principle is so basic that we take it for granted. But looking at
+the operations we have available so far, there is nothing that allows
+us to do this. In this Lecture we'll introduce the primitive operation
+that Cubical Agda provides for substitution: ``transport``.
 
-mvrnote: more summary
+Together with some of the path algebra from last lecture, we will use
+``transport`` to prove Martin-Löf's ``J`` rule, which is a powerful
+induction principle for path types. This is much like the induction
+principles we saw for the inductive types in Lectures 1-2 and 1-3:
+just as we can define functions out of ``ℕ`` giving a case for
+``zero`` and ``suc``, we will be able to define functions out of path
+types by giving a case just for ``refl``.
+
+Finally, we'll use this ``J`` rule to fully characterise the paths in
+some of the inductive types we've seen so far, showing for example
+that paths in ``Bool`` correspond to the observational equality
+``≡Bool`` that we expect. For this, we'll use the well-known
+"encode-decode" method.
 
 
 ## Substitution
 
 Given a type family `B : A → Type` thought of as a predicate, and a
-path `p : x ≡ y` in the type `A`, we want a function `subst B p : B x
-→ B y` that "substitutes `x` for `y` in things of type `B x`".
+path `p : x ≡ y` in the type `A`, we want a function
+`subst B p : B x → B y` that "substitutes `x` for `y` in things of
+type `B x`".
 
 ```
 subst : (B : A → Type ℓ) → (p : x ≡ y) → B x → B y
@@ -62,7 +77,7 @@ transport : A ≡ B → A → B
 ::: Aside:
 Well, actually, ``transport`` is defined via a slightly more
 general operation unhelpfully called ``transport-fixing``, which we will
-return to in Lecture 2-X.
+return to in Lecture 2-5.
 ```
 transport p a = transport-fixing (λ i → p i) i0 a
 ```
@@ -88,15 +103,15 @@ true≢false p = subst (λ b → true ≡Bool b) p tt
 Let's take a minute to make sure we understand what's going on here.
 Remember that ``¬`` is defined to be simply functions into ``∅``, so
 ``true≢false`` is a function `true ≡ false → ∅`. That is, to prove
-that ``true`` doesn't equal ``false``, we assume we have a path `true
-≡ false` and derive a contradiction. How do we do this?
+that ``true`` doesn't equal ``false``, we assume we have a path 
+`true ≡ false` and derive a contradiction. How do we do this?
 
 Well, we have by definition that `true ≡Bool true` is ``⊤`` and that
 `true ≡Bool false` is ``∅``, this time using the type family ``≡Bool``
-that we defined for observational equality. If we're given a path `p :
-true ≡ false`, then we could replace the second ``true`` in `true
-≡Bool true` with ``false`` to get an element of `true ≡Bool false`,
-which would finish our proof.
+that we defined for observational equality. If we're given a path 
+`p : true ≡ false`, then we could replace the second ``true`` in 
+`true ≡Bool true` with ``false`` to get an element of 
+`true ≡Bool false`, which would finish our proof.
 
 The family we are substituting in is therefore `(λ b → true ≡Bool b)`.
 The resulting term `subst (λ b → true ≡Bool b) p` is a function `true
@@ -124,8 +139,8 @@ IsInl : A ⊎ B → Type
 IsInl s = {!!}
 
 inl≢inr : ¬ inl x ≡ inr y
--- Exercise:
-inl≢inr path = {!!}
+-- Exercise: (Hint: it may help to specify the endpoints of the `subst`, so `subst {x = ...} {y = ...}`)
+inl≢inr {x = x} {y = y} path = {!!}
 
 inr≢inl : ¬ inr x ≡ inl y
 -- Exercise:
@@ -162,16 +177,16 @@ J-line : (Q : (y : A) → x ≡ y → Type ℓ)
   → Q x refl ≡ Q y p
 J-line Q p i = Q (p i) (connection∧ p i)
 
-J : (Q : (y : A) → x ≡ y → Type ℓ) 
+J : (Q : (y : A) → x ≡ y → Type ℓ)
   → (r : Q x refl)
-  → (p : x ≡ y) 
+  → (p : x ≡ y)
   → Q y p
 J Q r p = transport (J-line Q p) r
 ```
 
-If we think of the dependent type `P` as a property, then the
+If we think of the dependent type `Q` as a property, then the
 ``J`` rule says that to prove `Q y p` for all `y : A` and `p : x
-≡ y`, it suffices to prove `P` just when `y` is `x` and the path `p`
+≡ y`, it suffices to prove `Q` just when `y` is `x` and the path `p`
 is ``refl``. For this reason, the ``J`` rule is sometimes
 known as "path induction" since it resembles an induction principle
 like ``Bool-ind`` or ``ℕ-ind``: proving a property of all
@@ -202,7 +217,7 @@ J-refl Q r i = transport-fixing (λ _ → Q _ refl) i r
 
 ::: Aside:
 Right now we don't have the tools to understand the definition of
-``J-refl``, but when we cover ``transport-fixing`` in Lecture 2-X, we will
+``J-refl``, but when we cover ``transport-fixing`` in Lecture 2-5, we will
 recognise the above definition as exactly ``transport-refl``.
 :::
 
@@ -238,7 +253,7 @@ exactly the ``subst`` operation that we started with.
 subst-from-J : (B : A → Type ℓ) → (p : x ≡ y) → B x → B y
 subst-from-J B p b = J (λ y _ → B y) b p
 
-_ = λ {ℓ : Level} (A : Type ℓ) (B : A → Type ℓ) (x y : A) (p : x ≡ y) 
+_ = λ {ℓ : Level} (A : Type ℓ) (B : A → Type ℓ) (x y : A) (p : x ≡ y)
   → test-identical (subst-from-J B p) (subst B p)
 ```
 
@@ -271,23 +286,28 @@ sym-from-J : {x y : A} → (x ≡ y) → (y ≡ x)
 sym-from-J {x = x} p = J (λ z _ → z ≡ x) refl p
 ```
 
+Try reconstructing ``ap`` using ``J``:
+
+```
+ap-from-J : (f : A → B) → {x y : A} → (x ≡ y) → (f x ≡ f y)
+-- Exercise:
+ap-from-J f {x} p = {!!}
+```
+
 ::: Caution:
-This is a perfectly valid way to define symmetry, but ``sym-from-J``
-is not identical to the symmetry function we have already:
+These are perfectly valid ways to define ``sym`` and ``ap`, but they
+are is not identical to the functions we have already:
 
 ```
 -- Fails!
 -- _ = λ {A : Type} {x y : A} (p : x ≡ y)
 --   → test-identical (sym-from-J p) (sym p)
 ```
+
+Our existing ``sym`` and ``ap`` have much better computational
+properties, so you should continue to use them rather than these ones
+defined from ``J``.
 :::
-
-Try reconstructing ``ap`` using ``J``:
-
-```
-ap-from-J : (f : A → B) → {x y : A} → (x ≡ y) → (f x ≡ f y)
-ap-from-J f {x} p = J (λ z _ → f x ≡ f z) refl p
-```
 
 More interestingly, we can also get operations we haven't encountered
 yet:
@@ -303,39 +323,12 @@ constructions that have themselves involved ``J``.
 
 ```
 sym-inv-from-J : {x y : A} → (p : x ≡ y) → sym-from-J (sym-from-J p) ≡ p
-sym-inv-from-J {x = x} {y} p 
+sym-inv-from-J {x = x} {y} p
   = J (λ z q → sym-from-J (sym-from-J q) ≡ q) refl-case p
-  where 
+  where
     refl-case : sym-from-J (sym-from-J refl) ≡ refl
-    refl-case = comp-from-J (ap sym-from-J (J-refl (λ z _ → z ≡ x) refl)) 
+    refl-case = comp-from-J (ap sym-from-J (J-refl (λ z _ → z ≡ x) refl))
                             (J-refl (λ z _ → z ≡ x) refl)
-```
-
-mvrnote: rewrite the following to not use composition of equivalences,
-or delete
-
-```
--- funexthalf-≃ : {A : Type ℓ} {B : I → Type ℓ'}
---   {f : A → B i0} {g : A → B i1}
---   → ((x₀ : A) (x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
---   ≃ PathP (λ i → A → B i) f g
--- funexthalf-≃ {A = A} {B = B} {f = f} {g = g} =
---   ((x₀ x₁ : A) → Path A x₀ x₁ → PathP B (f x₀) (g x₁))
---   ≃⟨ Π-map-cod≃ (λ x₀ → J-ump-≃ (λ y _ → PathP B (f x₀) (g y))) ⟩
---   ((x : A) → PathP B (f x) (g x))
---   ≃⟨ funextP-≃ ⟩
---   PathP (λ i → A → B i) f g ∎e
-
--- funextP-ump-≃ : {A : I → Type ℓ} {B : I → Type ℓ'}
---   {f : A i0 → B i0} {g : A i1 → B i1}
---   → ((x₀ : A i0) (x₁ : A i1) → PathP A x₀ x₁ → PathP B (f x₀) (g x₁))
---   ≃ PathP (λ i → A i → B i) f g
--- funextP-ump-≃ {A = A} {B = B} {f = f} {g = g} =
---   J
---   (λ A1 A → {f : A i0 → B i0} {g : A i1 → B i1}
---   → ((x₀ : A i0) (x₁ : A i1) → PathP (λ i → A i) x₀ x₁ → PathP B (f x₀) (g x₁))
---   ≃ PathP (λ i → A i → B i) f g)
---   funexthalf-≃ (λ i → A i)
 ```
 
 As we've said, it is possible to continue down this road and do all of
@@ -429,7 +422,7 @@ And the ``J`` rule is exactly what is required to extend this to
 all paths.
 
 ```
-    fro-to : (x y : Bool) → isRetract (encode x y) (decode x y) 
+    fro-to : (x y : Bool) → isRetract (encode x y) (decode x y)
     fro-to x y = J (λ z p → decode x z (encode x z p) ≡ p) (fro-to-refl x)
 ```
 
@@ -438,9 +431,14 @@ This completes the equivalence!
 
 ## The Encode-Decode Method
 
-These encode-decode proofs all have a similar shape. Let's summarise
-what we did, noting what was unique to ``Bool`` and what we can re-use
-for an arbitrary type.
+This encode-decode trick is one that comes up often when
+characterising the paths in a type. The goal is to describe the type
+of paths `x ≡ y` by finding an equivalent type `code x y` that is
+easier to work with.
+
+Proofs of this kind have a similar shape. Let's summarise what we did,
+noting what was unique to ``Bool`` and what we can re-use for an
+arbitrary type.
 
 <!--
 ```
@@ -455,9 +453,9 @@ module EncodePattern
 -->
 
 We start with a type `X` with the goal of characterising paths `x ≡ y`
-in `X`. We make a guess at the answer as a type family 
+in `X`. We make a guess at the answer as a type family
 
-      code : X → X → Type
+    code : X → X → Type
 
 with the idea that `code x y` will be equivalent to `x ≡ y`. Choosing
 `code` will involve some creativity or luck, but it can usually be
@@ -469,7 +467,7 @@ easy to define functions out of it.
 For our guess to pass the smell test, we should at least be able to
 define a function corresponding to reflexivity.
 
-      encode-refl : (x : X) → code x x
+    encode-refl : (x : X) → code x x
 
 With this in hand, we can always make the definition
 
@@ -480,14 +478,14 @@ With this in hand, we can always make the definition
 
 Next we need a decoding map. So long as we choose ``code`` so that it
 has a nice mapping-out property --- for example, when it is an
-inductive type --- this should be easy. 
+inductive type --- this should be easy.
 
-      decode : (x y : X) → code x y → x ≡ y
+    decode : (x y : X) → code x y → x ≡ y
 
 The proof that this is a section should be similarly easy, because it
 also involves mapping out of ``code``.
 
-      to-fro : (x y : X) → isSection (encode x y) (decode x y)
+    to-fro : (x y : X) → isSection (encode x y) (decode x y)
 
 All that remains is to prove that it is also a retract. In this case,
 we need a function with type `(x y : X) → decode x y (encode x y p) ≡
@@ -497,7 +495,7 @@ p`. When `p` is ``refl``, so we are aiming to construct `fro-to-refl :
 extends this to a general path.
 
 ```
-  fro-to : (x y : X) → isRetract (encode x y) (decode x y) 
+  fro-to : (x y : X) → isRetract (encode x y) (decode x y)
   fro-to x y = J (λ c p → decode x c (encode x c p) ≡ p) (fro-to-refl x)
 ```
 
@@ -534,7 +532,7 @@ deleted.
     -- Exercise:
     fro-to-refl x = {!!}
 
-    fro-to : (x y : ⊤) → isRetract (encode x y) (decode x y) 
+    fro-to : (x y : ⊤) → isRetract (encode x y) (decode x y)
     fro-to x y p = J (λ c p → decode x c (encode x c p) ≡ p) (fro-to-refl x) p
 ```
 
@@ -575,12 +573,12 @@ equality ``≡ℕ``.
     -- Exercise:
     fro-to-refl x = {!!}
 
-    fro-to : (x y : ℕ) → isRetract (encode x y) (decode x y) 
+    fro-to : (x y : ℕ) → isRetract (encode x y) (decode x y)
     fro-to x y p = J (λ z q → decode x z (encode x z q) ≡ q) (fro-to-refl x) p
 ```
 
 Next, disjoint unions. We didn't define a candidate ``≡⊎`` for the
-paths to be equal to back in Lecture 1-X as we did with the others,
+paths to be equal to back in Lecture 1-5 as we did with the others,
 but it's not hard to guess what it should be. After all, the two sides
 are supposed to be *disjoint*, so paths between ``inl``s should be
 exactly paths in the left type, paths between ``inr``s should be
@@ -632,7 +630,7 @@ manually by pattern matching, rather than using ``J``.
 --  Exercise:
     fro-to-refl x = {!!}
 
-    fro-to : (x y : A ⊎ B) → isRetract (encode x y) (decode x y) 
+    fro-to : (x y : A ⊎ B) → isRetract (encode x y) (decode x y)
 --  Exercise:
     fro-to x y = {!!}
 ```
@@ -651,4 +649,19 @@ xs ≡List ys = {!!}
 ```
 
 ## References and Further Reading
-mvrnote: encode-decode
+
+
+* The original *[Homotopy Type Theory]* book:
+  * Encode-Decode for disjoint unions: Chapter 2.12
+  * Encode-Decode for natural numbers: Chapter 2.13
+  * Encode-Decode Generally: Chapter 8.9
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Encode-Decode, presented in the guise of the "fundamental theorem
+    of identity types": Chapter 11
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+
+* Agda Documentation
+  * [Partial elements](https://agda.readthedocs.io/en/latest/language/cubical.html#partial-elements)
+

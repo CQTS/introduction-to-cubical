@@ -20,7 +20,28 @@ private
 
 # Lecture 2-2: Equivalences and Path Algebra
 
-mvrnote: intro
+In the previous Lecture, we introduced paths as our fundamental notion
+of sameness, which behaves uniformly across all types.
+
+For most of the types we've seen so far, we have a obvious candidate
+for what paths *should* be for that type. For ``Bool`` we have
+``≡Bool``, for ``ℕ`` we have ``≡ℕ``, and for pairs and functions we
+saw ``×≡→≡×`` and ``funext`` respectively.
+
+There's one notable exception: what should paths in ``Type`` be? That
+is, what is the right notion of sameness for types? In the first part
+of this Lecture we'll give the answer that cubical type theory leads
+us to: the notion of an *equivalence* of types. Roughly speaking, an
+equivalence `A ≃ B` is a function `f : A → B` together with two
+proofs: a proof that `f` faithfully represents `A` in `B`, and a proof
+that `f` faithfully represents `B` in `A`.
+
+To start producing more interesting examples of equivalences, we'll
+need work with additional structure that the interval `I` has. Beyond
+the endpoints `i0` and `i1` we've been using so far, we'll add
+reversal (`~`) and the operations `∨` and `∧` (corresponding to max
+and min on the unit interval). Let's get started.
+
 
 ## Sections and Retracts
 
@@ -73,7 +94,7 @@ isSection-isPositive-Bool→ℕ : isSection isPositive Bool→ℕ
 isSection-isPositive-Bool→ℕ = isPositive-represents-Bool
 ```
 
-One way to justify the name "section" is thinking of the the type `B`
+One way to justify the name "section" is thinking of the type `B`
 (here ``Bool``) as being smaller than the type `A` (here ``ℕ``). A
 function is a section if it picks out a small part of `A` (a small
 "section" of `A`) that has the shape of `B`.
@@ -222,17 +243,12 @@ To make these less annoying to work with, we'll write some helpers for
 constructing these ``Equiv``s.
 
 ```
-pattern packIsEquiv sec isSec ret isRet
-  = isEquivData (sectionData sec isSec) (retractData ret isRet)
+packIsEquiv : {A : Type ℓ} {B : Type ℓ'} → {fun : A → B} → (sec : B → A) → isSection fun sec → (ret : B → A) → isRetract fun ret → isEquiv fun
+packIsEquiv sec isSec ret isRet = isEquivData (sectionData sec isSec) (retractData ret isRet)
 
-pattern packEquiv fun sec isSec ret isRet
-  = equiv fun (packIsEquiv sec isSec ret isRet)
+packEquiv : {A : Type ℓ} {B : Type ℓ'} → (fun : A → B) → (sec : B → A) → isSection fun sec → (ret : B → A) → isRetract fun ret → (A ≃ B)
+packEquiv fun sec isSec ret isRet = equiv fun (packIsEquiv sec isSec ret isRet)
 ```
-
-We mentioned these pattern synonyms back in Lecture 1-X. Here, they
-let us construct an element of an ``Equiv`` record by writing
-`packEquiv fun sec isSec ret isRet` rather than the fully explicit 
-`equiv fun (isEquivData (sectionData sec isSec) (retractData ret isRet))`.
 
 An equivalence between two types says, in effect, that elements of
 those types are different representations of the same data. Putting
@@ -249,9 +265,10 @@ Bool≃RedOrBlue
               isRetract-Bool-RedOrBlue
 ```
 
-Having the section of `f` and retract of `f` be the same map is a very
-common situation, so we will use a helper to duplicate the backwards
-map in this case.
+It is a very common situation that we have functions `f` and `g` with
+proofs that `g` is *both* a section and a retract of `f`, that is, `g`
+is an ordinary inverse of `f`. Here's a simple a helper that builds an
+equivalence from in this case.
 
 ```
 inv→equiv : (fun : A → B)
@@ -263,15 +280,15 @@ inv→equiv fun inv isSec isRet = packEquiv fun inv isSec inv isRet
 ```
 
 ::: Aside:
-It might seem strange that our notion of equivalence involves *two*
-maps backwards rather than just one.
+It might seem strange that our notion of equivalence ``≃`` involves
+*two* maps backwards rather than just one.
 
 When a map has a single inverse map that is a both a section and a
 retract, the map is called an *isomorphism*, a faux-Greek word meaning
 "same shape". While every isomorphism gives rise to an equivalence
 (via the function ``inv→equiv`` we just defined) and every equivalence
 gives rise to an isomorphism (via ``invEquiv`` coming up in Lecture
-2-X), the type of equivalences and the type of isomorphisms between
+2-4), the type of equivalences and the type of isomorphisms between
 two types are not always the same! 
 
 It will turn out that "equivalence" as we've defined it here is the
@@ -325,14 +342,13 @@ both ``true`` and ``false`` to ``red``, for example, then there is no
 way we can find an inverse. Any section would have to send ``red`` to
 ``true`` and also to ``false``, but these aren't equal.
 
-In Lecture 1-X, we had a few "bijections" between types. At the time,
+In Lecture 1-1, we had a few "bijections" between types. At the time,
 all we could do is produce maps going each way. Now we can show that
 these really are equivalences. Here's an especially easy one, where
 the paths in the ``to-fro`` and ``fro-to`` functions can be
 ``refl`` for any argument.
 
 ```
--- mvrnote: unused
 ×-ump-≃ : (C → A) × (C → B) ≃ (C → A × B)
 ×-ump-≃ = inv→equiv to fro to-fro fro-to
   where
@@ -352,25 +368,6 @@ the paths in the ``to-fro`` and ``fro-to`` functions can be
 --  Exercise:
     fro-to x = {!!}
 
--- mvrnote: unused
-×-assoc-≃ : (A × (B × C)) ≃ ((A × B) × C)
-×-assoc-≃ = inv→equiv to fro to-fro fro-to
-  where
-    to : (A × (B × C)) → ((A × B) × C)
-    to (a , (b , c)) = (a , b) , c
-
-    fro : ((A × B) × C) → (A × (B × C))
-    fro ((a , b) , c) = (a , (b , c))
-
-    to-fro : isSection to fro
---  Exercise:
-    to-fro x = {!!}
-
-    fro-to : isRetract to fro
---  Exercise:
-    fro-to x = {!!}
-
--- mvrnote: unused
 curry-≃ : {ℓ₁ ℓ₂ ℓ₃ : Level}
   → {A : Type ℓ₁}
   → {B : A → Type ℓ₂}
@@ -379,25 +376,18 @@ curry-≃ : {ℓ₁ ℓ₂ ℓ₃ : Level}
   ≃ ((x : A) → (y : B x) → C x y)
 -- We don't have to give names to the section and retract proofs at
 -- all, if we prefer.
--- Exercise:
-curry-≃ = int→equiv Σ-curry Σ-uncurry (λ x → {!!}) (λ x → {!!})
+curry-≃ = inv→equiv Σ-curry Σ-uncurry (λ x → refl) (λ x → refl)
 
--- mvrnote: put somewhere?
 funext-≃ : {A : Type ℓ} {B : A → Type ℓ'}
   → {f g : (a : A) → B a}
   → ((x : A) → f x ≡ g x)
   ≃ (f ≡ g)
-funext-≃ = inv→equiv funext funext⁻ (λ _ → refl) (λ _ → refl)
-
-funextP-≃ : {A : Type ℓ} {B : I → Type ℓ'}
-  → {f : A → B i0} {g : A → B i1}
-  → ((x : A) → PathP B (f x) (g x))
-  ≃ PathP (λ i → A → B i) f g
-funextP-≃ = inv→equiv funextP funextP⁻ (λ _ → refl) (λ _ → refl)
+-- Exercise:
+funext-≃ = {!!}
 ```
 
-The above examples work because the composite of `to` and `fro` acts
-like the identity on any argument.
+The above examples work smoothly because the composite of `to` and
+`fro` acts like the identity on any argument.
 
 Another place we'll want to do this is when pulling records apart. The
 uniqueness rule for records means that the section and retraction
@@ -410,18 +400,24 @@ explode-isEquiv = inv→equiv
   (λ p → isEquivData (p .fst) (p .snd))
   (λ _ → refl)
   (λ _ → refl)
+```
 
-explode-Equiv : (A ≃ B) ≃ (Σ[ f ∈ (A → B)] isEquiv f)
+This handles the ``isEquiv`` record, now try proving the same fact for
+the ``Equiv`` record that pairs a function with one of these
+``isEquiv`` proofs. (This should be as simple as the
+``explode-isEquiv`` helper above, don't overthink it!)
+
+```
+explode-Equiv : (A ≃ B) ≃ (Σ[ f ∈ (A → B) ] isEquiv f)
 -- Exercise:
 explode-Equiv = {!!}
 ```
 
-In the Lecture 2-X we gave descriptions of ``PathP``s in
+In the Lecture 2-1 we gave descriptions of ``PathP``s in
 various types. The functions involved are also definitional inverses
 and so assemble into equivalences in a similar way.
 
 ```
--- mvrnote: is orienting these the other direction more natural?
 ×Path≃Path× : {x y : A × B} →
   (x .fst ≡ y .fst) × (x .snd ≡ y .snd)
   ≃ (x ≡ y)
@@ -442,16 +438,16 @@ We will not always be so lucky and have definitional inverses to our
 functions. For the following you will have to split into cases, like
 we did for the function ``isPositive-represents-Bool``.
 
-If the next equivalence doesn't work doesn't work, go back and check
-that the definitions of ``Bool→⊤⊎⊤`` and ``⊤⊎⊤→Bool`` you
-gave are actually inverses!
+If the next equivalence doesn't work, go back and check that the
+definitions of ``Bool→⊤⊎⊤`` and ``⊤⊎⊤→Bool`` you gave are actually
+inverses!
 
 ```
 Bool≃⊤⊎⊤ : Bool ≃ (⊤ ⊎ ⊤)
 Bool≃⊤⊎⊤ = inv→equiv Bool→⊤⊎⊤ ⊤⊎⊤→Bool to-fro fro-to
   where
     to-fro : isSection Bool→⊤⊎⊤ ⊤⊎⊤→Bool
---  Exercise:
+--  Exercise: (Hint: Pattern match on the element of `⊤` as `tt` too)
     to-fro x = {!!}
 
     fro-to : isRetract Bool→⊤⊎⊤ ⊤⊎⊤→Bool
@@ -459,7 +455,9 @@ Bool≃⊤⊎⊤ = inv→equiv Bool→⊤⊎⊤ ⊤⊎⊤→Bool to-fro fro-to
     fro-to x = {!!}
 ```
 
-The next few are similar.
+The next few are similar. Again, you will need to do some pattern
+matching until the goal is solvable by ``refl``. If you see yellow
+then Agda is not happy!
 
 ```
 ℤ≃ℕ⊎ℕ : ℤ ≃ (ℕ ⊎ ℕ)
@@ -518,8 +516,11 @@ equivalences have different sections and retracts, and so we should
 combine these to produce separate sections and retracts for the output
 equivalence.
 
+It will often be the case that you use the section from the input to
+define the section, and similarly use the retract from the input to
+define the retract.
+
 ```
--- mvrnote: make f/g vs e₁/e₂ consistent
 ×-map-≃ : (A ≃ A') → (B ≃ B') → (A × B) ≃ (A' × B')
 ×-map-≃ {A = A} {A' = A'} {B = B} {B' = B'} f g = packEquiv to sec to-fro ret fro-to
   where
@@ -542,50 +543,6 @@ equivalence.
 --  Exercise:
     fro-to (a , b) = {!!}
 
-→-map-≃ : (A ≃ B) → (C ≃ D) → (B → C) ≃ (A → D)
-→-map-≃ {A = A} {B = B} {C = C} {D = D} e₁ e₂ = packEquiv to sec to-fro ret fro-to
-  where
-    to : (B → C) → (A → D)
-    to f a = e₂ .map (f (e₁ .map a))
-
-    sec : (A → D) → (B → C)
---  Exercise:
-    sec g b = {!!}
-
-    ret : (A → D) → (B → C)
---  Exercise:
-    ret g' b = {!!}
-
-    to-fro : isSection to sec
---  Exercise:
-    to-fro g = {!!}
-
-    fro-to : isRetract to ret
---  Exercise:
-    fro-to f = {!!}
-
-Π-map-cod≃ : {P : A → Type ℓ} {Q : A → Type ℓ'} → ((x : A) → P x ≃ Q x) → ((x : A) → P x) ≃ ((x : A) → Q x)
-Π-map-cod≃ {A = A} {P = P} {Q = Q} e = packEquiv to sec to-fro ret fro-to
-  where
-    to : ((x : A) → P x) → ((x : A) → Q x)
-    to f x = e x .map (f x)
-
-    sec : ((x : A) → Q x) → ((x : A) → P x)
---  Exercise:
-    sec g x = {!!}
-
-    ret : ((x : A) → Q x) → ((x : A) → P x)
---  Exercise:
-    ret g' = {!!}
-
-    to-fro : isSection to sec
---  Exercise:
-    to-fro g = {!!}
-
-    fro-to : isRetract to ret
---  Exercise:
-    fro-to f = {!!}
-
 ⊎-map-≃ : (A ≃ A') → (B ≃ B') → (A ⊎ B) ≃ (A' ⊎ B')
 ⊎-map-≃ {A = A} {A' = A'} {B = B} {B' = B'} f g = packEquiv to sec to-fro ret fro-to
   where
@@ -607,6 +564,60 @@ equivalence.
     fro-to : isRetract to ret
 --  Exercise:
     fro-to t = {!!}
+```
+
+This one is a little tricker:
+
+```
+→-map-≃ : A ≃ B
+        → C ≃ D
+        → (B → C) ≃ (A → D)
+→-map-≃ {A = A} {B = B} {C = C} {D = D} e₁ e₂ = packEquiv to sec to-fro ret fro-to
+  where
+```
+
+In the forwards map, we are handed a function `B → C`, and can compose
+that with the functions underlying the equivalence.
+
+```
+    to : (B → C) → (A → D)
+    to f = (e₂ .map) ∘ f ∘ (e₁ .map)
+```
+
+Now in the backwards map, we have to choose what we compose with
+carefully, because we have two options on either side: either the
+section map or the retraction map. We want to make the choices that
+allow us to cancel those maps out using the proofs contained in `e₁`
+and `e₂`.
+
+```
+    sec : (A → D) → (B → C)
+    sec g = (e₂ .proof .section .map) ∘ g ∘ (e₁ .proof .retract .map)
+```
+
+So, for any particular `g`, in the section proof we have to show
+
+    (e₂ .map) ∘ (e₂ .proof .section .map) ∘ g ∘ (e₁ .proof .retract .map) ∘ (e₁ .map)
+
+is the same as `g`. And happily, this is the composition order that
+matches with the section/retraction proofs.
+
+```
+    to-fro : isSection to sec
+    to-fro g i a = e₂ .proof .section .proof (g (e₁ .proof .retract .proof a i)) i
+```
+
+Try proving the other side:
+
+```
+    ret : (A → D) → (B → C)
+--  Exercise:
+    ret g' b = {!!}
+
+    fro-to : isRetract to ret
+--  Exercise:
+    fro-to f = {!!}
+
 ```
 
 Equivalences do not necessarily go between different types. A type can
@@ -660,6 +671,51 @@ sym : x ≡ y → y ≡ x
 sym p i = p (~ i)
 ```
 
+If we apply this reversal to just one axis of a square, we can mirror
+it along that axis. Flipping horizontally:
+
+             a-₁                         sym a-₁
+       a₀₁ — — — > a₁₁               a₁₁ — — — > a₀₁
+        ^           ^                 ^           ^
+    a₀- |           | a₁-   ~~>   a₁- |           | a₀-
+        |           |                 |           |
+       a₀₀ — — — > a₁₀               a₁₀ — — — > a₀₀
+             a-₀                         sym a-₀
+
+```
+mirror-square-1 : {a₀₀ a₀₁ a₁₀ a₁₁ : A }
+  → {a₀- : Path A a₀₀ a₀₁}
+  → {a₁- : Path A a₁₀ a₁₁}
+  → {a-₀ : Path A a₀₀ a₁₀}
+  → {a-₁ : Path A a₀₁ a₁₁}
+  → Square a₀- a₁- a-₀ a-₁
+  → Square a₁- a₀- (sym a-₀) (sym a-₁)
+mirror-square-1 s i j = s (~ i) j
+```
+
+And flipping vertically:
+
+             a-₁                               a-₀
+       a₀₁ — — — > a₁₁                   a₀₀ — — — > a₁₀
+        ^           ^                     ^           ^
+    a₀- |           | a₁-   ~~>   sym a₀- |           | sym a₁-
+        |           |                     |           |
+       a₀₀ — — — > a₁₀                   a₀₁ — — — > a₁₁
+             a-₀                               a-₁
+
+```
+mirror-square-2 : {a₀₀ a₀₁ a₁₀ a₁₁ : A }
+  → {a₀- : Path A a₀₀ a₀₁}
+  → {a₁- : Path A a₁₀ a₁₁}
+  → {a-₀ : Path A a₀₀ a₁₀}
+  → {a-₁ : Path A a₀₁ a₁₁}
+  → Square a₀- a₁- a-₀ a-₁
+  → Square (sym a₀-) (sym a₁-) a-₁ a-₀
+-- Exercise:
+     → Square {!!} {!!} {!!} {!!}
+```
+
+
 And we can upgrade this principle to also apply to ``PathP``s. We have
 to flip the path of types `A` too, so that the endpoints lie in the
 correct types.
@@ -671,7 +727,7 @@ symP : {A : I → Type ℓ} → {x : A i0} → {y : A i1}
 symP p j = p (~ j)
 ```
 
-Now, there's a evident question we can ask: what happens if we flip a
+Now, there's an evident question we can ask: what happens if we flip a
 path twice? Agda takes it as an axiom that `~ (~ i) = i`, so the
 answer is that we get the same path again by definition.
 
@@ -700,7 +756,8 @@ and $p$.
 We will axiomatize these with two more in-built interval operations
 ``∨`` and ``∧``, for $\max$ and $\min$ respectively. Agda computes the
 values of ``∨`` and ``∧`` when either side is known to be an endpoint
-``i0`` or ``i1``.
+``i0`` or ``i1``. These operations can be entered using `\or` and
+`\and` respectively.
 
 Uncomment this block and try normalising the following expressions.
 
@@ -721,8 +778,9 @@ _ = {! i0 ∧ i1 !}
 ```
 
 There are a few additional equalities which hold for $\max$ and $\min$
-that Agda makes true for ``∧`` and ``∨``. (You don't have to memorise
-these.)
+that Agda makes true for ``∧`` and ``∨``. These are impossible to read
+in the editor unfortunately, so you should have a look on the website
+version. (You don't have to memorise these.)
 
 * Top and Bottom:
   $$
@@ -802,6 +860,7 @@ called *connections*. The way we are drawing these, the arguments to
          |         |                  ∙ — >
          x — — — > x                    i  
             refl                  
+
 ```
 connection∧ : (p : x ≡ y) → Square refl p refl p
 connection∧ p i j = p (i ∧ j)
@@ -850,8 +909,8 @@ connectionEx2 p i j = {!!}
 ```
 
 As an immediate application of connections, we can show that the
-``ℤ→ℤˢ`` and ``ℤˢ→ℤ`` maps we defined earlier are an
-equivalence. You will need to use a connection in the case for
+``ℤ→ℤˢ`` and ``ℤˢ→ℤ`` maps we defined earlier are an equivalence. You
+will need to use one of the above connection squares in the case for
 ``zeroˢ≡``.
 
 ```
@@ -898,4 +957,16 @@ which tells us exactly what square we need to construct.
 
 
 ## References and Further Reading
-https://arxiv.org/pdf/2408.11501
+
+* The original *[Homotopy Type Theory]* book:
+  * Equivalences: Chapter 4, with the specific version we are using in Chapter 4.3.
+
+* HoTTEST Summer School 2022
+  * [Paths and Interval Algebra](https://github.com/martinescardo/HoTTEST-Summer-School/blob/main/Agda/Cubical/Lecture7-notes.lagda.md)
+* Tutorial for `cubicaltt`, an early cubical proof assistant
+  * [Symmetries and Connections](https://github.com/mortberg/cubicaltt/blob/master/lectures/lecture2.ctt)
+
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+
+* [Formalizing equivalences without tears](https://arxiv.org/pdf/2408.11501) by Tom de Jong

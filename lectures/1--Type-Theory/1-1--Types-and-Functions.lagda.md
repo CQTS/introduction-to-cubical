@@ -212,8 +212,6 @@ constℕ₂ : ℕ → (ℕ → ℕ)
 constℕ₂ a b = a
 ```
 
-mvrnote: make more clear why we have two different ways of defining the same function
-
 How do we make sense of this? The definitions of the functions
 ``constℕ`` and ``constℕ₂`` are literally identical to Agda,
 but the way we have written them suggests two different ways we can
@@ -234,7 +232,7 @@ constℕ₃ a = λ (b : ℕ) → a
 ```
 
 In a lot of programming languages such expressions are called
-*anonymous functions*, so-called because the function doesn't get a
+*anonymous functions*, so called because the function doesn't get a
 name.
 
 The syntax `λ (x : A) → t` defines the function of type `A → B` which
@@ -251,6 +249,9 @@ function of type `ℕ → ℕ`. This general technique of describing
 functions of multiple arguments via functions that return functions is
 called *currying*, after the computer scientist Haskell Curry (whose
 name is also immortalized in the programming language Haskell).
+Currying is more than just a party trick: it can be very useful in
+practice to create functions by "partially applying" a function this
+way.
 
 Providing the type of the argument is optional in a λ-abstraction,
 so we could just as well have written:
@@ -409,7 +410,7 @@ back the identity function `A → A` for that type.
 Like every variable in Agda, `A` itself has a type, in this case the
 type ``Type``. This is a type whose elements themselves are types,
 typically these are *type universes*. We will have more to say about
-them in Lecture 1-X.
+them in Lecture 1-3.
 
 We can reconstruct ``idfunℕ`` back by providing `ℕ` to ``idfunᵉ``:
 
@@ -708,7 +709,11 @@ pattern-snd× (a , b) = b
 ×-commⁱ p = {!!}
 ```
 
-mvrnote: say something about not including `=` in a goal
+::: Caution:
+Agda will complain if you accidentally include `=` inside the goal
+brackets rather than outside. If you're seeing an error message like
+`Not a valid pattern:`, this could be what has happened.
+:::
 
 Forming the product type is *functorial*, which means that if we have
 separate functions that transform the sides of a ``×``, we can put
@@ -724,8 +729,10 @@ them together to transform the pair type directly.
 ```
 
 With pair types we can make precise the currying and uncurrying idea
-from earlier, going from a function with a single pair argument to a
-function that returns a function, and vice versa.
+from earlier. There are two ways to define a function that accepts two
+arguments. We can either accept them together as a pair, or accept
+them one at a time. Here's a helper that converts from the pair
+version to the one-at-a-time version:
 
 ```
 ×-curry : {A B C : Type}
@@ -734,7 +741,7 @@ function that returns a function, and vice versa.
 ×-curry f x y = f (x , y)
 ```
 
-Remember that
+Remember that function types are right associative:
 
     ((A × B) → C) → (A → (B → C))
 
@@ -934,7 +941,12 @@ Notice that the type of `g` has changed from the type it had back in
 now give a function `B a → B' (f a)` for each possible `a : A`.
 
 ``×-curry`` and ``×-uncurry`` can be generalised to work with
-dependent pairs and functions.
+dependent pairs and functions. Remember that currying and uncurrying
+let us switch between a function that takes a pair as an argument, and
+a function that accepts those arguments one-at-a-time. Here we are
+generalising that idea so that the second component of the pair is
+allowed to depend on the first component. And not only that, but the
+overall result type of the function is allowed to depend on the pair!
 
 ```
 Σ-curryⁱ : {A : Type} → {B : A → Type} → {C : (x : A) → B x → Type}
@@ -952,6 +964,7 @@ Like `×`, we can chain `Σ` together however we like. The dependent
 types do make this a little more complicated though!
 
 Suppose we start with dependent types
+
 * `A : Type`,
 * `B : A → Type`, and
 * `C : (x : A) → B x → Type`.
@@ -972,7 +985,7 @@ projecting the components where we need them:
 
 This corresponds to the non-dependent triple `(A × B) × C`.
 
-As with non-dependent pairs, these two types are interconvertible.
+As with non-dependent pairs, these two types are inter-convertible.
 
 ```
 -- Exercise:
@@ -993,7 +1006,22 @@ As with non-dependent pairs, these two types are interconvertible.
 
 ## References and Further Reading
 
-mvrnote:
-currying
-dependency
-https://www.cs.bham.ac.uk/~mhe/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#sigmatypes
+* The original *[Homotopy Type Theory]* book:
+  * Function types: Chapter 1.2, Chapter 1.4
+  * Σ types: Chapters 1.5, 1.6
+  * Formal Rules: Chapter A.2
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Function types: Chapter 2
+  * Σ types: Chapter 4.6
+* Martin Escardo's [Lecture Notes]: 
+  * [Σ types](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#sigmatypes)
+  * [function types](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#pitypes)
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
+
+* Agda Documentation
+  * [Function Types](https://agda.readthedocs.io/en/latest/language/function-types.html)
+  * [Lambda Abstraction](https://agda.readthedocs.io/en/latest/language/lambda-abstraction.html)
+  * [Implicit Arguments](https://agda.readthedocs.io/en/latest/language/implicit-arguments.html)

@@ -8,14 +8,15 @@ worked for us.
 [official documentation]: https://agda.readthedocs.io/en/latest/getting-started/installation.html
 
 ::: Caution:
-Check the version number if you are installing Agda via package
-manager. These notes were written against Agda version `2.7.0`. The
-exercise files may not work with earlier or later versions.
+Double check the version number by running `agda --version`, if you
+install Agda via a package manager. These notes were written against
+Agda version `2.8.0`. The exercise files may not work with earlier or
+later versions.
 :::
 
 ::: Caution:
-These notes do **not** rely on the the Agda standard library, and so
-you don't need to worry about downloading and installing it. 
+These lecture notes do **not** rely on the the Agda standard library,
+and so you don't need to worry about downloading and installing it.
 :::
 
 ## On Mac via Homebrew
@@ -34,50 +35,13 @@ it may not in the future!
 Install Stack from <https://docs.haskellstack.org/en/stable/install_and_upgrade/>
 
 Open PowerShell, and use Stack to install the correct version of Agda:
+
 ``` shell
-stack --resolver lts-23.9 new Agda
-stack install Agda
+stack --resolver lts-24.4 install Agda
 ```
 
 This may take a while.
 
-## On Mac and Linux via Nix 
-
-mvrnote: these instructions may not get the correct version now
-
-If installing Agda via `brew` did not work, we have also provided a
-Nix shard that will install the correct version of Agda. This will
-also install a copy of Emacs, if you would like to use that as your
-editor.
-
-First, install the Nix package manager:
-
-Linux:
-``` shell
-sh <(curl -L https://nixos.org/nix/install) --daemon
-```
-
-Mac:
-``` shell
-sh <(curl -L https://nixos.org/nix/install)
-```
-
-Now we need to enable Nix flakes:
-``` shell
-mkdir -p ~/.config/nix
-echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-```
-
-For a fun series of blog posts on Nix and how to use it, [click this
-link](https://ianthehenry.com/posts/how-to-learn-nix/). We won't need
-any heavy lifting here, we're just using Nix to install Agda easily.
-
-Now, when you want to work in Agda with Emacs on this project,
-navigate to the directory that you cloned this in and run
-``` shell
-nix develop
-```
-This might take a while the first time.
 
 # Installing VSCode
 
@@ -94,21 +58,24 @@ the `agda` executable is located. This is under `Preferences >
 Extensions` and then the `Agda Mode > Connection: Agda Path` option.
 
 You will want to go `File -> Preferences -> Settings -> Text Editor ->
-Suggestions`, and disable `Inline Suggest`. This feature will give
-suggested snippets of code as you type, unfortunately, for Agda these
-snippets are generally confusing and wrong.
+Suggestions`, and disable `Inline Suggest`. This feature gives AI
+suggested snippets of code as you type, but unfortunately, for Agda
+these snippets are often confusing and wrong.
+
 
 # Installing Emacs on Mac
 
 On Mac, you can use Homebrew to install Emacs.
+
 ``` shell
 brew tap d12frosted/emacs-plus
 brew install emacs-plus
-agda-mode setup
+agda --emacs-mode=setup
 ```
 
 Now try running `emacs` in the terminal. If a nice Emacs window
 doesn't appear, run
+
 ``` shell
 brew link --overwrite emacs-plus
 ```

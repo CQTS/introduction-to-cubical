@@ -12,8 +12,6 @@ open import 1--Type-Theory.1-3--Universes-and-More-Inductive-Types
 
 # Lecture 1-4: Record Types and Copatterns
 
-mvrnote: somewhat under construction
-
 On occasion we will want to package together some collection of data
 into a single larger type. This is an extremely common pattern in
 ordinary programming: think of `struct`s in C or C++, `dataclass`es in
@@ -273,14 +271,11 @@ trio×-again a b c .fst .snd = b
 trio×-again a b c .snd      = c
 ```
 
-
-mvrnote: https://agda.readthedocs.io/en/v2.7.0.1/language/pattern-synonyms.html
-
 ::: Aside:
 In the type-theory literature, types which are determined by their
 eliminators are often called *negative* types, as opposed to
 *positive* types such as inductive types, which are determined by
-their constructors. mvrnote: more
+their constructors.
 :::
 
 
@@ -312,7 +307,7 @@ _ = λ (u : Record-⊤) → test-identical u Record-tt
 
 This is occasionally helpful, but missing it is not a big deal.
 
-Back in Lecture 1-1 (and revisited in Lecture 1-X), we saw the operations
+Back in Lecture 1-1 (and revisited in Lecture 1-3), we saw the operations
 ``×-curry`` and ``×-uncurry`` which are mutual inverses. Putting
 dependency aside, these state that to produce a map out of a pair type
 `A × B → C`, it is enough to produce a map `A → B → C`. This looks
@@ -330,12 +325,15 @@ Inductive-snd : {A : Type} {B : Type} → Inductive-× A B → B
 Inductive-snd (comma a b) = b
 ```
 
-mvrnote not too burdensome
+Something similar works for ``Σ``. Losing the eta-rule for ``×`` and
+``Σ`` is not a huge problem: we could prove a less convenient version
+of it ourselves using the path types we introduce in Part 2. In any
+case, we'll stick with the record version of ``Σ`` we've been using so
+far.
 
-## References
 
-https://agda.readthedocs.io/en/latest/language/record-types.html
-https://plfa.github.io/Connectives/
-focussing?
+## References and Further Reading
 
-eta for positive types
+* Agda Documentation
+  * [Record Types](https://agda.readthedocs.io/en/latest/language/record-types.html)
+  * [Copatterns](https://agda.readthedocs.io/en/latest/language/copatterns.html)

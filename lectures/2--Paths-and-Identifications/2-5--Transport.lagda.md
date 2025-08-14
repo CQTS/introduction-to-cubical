@@ -23,15 +23,19 @@ private
 
 # Lecture 2-5: Transport
 
-In this lecture, we will revisit ``transport`` and the underlying
-operation ``transport-fixing``, equipped with the intuition for partial
-elements that we developed in the previous lecture. 
+In this lecture, we will revisit ``transport`` and ``subst``, the
+operations that let us move terms along a path between types.
+
+The fundamental underlying operation is the slightly-more-general
+``transport-fixing``, and understanding this will make use of the
+intuition for partial elements that we developed in the previous
+lecture.
 
 
 ## Transport Fixing a Formula
 
-Here is the actual definition of ``transport`` which we skipped when
-we first saw it in Lecture 2-X.
+Here is the actual definition of ``transport`` which we vskipped when
+we first saw it in Lecture 2-3.
 
 ```
 transport-again : {A B : Type ℓ} → A ≡ B → A → B
@@ -54,20 +58,20 @@ and the result is an element of the type `A i1` at the other end of
 the path.
 
 As usual, to understand the purpose of `φ`, we need to imagine we are
-in the context of some other cubical variables. The formula `φ`
-expresses the parts of the cube *where the transport is constant*. So
-`transport p x = transport-fixing (λ i → p i) i0 x` is not constant anywhere,
-but `transport-fixing (λ _ → A) i1 x` is constant everywhere and so
-is identical to `x`.
+in the context of some other cubical variables. The purpose of the
+formula `φ` is to specify parts of the cube *where the transport is
+constant*. So `transport p x = transport-fixing (λ i → p i) i0 x` is
+not constant anywhere, but `transport-fixing (λ _ → A) i1 x` is
+constant everywhere and so is identical to `x`.
 
 ```
 _ = λ {ℓ : Level} {A : Type ℓ} (a : A)
   → test-identical (transport-fixing (λ _ → A) i1 a) a
 ```
 
-Agda will stop you if you demand ``transport-fixing`` be constant in a way
-that doesn't make sense, like claiming that our original definition of
-``transport`` is constant everywhere:
+Agda will give an error if you demand ``transport-fixing`` be constant
+in a way that doesn't make sense, like claiming that our original
+definition of ``transport`` is constant everywhere:
 
 ```
 -- Fails!
@@ -106,18 +110,6 @@ subst-filler : (B : A → Type ℓ) (p : x ≡ y) → (b : B x)
 subst-filler B p = transport-filler (λ i → B (p i))
 ```
 
-With a similar definition to ``transport-filler``, we can show the
-same for elements starting on the other side at `B`: transporting a `b
-: B` backwards along `p` is connected via a path-over to `b`.
-
-```
--- mvrnote: rename
-transport-filler' : (p : A ≡ B) (b : B)
-  → PathP (λ i → p i) (transport (sym p) b) b
--- Exercise:
-transport-filler' p b i = {!!}
-```
-
 Try using ``transport-fixing`` to prove that that transporting an element
 `x : A` along the constant path of types at `A` gives back `x`.
 
@@ -145,7 +137,9 @@ an expression also involving an interval variable `j` which reduces to
 this large expression when `j = i0` and which simplifies to just `b`
 when `j = i1`. For the latter, remember that the whole point of
 ``transport-fixing`` is that `transport-fixing (λ _ → A) i1 x`
-computes to exactly `x`.
+computes to exactly `x`, so `b` is the same as:
+
+    transport-fixing (λ i → p ?) i1 (transport-fixing (λ i → p ?) i1 b)
 
 ```
 -- Exercise:
@@ -174,14 +168,18 @@ path→equiv-refl : path→equiv refl ≡ idEquiv A
 path→equiv-refl i = {!!}
 ```
 
-There is a second way that ``PathP`` and ``transport``
-relate. Recall that an element of `PathP A a₀ a₁` connects two
-elements `a₀ : A i0` and `a₁ : A i1` of the types at either end of a
-line of types `A : I → Type`. Instead of travelling along the line
-`A`, we could first transport the endpoint `a₀` over to the type `A
-i1`, and then ask for a path entirely inside `A i1`. That is, we can
-always convert a ``PathP`` into an ordinary ``Path`` involving a
-transport, and vice versa.
+
+## Converting Between PathP and Path
+
+There is a second way that ``PathP`` and ``transport`` relate. Recall
+that an element of `PathP A a₀ a₁` connects two elements `a₀ : A i0`
+and `a₁ : A i1` of types at either end of a line `A : I → Type`, so
+bthat the type is allowed to vary as we travel from `a₀` to `a₁`.
+
+Instead of travelling along the line `A`, we could first transport the
+endpoint `a₀` over to the type `A i1`, and then ask for an ordinary
+path that lives entirely inside `A i1`. That is, a ``PathP`` is
+equivalent to ``Path`` involving a transport, and vice versa.
 
 For the first conversion, ``toPathP``, we need to do an ``hcomp``.
 
@@ -192,10 +190,9 @@ For the first conversion, ``toPathP``, we need to do an ``hcomp``.
       a₀ — — — > transport (λ j → A j) a₀          ∙ — >
                                                      i
                 A i
-     A i0 — — — — — — — - > A i1
+     A i0 — — — — — — — — > A i1
 
 ```
--- mvrnote: rename?
 toPathP : {A : I → Type ℓ} {a₀ : A i0} {a₁ : A i1}
   → Path (A i1) (transport (λ j → A j) a₀) a₁
   → PathP A a₀ a₁
@@ -219,12 +216,11 @@ fromPathP {A = A} p i = transport-fixing (λ j → A (i ∨ j)) i (p i)
 ```
 
 These two maps are inverses. Unfortunately, this is a real pain to
-show directly, involving some really gnarly ``hcomp``s. So, we will
-cheat, and produce an equivalence using the ``path→equiv`` function we
-just defined.
+show directly, involving some gnarly ``hcomp``s. So, we will cheat,
+and produce an equivalence using the ``path→equiv`` function we just
+defined.
 
 ```
--- mvrnote: Path to PathP seems to be the more common direction, so flip this?
 PathP≡Path : (A : I → Type ℓ) {a₀ : A i0} {a₁ : A i1}
   → PathP A a₀ a₁ ≡ Path (A i1) (transport (λ i → A i) a₀) a₁
 PathP≡Path A {a₀} {a₁} i =
@@ -240,23 +236,16 @@ are not the nice ``toPathP`` and ``fromPathP`` maps that we
 defined above. For our purposes, this simpler equivalence is good
 enough.
 
-```
--- mvrnote: can can this be avoided?
-PathP≡Path' : (A : I → Type ℓ) (a₀ : A i0) (a₁ : A i1)
-  → PathP A a₀ a₁ ≡ Path (A i0) a₀ (transport (λ i → A (~ i)) a₁)
-PathP≡Path' A a₀ a₁ i =
-  PathP (λ j → A (~ (i ∨ ~ j))) a₀ (transport-filler (λ j → A (~ j)) a₁ i)
-```
-
 
 ## Transport Computes
 
-Because ``transport-fixing`` is built-in, it comes with some magic that
-makes it convenient when used with specific types. Here are some
-examples.
+``transport-fixing`` (and therefore ``transport`` and ``subst``) come
+with some magic that cause it to simplify when more information is
+known about the line of types `A`.
 
-If the path of types is constant at an inductive type such as
-``ℕ`` or ``Bool``, then transporting is simply the identity.
+When the path of types is constant at an inductive type such as ``ℕ``
+or ``Bool``, then transporting along does nothing, and the transport
+vanishes.
 
 ```
 _ = λ (x : ⊤)    → test-identical (transport (λ i → ⊤)    x) x
@@ -335,8 +324,12 @@ supposed to be?
 :::
 
 ```
-module _ {A : I → Type} {a₀ : (i : I) → A i} {a₁ : (i : I) → A i} where private
-  _ = λ {p : a₀ i0 ≡ a₁ i0} → test-identical
+module _ {A : I → Type}
+         {a₀ : (i : I) → A i}
+         {a₁ : (i : I) → A i}
+         {p : a₀ i0 ≡ a₁ i0}
+  where
+  _ = test-identical
       (transport (λ i → a₀ i ≡ a₁ i) p)
       -- Exercise:
       {!!}
@@ -346,12 +339,16 @@ module _ {A : I → Type} {a₀ : (i : I) → A i} {a₁ : (i : I) → A i} wher
 because we only defined ``∙∙`` for ordinary paths.
 
 ```
-module _ {A : I → I → Type} {a₀ : (i : I) → A i i0} {a₁ : (i : I) → A i i1} where private
-  _ = λ {p : PathP (A i0) (a₀ i0) (a₁ i0)} → test-identical
+module _ {A : I → I → Type}
+         {a₀ : (i : I) → A i i0}
+         {a₁ : (i : I) → A i i1}
+         {p : PathP (A i0) (a₀ i0) (a₁ i0)}
+  where
+  _ = test-identical
       (transport (λ i → PathP (A i) (a₀ i) (a₁ i)) p)
       (λ j → hcomp (∂ j) (λ i → λ { (j = i0) → fromPathP (λ i → a₀ i) i;
-                                         (j = i1) → fromPathP (λ i → a₁ i) i;
-                                         (i = i0) → transport (λ i → A i j) (p j) } ))
+                                    (j = i1) → fromPathP (λ i → a₁ i) i;
+                                    (i = i0) → transport (λ i → A i j) (p j) } ))
 ```
 
 We can mix and match these. Here is how a "`B`-valued binary operation
@@ -360,7 +357,7 @@ on `A`" would transport. This just decomposes into transport
 transport forwards of the result:
 
 ```
-module _ {A : I → Type} {B : I → Type} where private
+module _ {A : I → Type} {B : I → Type} where
   _ = λ {m : A i0 × A i0 → B i0} → test-identical
       (transport (λ i → A i × A i → B i) m)
       (λ (x , y) →
@@ -368,9 +365,10 @@ module _ {A : I → Type} {B : I → Type} where private
                                   transport (λ i → A (~ i)) y)))
 ```
 
-And here's how a function into ``Bool`` transports. As we have
-seen, transport in ``Bool`` disappears, so in-fact we only have
-to transport the input.
+And here's how a function into ``Bool`` transports. As we have seen,
+transport in ``Bool`` disappears, so in fact the result only contains
+a (backwards) transport applied to the input.
+
 
 ```
   _ = λ {p : A i0 → Bool} → test-identical
@@ -380,61 +378,36 @@ to transport the input.
 
 Try it yourself:
 
-mvrnote: fix exercises
 ```
-  -- Exercise:
   _ = λ {m : A i0 × A i0 → A i0} → test-identical
+    (transport (λ i → A i × A i → A i) m)
+    -- Exercise:
+    λ (x , y) → {!!}
 
-  -- Exercise:
-  _ = λ {f : A i0 × B i0 → B i0} → test-identical
-
-  -- Exercise:
   _ = λ {y : (A i0 → A i0) → A i0} → test-identical
-```
-
-
-## Transport Computes, Dependently
-
-There are dependent versions of the above computation rules for
-``transport``. They follow the same pattern as above, but further
-work is necessary so that things still typecheck.
-
-mvrnote: rewrite to not use `let`
-```
-module _ {A : I → Type} {B : (i : I) → A i → Type} where private
-  _ : {x₀ : A i0} {y₀ : B i0 x₀}
-    → transport (λ i → Σ[ x ∈ A i ] B i x) (x₀ , y₀)
+    (transport (λ i → (A i → A i) → A i) y)
     -- Exercise:
-    ≡ let
-        -- This is just the same as in the non-dependent case
-        x₁ : A i1
-        x₁ = {!!}
-        -- Here we need a path from `B i0 x₀` to `B i1 x₁`
-        x₀≡x₁ : PathP (λ i → A i) x₀ x₁
-        x₀≡x₁ = {!!}
-        y₁ = transport (λ i → B i (x₀≡x₁ i)) y₀
-      in (x₁ , y₁)
-
-  _ = refl
-
-  _ : {f : (x₀ : A i0) → B i0 x₀}
-    → transport (λ i → (x : A i) → B i x) f
-    -- Exercise:
-    ≡ λ (x₁ : A i1) →
-      let
-        x₀ : A i0
-        x₀ = {!!}
-        x₀≡x₁ : PathP (λ i → A i) x₀ x₁
-        x₀≡x₁ j = {!!}
-        fx₁ : B i1 x₁
-        fx₁ = {!!}
-      in fx₁
-
-  _ = refl
+    λ f → {!!}
 ```
-
 
 ## References and Further Reading
+
+These use a different notion of path, but many properties are similar.
+* The original *[Homotopy Type Theory]* book:
+  * Transport: Chapter 2.3
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Transport: Chapter 5.4
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+
+* Agda Documentation
+  * [Transport](https://agda.readthedocs.io/en/latest/language/cubical.html#transport)
+* HoTTEST Summer School 2022
+  * [Transport](https://github.com/martinescardo/HoTTEST-Summer-School/blob/main/Agda/Cubical/Lecture8-notes.lagda.md)
+* Tutorial for `cubicaltt`, an early cubical proof assistant
+  * [Transport](https://github.com/mortberg/cubicaltt/blob/master/lectures/lecture3.ctt)
+
 
 Regularity
 https://arxiv.org/pdf/1808.00920

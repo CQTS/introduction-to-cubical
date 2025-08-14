@@ -13,7 +13,7 @@ open import 1--Type-Theory.1-5--Propositions-as-Types
 
 # Lecture 2-1: Paths
 
-In Lecture 1-X, we saw that we could define types that represent
+In Lecture 1-5, we saw that we could define types that represent
 equality in another inductive type, like ``Bool`` or ``ℕ``. It would
 be tedious to have to define equality separately for every type (and
 worse, to check that every function preserves equality), and it would
@@ -36,9 +36,12 @@ first, so we have something to ground our intuitions.
 If $f, g : X → Y$ are two continuous functions between spaces $X$ and
 $Y$ (say, subsets of Euclidean space), then a homotopy $h$ between $f$
 and $g$ is a function $h : [0, 1] × X → Y$ of two variables $h(t, x)$
-where $h(0, x) = f(x)$ and $h(1, x) = g(x)$ for all $x$. The idea is
-that $h(t, x)$ continuously transforms the function
-$f$ into the function $g$ as $t$ travels from $0$ to $1$.
+where $h(0, x) = f(x)$ and $h(1, x) = g(x)$ for all $x$. So, for a
+fixed $x$, the function $t ↦ h(t, x)$ traces out a path in $Y$ from
+$f(x)$ to $g(x)$. By packing these paths together into a single
+function $[0, 1] × X → Y$, the idea is that $h(t, x)$ continuously
+transforms the function $f$ into the function $g$ as $t$ travels from
+$0$ to $1$.
 
 <!--
 ::: Aside:
@@ -89,26 +92,8 @@ evaluate the path at `i0`, we do get `x` exactly, and similarly for
 
 Similarly to ``Level``, the interval ``I`` is not actually a type,
 rather, we are just using it as a tool to describe our notion of
-sameness. For this reason, it and its endpoints get siloed in their
-own special universe.
-
-```
-_ : IUniv
-_ = I
-
-_ : I
-_ = i0
-
-_ : I
-_ = i1
-```
-
-::: Aside:
-Above we make a "definition" with name `_`; this signals to Agda to
-check the type of what we provide, but then throw away the result. We
-will use this to demonstrate the type of some expression without
-having to invent a new name for it.
-:::
+sameness. For this reason, it gets siloed in its own special universe,
+``IUniv``.
 
 This prevents us from using all our usual type operations on
 ``I``, which is good, since an element of ``I`` isn't meant
@@ -122,6 +107,13 @@ to be treated as a piece of data.
 -- _ : Type
 -- _ = Bool → I -- error!
 ```
+
+::: Aside:
+Above we make a "definition" with name `_`; this signals to Agda to
+check the type of what we provide, but then throw away the result. We
+will use this to demonstrate the type of some expression without
+having to invent a new name for it.
+:::
 
 However, since we want to discuss paths in any type, there is a
 special rule that for any actual type `A : Type ℓ`, functions `I → A`
@@ -187,7 +179,7 @@ OK, that's enough of that --- it's straightforward to keep going.
 
 ::: Aside:
 You can find all the laws for a Boolean algebra listed on Wikipedia,
-or you can peek ahead to Lecture 2-X and take all the laws for a De Morgan
+or you can peek ahead to Lecture 2-2 and take all the laws for a De Morgan
 algebra (but where `∧ = and` and `∨ = or` and `~ = not`) together with
 the "Law of Excluded Middle": `b or (not b)`.
 :::
@@ -231,10 +223,12 @@ apⁿ-∘ f g p = {!!}
 
 ``apⁿ`` is simple but useful. For example, we can re-prove some of the
 properties of addition (``+ℕ-≡ℕ-idl``, ``+ℕ-≡ℕ-idr``, ``+ℕ-≡ℕ-assoc``)
-using our new notion of equality. In each recursive step, you will
-have to use ``apⁿ`` to convert a path `n ≡ m` to a path `suc n ≡ suc
-m`. (We didn't have to do that previously, because `suc n ≡ℕ suc m`
-was *defined* to be `n ≡ℕ m`. Win some lose some!)
+using our new notion of equality. These proofs will have the same
+structure as the previous ones, doing case-splitting on the first
+argument to simplify the goal. In each recursive step, you will have
+to use ``apⁿ`` to convert a path `n ≡ m` to a path `suc n ≡ suc m`.
+(We didn't have to do that previously, because `suc n ≡ℕ suc m` was
+*defined* to be `n ≡ℕ m`. Win some lose some!)
 
 ```
 +ℕ-idl : (n : ℕ) → (zero +ℕ n) ≡ n
@@ -286,7 +280,7 @@ called "Higher Inductive Types" or HITs.)
 
 Our first use of a path constructor is a more symmetrical version of
 the integers. Remember that the definition of ``ℤ`` we gave back in
-Lecture 1-X is a little janky --- we have to treat the negative
+Lecture 1-2 is a little janky --- we have to treat the negative
 integers and the positive integers asymmetrically, assigning ``zero``
 to the ``pos`` side and shifting the ``negsuc`` side down by one. Now
 that we have paths, we can define a symmetric version of the integers
@@ -303,7 +297,7 @@ data ℤˢ : Type where
 
 Arithmetic using these integers is easier to reason about than the
 version involving ``negsuc``. First, here's the successor function,
-which you should compare to ``sucℤ``.
+which you should compare to the previous definition ``sucℤ``.
 
 ```
 sucℤˢ : ℤˢ → ℤˢ
@@ -321,10 +315,18 @@ predecessor otherwise.
 Notice that we have defined what the function does on zero twice! Once
 as `posˢ zero`, and again as `negˢ zero`. The final case for the path
 constructor ``zeroˢ≡`` forces us to demonstrate that we give the same
-answer both times. And indeed we do, so that final case can be defined
-by the constant path at `posˢ (suc zero)`.
+answer both times. And indeed we do, so final case can be defined by
+the constant path at `posˢ (suc zero)`.
 
 It is easy to convert between these integers and the original ones.
+For the forward direction, most of the cases are straightforward; only
+``zeroˢ≡`` we have to think about. Here, remember that typing `C-c
+C-,` will have Agda show you the type of what it wants to see,
+including the boundary restrictions if you are in the process of
+defining a path. In this case, assuming have defined the other cases
+of the function correctly, we need a term of ``ℤ`` that is equal to
+`pos zero` when `i = i0`, and also equal to `pos zero` when `i = i1`.
+For this, we can obviously just use `pos zero` itself.
 
 ```
 ℤˢ→ℤ : ℤˢ → ℤ
@@ -334,9 +336,18 @@ It is easy to convert between these integers and the original ones.
 ℤ→ℤˢ : ℤ → ℤˢ
 -- Exercise:
 ℤ→ℤˢ z = {!!}
+
+-- No cheating!
+_ = test-identical (ℤˢ→ℤ (ℤ→ℤˢ -2)) -2
+_ = test-identical (ℤˢ→ℤ (ℤ→ℤˢ -1)) -1
+_ = test-identical (ℤˢ→ℤ (ℤ→ℤˢ 0)) 0
+_ = test-identical (ℤˢ→ℤ (ℤ→ℤˢ 1)) 1
+_ = test-identical (ℤˢ→ℤ (ℤ→ℤˢ 2)) 2
 ```
 
-Complete the definition of addition.
+Complete the definition of addition. The cases for ``zeroˢ≡`` will all
+involve constant paths. If you are writing ``zeroˢ≡`` on the
+right-hand side somewhere, you have gone astray!
 
 ```
 predℤˢ : ℤˢ → ℤˢ
@@ -391,7 +402,7 @@ S¹-ump-fro f = {!!}
 ## Paths in Pair and Function Types
 
 Now we can ask what paths look like in various types. Inductive data
-types (like ``Bool``) will be covered in detail in Lecture 2-X. Let's
+types (like ``Bool``) will be covered in detail in Lecture 2-3. Let's
 begin with something easier: what is a path in a pair type? It's a
 pair of paths.
 
@@ -411,12 +422,11 @@ has the correct endpoints.
 ≡×→×≡ p = {!!}
 ```
 
-Similarly, what is a path in a function type? It is a function landing
-in paths! This is the principle of "function extensionality": to say
-that `f` is the same as `g` means that, for all `x`, `f x` is the same
-as `g x`.
-
-mvrnote: relate back to homotopy discussion
+Similarly, what is a path in a function type? This brings us full
+circle to the classical definition of homotopy: it is a function
+landing in paths! In type theory this is known as the principle of
+"function extensionality": to claim that `f` is the same as `g` means
+claiming that, for all `x`, `f x` is the same as `g x`.
 
 ```
 funextˢ : {f g : A → B}
@@ -432,17 +442,20 @@ funextˢ⁻ : {f g : A → B}
 funextˢ⁻ p = {!!}
 ```
 
+(We write ``funextˢ`` in anticipation of proving a more general fact
+for dependent functions ``funext``, later in this Lecture.)
+
 This works for functions with any number of arguments:
 
 ```
-funext2 : {f g : A → B → C}
+funext₂ : {f g : A → B → C}
   → (p : (x : A) (y : B) → f x y ≡ g x y)
   → f ≡ g
 -- Exercise:
-funext2 p i x y = {!!}
+funext₂ p i x y = {!!}
 ```
 
-Try using ``funext`` to prove some unsurprising facts about function
+Try using ``funextˢ`` to prove some unsurprising facts about function
 composition:
 
 ```
@@ -465,13 +478,13 @@ composition:
 
 ## Paths over Paths
 
-A path in a type `A` is a function `p : I → A` with fixed endpoints `x
-: A` and `y : A`. But what if `A` is itself a path of types `A : I →
-Type`? Then we consider dependent functions `p : (i : I) → A i` with
-fixed endpoints `x : A i0` and `y : A i`; these are called "paths over
-the path `A`", or sometimes simply "path-overs". The name for this in
-Agda is ``PathP``, for "Path (over) P(ath)". This is another built-in
-notion, like ``≡``.
+A path in a type `A` is a function `p : I → A` with fixed endpoints 
+`x : A` and `y : A`. But what if `A` is itself a path of types
+`A : I → Type`? Then we consider dependent functions `p : (i : I) → A i`
+with fixed endpoints `x : A i0` and `y : A i``; these are called
+"paths over the path `A`", or sometimes simply "path-overs". The name
+for this in Agda is ``PathP``, for "Path (over) P(ath)". This is
+another built-in notion, like ``≡``.
 
 ```
 _ : (A : I → Type) (x : A i0) (y : A i1) → Type
@@ -482,10 +495,12 @@ Similarly to paths, if we have `p : PathP A x y`, then `p i0` is `x` and
 `p i1` is `y` always, regardless of the actual definition of `p`.
 
 In fact, the type `x ≡ y` is defined in terms of ``PathP``, where the
-path of types happens to the constant path at the type `A`. This is
-just like non-dependent functions `A → B` are exactly dependent
+path of types happens to be the constant path at the type `A`. This is
+just like how non-dependent functions `A → B` are exactly dependent
 functions `(x : A) → B`, where `B` happens to be a constant type and
 not depend on `x`.
+
+Try re-defining ``≡`` out of ``PathP``:
 
 ```
 ≡-again : (A : Type) (x : A) (y : A) → Type
@@ -521,8 +536,8 @@ ap-bin f p q i = f (p i) (q i)
 Let's return to paths in pair types, but look at *dependent* pairs.
 There are actually two places dependency could show up here. The first
 is the obvious one, when `B` depends on `A`. The definitions are the
-same as in the non-dependent case, so try to fill in the parameters to
-the ``PathP`` type.
+same as in the non-dependent case, that is, the functions ``×≡→≡×``
+and ``≡×→×≡``, so try to fill in the parameters to the ``PathP`` type.
 
 ::: Aside:
 Here we are going to use an "anonymous module", to collect the
@@ -583,23 +598,6 @@ module _ {A : Type ℓ} {B : A → Type ℓ₂}
   funext⁻ p x i = p i x
 ```
 
-mvrnote:
-
-```
-module _ {A : Type ℓ} {B : I → Type ℓ'}
-  {f : A → B i0} {g : A → B i1}
-  where
-  funextP : 
-      ((x : A) → PathP B (f x) (g x))
-    → PathP (λ i → A → B i) f g
-  funextP h i x = h x i
-  
-  funextP⁻ : 
-      PathP (λ i → A → B i) f g
-    → ((x : A) → PathP B (f x) (g x))
-  funextP⁻ p x i = p i x
-```
-
 Path-overs are also what is required to describe the *induction*
 principle of the circle; the upgraded version of ``S¹-rec`` for
 dependent functions. If we have a type family `A : S¹ → Type` over the
@@ -608,18 +606,18 @@ element of the type family at ``base``, and the loop is a path from
 that point to itself, lying over the path of types `A ∘ loop`.
 
 ```
-S¹-ind-≡ : {A : S¹ → Type ℓ}
+S¹-ind : {A : S¹ → Type ℓ}
   → (a : A base)
   → PathP (λ i → A (loop i)) a a
   → (s : S¹) → A s
-S¹-ind-≡ a l base = a
-S¹-ind-≡ a l (loop i) = l i
+S¹-ind a l base = a
+S¹-ind a l (loop i) = l i
 ```
 
 The input `l : PathP (λ i → A (loop i)) a a` involves a path `λ i → A
 (loop i)` from `A base` to itself, that is, a path between two
 *types*. Right now we have no way of producing interesting paths
-between types, but univalence will come to the rescue in Lecture 2-X.
+between types, but univalence will come to the rescue in Lecture 2-6.
 
 
 ## Squares
@@ -632,86 +630,85 @@ the elements of `I` as data and so don't let ourselves actually form
 the type `I × I`, we can nevertheless think of a function of two
 interval variables corresponding to a square.
 
-             a-1
-       a01 — — — > a11
+             a-₁
+       a₀₁ — — — > a₁₁
         ^           ^             ^
-    a0- |           | a1-       j |
+    a₀- |           | a₁-       j |
         |           |             ∙ — >
-       a00 — — — > a10              i
-             a-0
+       a₀₀ — — — > a₁₀              i
+             a-₀
 
-We will see a square like this as a path from the left side to the
-right side, that is, as a path between the paths `a0-` and `a1-`.
-However, these don't have the same type; observing the endpoints, we
-see that `a0- : a00 ≡ a01` and `a1- : a10 ≡ a11`. Using the other two
-paths `a-0` and `a-1`, we may construct a path of types that
-continuously transforms from the type of `a0-` to the type of `a1-`,
-as we sweep from left to right.
+How do we properly write down the type of such a thing? Well, let's
+imagine we have a square like that and we feed it a value of `i`. What
+should the type of the result be? Well, once we've chosen an `i`,
+what's left is a function `I → A` which is awaiting a value of `j`,
+that is, the result is a vertical slice of the above square. We can
+even identify what the endpoints of that slice should be: once we've
+chosen a value of `i`, we know that vertical slice starts at `a-₀ i`
+on the bottom, and ends up at `a-₁ i` on the top.
 
 ```
-Square-sweep : {A : Type ℓ} {a00 a01 a10 a11 : A}
-  → (a-0 : a00 ≡ a10) (a-1 : a01 ≡ a11)
+Square-sweep : {A : Type ℓ} {a₀₀ a₀₁ a₁₀ a₁₁ : A}
+  → (a-₀ : a₀₀ ≡ a₁₀) (a-₁ : a₀₁ ≡ a₁₁)
   → (I → Type ℓ)
-Square-sweep a-0 a-1 i = a-0 i ≡ a-1 i
+Square-sweep a-₀ a-₁ i = a-₀ i ≡ a-₁ i
 ```
 
-Plugging in the endpoints of `I`, we indeed see that
+Now this is true for any value of `i`, including `i = i0` and
+`i = i1`. In those cases, we know exactly which vertical paths we
+should get: the left and right boundaries of the square.
 
-* `(Square-sweep a-0 a-1 i0) = (a00 ≡ a01)` and
-* `(Square-sweep a-0 a-1 i1) = (a10 ≡ a11)`
-
-by definition.
-
-We want to say that the square is somehow an element of this
-continuously varying path type. With ``PathP``, we can do exactly
-this, and define the type of squares as paths over the continuously
-varying path ``Square-sweep``:
+So putting this all together, as `i` travels from ``i0`` to ``i1``, we
+want a value of `Square-sweep a-₀ a-₁ i` that travels from `a₀-` to
+`a₁-`. This is our definition of what it means to be a ``Square`` with
+specified boundary.
 
 ```
-Square : {A : Type ℓ} {a00 a01 a10 a11 : A}
-  → (a0- : a00 ≡ a01)
-  → (a1- : a10 ≡ a11)
-  → (a-0 : a00 ≡ a10)
-  → (a-1 : a01 ≡ a11)
+Square : {A : Type ℓ} {a₀₀ a₀₁ a₁₀ a₁₁ : A}
+  → (a₀- : a₀₀ ≡ a₀₁)
+  → (a₁- : a₁₀ ≡ a₁₁)
+  → (a-₀ : a₀₀ ≡ a₁₀)
+  → (a-₁ : a₀₁ ≡ a₁₁)
   → Type ℓ
-Square a0- a1- a-0 a-1 = PathP (Square-sweep a-0 a-1) a0- a1-
+Square a₀- a₁- a-₀ a-₁ = PathP (Square-sweep a-₀ a-₁) a₀- a₁-
 ```
 
-Here's the picture again, for you to inspect:
+Let's define some simple squares. If we start with a path `x ≡ y` and
+think of it lying horizontally, we can stretch it vertically into a
+square.
 
-             a-1
-       a01 — — — > a11
-        ^           ^             ^
-    a0- |           | a1-       j |
-        |           |             ∙ — >
-       a00 — — — > a10              i
-             a-0
-
-mvrnote: Square p q refl refl is the same as p ≡ q 
-
-Elements of the `Square A` type are squares exist in a constant type
-`A`. But just as we can upgrade ``Path`` to ``PathP`` where
-the type `A` can vary over the path, we can upgrade ``Square`` to
-``SquareP`` where the type can vary over the square.
+             p
+         x — — — > y
+         ^         ^                  ^
+    refl |         | refl           j |
+         |         |                  ∙ — >
+         x — — — > y                    i
+             p
 
 ```
-SquareP :
-  (A : I → I → Type ℓ)
-  {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
-  (a₀- : PathP (λ j → A i0 j) a₀₀ a₀₁)
-  (a₁- : PathP (λ j → A i1 j) a₁₀ a₁₁)
-  (a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀)
-  (a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁)
-  → Type ℓ
+stretch-vertical : (p : x ≡ y) → Square refl refl p p
+stretch-vertical p i j = p i
+```
 
-SquareP A a₀- a₁- a-₀ a-₁
-  = PathP (λ i → PathP (λ j → A i j) (a-₀ i) (a-₁ i))
-          a₀-
-          a₁-
+So the value of the square at any point is given by forgetting the
+second dimension (`j`) and doing whatever the path `p` does on `i`.
+
+```
+stretch-horizontal : (p : x ≡ y) → Square p p refl refl
+-- Exercise:
+stretch-horizontal p i j = {!!}
 ```
 
 For some practice thinking with squares, write a version of ``ap``
 that applies to squares.
+
+             a-₁                              ap f a₁-
+       a₀₁ — — — > a₁₁                  f a₁₀ — — — > f a₁₁
+        ^           ^                      ^           ^
+    a₀- |           | a₁-   ~~>   ap f a-₀ |           | ap f a-₁
+        |           |                      |           |
+       a₀₀ — — — > a₁₀                  f a₀₀ — — — > f a₀₁
+             a-₀                              ap f a₀-
 
 ```
 ap-Square : (f : A → B)
@@ -729,16 +726,16 @@ ap-Square f s = {!!}
 Next, write down the function that flips a square along the diagonal:
 
 
-             a-1                           a1-
-       a01 — — — > a11               a10 — — — > a11
+             a-₁                           a₁-
+       a₀₁ — — — > a₁₁               a₁₀ — — — > a₁₁
         ^           ^                 ^           ^
-    a0- |           | a1-   ~~>   a-0 |           | a-1
+    a₀- |           | a₁-   ~~>   a-₀ |           | a-₁
         |           |                 |           |
-       a00 — — — > a10               a00 — — — > a01
-             a-0                           a0-
+       a₀₀ — — — > a₁₀               a₀₀ — — — > a₀₁
+             a-₀                           a₀-
 
 ```
-flipSquare : {a₀₀ a₀₁ a₁₀ a₁₁ : A }
+flip-square : {a₀₀ a₀₁ a₁₀ a₁₁ : A }
   → {a₀- : Path A a₀₀ a₀₁}
   → {a₁- : Path A a₁₀ a₁₁}
   → {a-₀ : Path A a₀₀ a₁₀}
@@ -746,77 +743,69 @@ flipSquare : {a₀₀ a₀₁ a₁₀ a₁₁ : A }
   → Square a₀- a₁- a-₀ a-₁
   → Square a-₀ a-₁ a₀- a₁-
 -- Exercise:
-flipSquare s = {!!}
+flip-square s = {!!}
 ```
 
-Once you've figured this out, try to define a similar function
-``flipSquareP``, where the type now varies over the square. Here,
-the trick is not so much the definition itself --- it will be the same
-as ``flipSquare`` --- but rather the type.
+Given two functions `f` and `g` from `A` to `B` and a path `a ≡ a'` in
+`A`, we can use `ap` on each of those functions to get two paths that
+live in `B`. Given a homotopy `H` between `f` and `g`, we can fill in
+a square between those two paths:
+
+           ap g p
+       g a — — — > g a'
+        ^           ^
+    H a |           | H a'
+        |           |
+       f a — — — > f a'
+           ap f p
 
 ```
-flipSquareP : 
+homotopy-Path : {f g : A → B}
+  → (H : (x : A) → (f x ≡ g x))
+  → {a a' : A}
+  → (p : a ≡ a')
+  → Square (H a) (H a') (ap f p) (ap g p)
+-- Exercise:
+homotopy-Path H p i j = {!!}
+```
+
+Elements of the `Square A` type are squares that exist in a constant
+type `A`. But just as we can upgrade ``Path`` to ``PathP`` where the
+type `A` can vary over the path, we can upgrade ``Square`` to
+``SquareP`` where the type can vary over the square.
+
+```
+SquareP :
+  (A : I → I → Type ℓ)
+  {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
+  (a₀- : PathP (λ j → A i0 j) a₀₀ a₀₁)
+  (a₁- : PathP (λ j → A i1 j) a₁₀ a₁₁)
+  (a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀)
+  (a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁)
+  → Type ℓ
+SquareP A a₀- a₁- a-₀ a-₁
+  = PathP (λ i → PathP (λ j → A i j) (a-₀ i) (a-₁ i))
+          a₀-
+          a₁-
+```
+
+Try to define a similar function ``flip-squareP``, where the type now
+varies over the square. Here, the trick is not so much the definition
+itself --- it will be the same as ``flip-square`` --- but rather the
+type.
+
+```
+flip-squareP :
   (A : I → I → Type ℓ)
   {a₀₀ : A i0 i0} {a₀₁ : A i0 i1} {a₁₀ : A i1 i0} {a₁₁ : A i1 i1}
   {a₀- : PathP (λ j → A i0 j) a₀₀ a₀₁}
   {a₁- : PathP (λ j → A i1 j) a₁₀ a₁₁}
   {a-₀ : PathP (λ i → A i i0) a₀₀ a₁₀}
   {a-₁ : PathP (λ i → A i i1) a₀₁ a₁₁}
-  -- Exercise:
-  → SquareP {!!} {!!} {!!} {!!} {!!}
-  → SquareP {!!} {!!} {!!} {!!} {!!}
-
-flipSquareP A s = λ i j → s j i
-```
-
-Any homotopy between functions is automatically "natural", in the
-following sense. Say we have a homotopy between `f` and `g`, that is,
-a function `H : (x : A) → (f x ≡ g x)`. If we have a path `p : x ≡ y`
-in `A`, then there are two ways we could get from `f x` to `g y`: the
-two ways of going around the following square:
-
-                H y
-          f y — — — > g y
-           ^           ^             ^
-    ap f p |           | ap g p    j |
-           |           |             ∙ — >
-          f x — — — > g x              i
-                H x
-
-mvrnote: illustration
-
-It is not hard to produce a square that shows these are in fact equal,
-as paths in `B`:
-
-```
-homotopy-natural : {f g : A → B}
-  → (H : (x : A) → (f x ≡ g x))
-  → {x y : A}
-  → (p : x ≡ y)
-  → Square (ap f p) (ap g p) (H x) (H y)
 -- Exercise:
-homotopy-natural H p k i = {!!}
-```
-
-mvnrote: delete this?
-And this even works in higher dimensions. We could define a "`Cube`"
-type to use here, but as a one-off just writing the ``PathP`` manually
-will do.
-
-```
--- homotopy-natural-cube : {f g : A → B}
---   → (H : (x : A) → (f x ≡ g x))
---   → {a b c d : A}
---   → {r : a ≡ c} {s : b ≡ d}
---   → {t : a ≡ b} {u : c ≡ d}
---   → (sq : Square t u r s)
---   → PathP (λ k → Square (homotopy-natural H t k)
---                         (homotopy-natural H u k)
---                         (homotopy-natural H r k)
---                         (homotopy-natural H s k))
---     (ap-Square f sq)
---     (ap-Square g sq)
--- homotopy-natural-cube H sq k i j = H (sq i j) k
+     → SquareP {!!} {!!} {!!} {!!} {!!}
+     → SquareP {!!} {!!} {!!} {!!} {!!}
+flip-squareP A s = {!!}
 ```
 
 
@@ -827,16 +816,21 @@ nice example: the torus, which consists a basepoint, two circles
 connected to that basepoint, and a square region with sides as
 follows:
 
-             line1
-          pt — — — > pt
+              loop1
+        base — — — > base
           ^           ^
           |           |                 ^
-    line2 |           | line2         j |
+    loop2 |           | loop2         j |
           |           |                 ∙ — >
-          pt — — — > pt                   i
-             line1
+        base — — — > base                 i
+              loop1
 
-mvrnote: this will really need some pictures
+This really does correspond to the doughnut shape you might be
+thinking of. By specifying the horizontal sides and vertical sides of
+the square to be identical, we are gluing them together, much as in
+the following animation:
+
+<https://commons.wikimedia.org/wiki/File:Torus_from_rectangle.gif>
 
 ```
 data Torus : Type where
@@ -846,8 +840,12 @@ data Torus : Type where
   torus-square : Square torus-loop2 torus-loop2 torus-loop1 torus-loop1
 ```
 
-Topologically, the torus is equal to the cartesian product of two
-circles. We can prove this directly! mvrnote: refer to the picture
+Topologically, the torus is equal to the product of two circles.
+Imagine taking a single vertical circle on the torus that runs through
+the middle. Then dragging this along a path made of a horizontal
+circle, we trace out the full shape of the torus.
+
+We can prove this equivalence directly, by pattern matching!
 
 ```
 Torus→S¹×S¹ : Torus → S¹ × S¹
@@ -860,3 +858,26 @@ S¹×S¹→Torus c = {!!}
 ```
 
 ## References and Further Reading
+
+* Agda Documentation
+  * [The interval and path types](https://agda.readthedocs.io/en/latest/language/cubical.html#the-interval-and-path-types)
+  * [Inductive types with path constructors](https://agda.readthedocs.io/en/latest/language/cubical.html#higher-inductive-types)
+* Tutorial for `cubicaltt`, an early cubical proof assistant
+  * [Paths](https://github.com/mortberg/cubicaltt/blob/master/lectures/lecture1.ctt)
+
+These use a different notion of path, but many properties are similar.
+* The original *[Homotopy Type Theory]* book:
+  * Homotopies: Chapter 2.4
+  * Paths in Σ types: Chapters 2.6 and 2.7
+  * Function Extensionality: Chapter 2.9
+  * The Circle: Chapter 6.4
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Function Extensionality: Chapter 13
+  * The Circle: Chapter 21
+* Martin Escardo's [Lecture Notes]:
+  * [Paths in Σ types](https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#sigmaequality)
+* HoTTEST Summer School 2022
+  * [The Circle](https://github.com/martinescardo/HoTTEST-Summer-School/blob/main/Agda/HITs/Lecture4-notes.lagda.md)
+
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html

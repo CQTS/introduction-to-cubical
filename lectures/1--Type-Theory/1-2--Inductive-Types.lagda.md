@@ -23,7 +23,7 @@ images of each other:
   specified by choosing a value for each of those fields.
 
 In this Lecture we'll see our first few examples of inductive types.
-We'll return to record types in Lecture 1-X.
+We'll return to record types in Lecture 1-4.
 
 ## Booleans
 
@@ -100,15 +100,18 @@ _and_ x y = case x of λ
             ; false → false }
   ; false → false
   }
-
-_xor_ : Bool → Bool → Bool
--- Exercise:
-x xor y = {!!}
 ```
 
-mvrnote: recall what xor means here?
+Try the same for ``xor``. Recall that the eXclusive OR operation is
+``true`` when *exactly one* of the inputs is ``true``. (Unfortunately
+Agda doesn't allow multi-line goals, but this one isn't too hard to
+write out by hand. )
 
-mvrnote: multi-line goals are not allowed, consider modifying this exercise
+```
+_xor_ : Bool → Bool → Bool
+-- Exercise:
+_xor_ x y = {!!}
+```
 
 Agda considers definitions with names that contain underscores
 specially, and lets us use them in two ways: either literally like any
@@ -205,6 +208,24 @@ _or'_ : Bool → Bool → Bool
 x or' y = {!!}
 ```
 
+::: Caution:
+Case splitting in a definition should be all-or-nothing: either an
+argument is left as a variable, or it is split into all of its cases.
+It might be tempting to write something like
+
+    _or''_ : Bool → Bool → Bool
+    true or'' y = true
+    x or'' true = true
+    false or'' false = false
+
+but this leads to confusion down the track. When evaluating
+`true or'' true`, it's not clear whether the first or second case
+should apply. In this definition we get lucky in that the right sides
+are the same, but in more complicated definitions this might not be
+the case. Agda will issue a warning if you haven't done an "exact
+split" in a definition.
+:::
+
 Here is the definition of logical implication. There is a strange
 feature of this definition which has a Latin name: "ex falso
 quodlibet" --- ``false`` implies anything.
@@ -255,9 +276,9 @@ nextDay c = {!!}
 
 ## The Unit
 
-``Bool`` is a simple data type, but it isn't the simplest. We can
-use even fewer constructors. With one constructor, we have the unit
-type ``⊤``, with its unique element ``tt``:
+``Bool`` is a simple data type, but it isn't the simplest: we can use
+even fewer constructors. With one constructor, we have the unit type
+``⊤`` with its unique element ``tt``:
 
 ```
 data ⊤ : Type where
@@ -265,7 +286,7 @@ data ⊤ : Type where
 ```
 
 To define a function `⊤ → A`, we just have to say what it does on the
-constructor ``tt``. This is so simple that it is difficult to
+constructor ``tt``. This type is so simple that it is difficult to
 come up with interesting examples.
 
 ```
@@ -277,7 +298,7 @@ ignore-bool b = tt
 ```
 
 Because ``⊤`` contains no information, maps into ``⊤`` provide no
-information either.
+information either. (Don't overthink these!)
 
 ```
 ⊤-ump-in-to : {A : Type}
@@ -321,9 +342,9 @@ an element of the output type.
 Enough with the simple data types, let's do some mathematics. We can
 define the natural numbers ``ℕ`` as an inductive data type with two
 constructors. There is a constructor `zero : ℕ`, saying that zero is a
-natural number, and a constructor `suc : ℕ → ℕ`, which says that if
-`n` is already a natural number then `suc n` (the "successor" of `n`,
-i.e. `1 + n`) is also a natural number.
+natural number, and a constructor `suc : ℕ → ℕ`, which says that
+starting with a natural number `n`, we can get a natural number
+`suc n` (the "successor" of `n`, i.e. `1 + n`).
 
 We actually defined ``ℕ`` behind the scenes so that we could use it in
 Lecture 1-1. On the website, you can click on its name to take you
@@ -339,13 +360,9 @@ The exact definition of ``ℕ``, copy-pasted, is:
 defining a new type with the same name as an existing one.)
 
 Defining functions out of ``ℕ`` is similar to defining functions out
-of ``Bool``, we just have to give cases for the two constructors. 
-
-mvrnote: this may be confusing, it could be read as somehow saying
-that `suc` takes the number to a smaller one
-
-The difference is that the ``suc`` constructor tells us which natural
-number the provided argument is the successor of.
+of ``Bool``, we just have to give cases for the two constructors. The
+difference is that the ``suc`` constructor has an argument: the
+natural number `n` that `suc n` is the successor of.
 
 Here's a first example:
 
@@ -358,7 +375,9 @@ _ = test-identical (isZero 0)  true
 _ = test-identical (isZero 19) false
 ```
 
-So, ``isZero`` is ``true`` for zero, and ``false`` for any successor.
+So, ``isZero`` is ``true`` for zero, and ``false`` for any natural
+number that's the successor of some other natural number (because then
+it can't be zero).
 
 ::: Aside:
 Agda throws in some secret-sauce that lets us write elements of ``ℕ``
@@ -366,9 +385,24 @@ as numerals `1`, `2`, `3`, ..., rather than having to write out `suc
 (suc (suc zero))` for `3`, for example.
 :::
 
-
 For ``isZero`` we didn't need to use the variable `n`, but to do
-anything interesting we will. For example:
+anything interesting we will. For example, we can define a
+"predecessor" operation, which partially undoes the successor ``suc``
+Of course, it can't fully undo it, since ``zero`` has nowhere to go
+except ``zero`` again.
+
+```
+predℕ : ℕ → ℕ
+predℕ zero = zero
+predℕ (suc n) = n
+
+_ = test-identical (predℕ 0) 0
+_ = test-identical (predℕ 1) 0
+_ = test-identical (predℕ 19) 18
+```
+
+More interseting still, we can define functions on `n` that are
+*recursive*.
 
 ```
 doubleℕ : ℕ → ℕ
@@ -376,17 +410,28 @@ doubleℕ zero = zero
 doubleℕ (suc n) = suc (suc (doubleℕ n))
 ```
 
-Thinking mathematically, $2 × 0 = 0$, covering the first case. For the
-second case, $2 × (1 + n) = 2 + (2 × n)$. To achieve the $2 +$ part,
-we use ``suc`` twice, and to achieve the $2 × n$ part, we use a
+Thinking mathematically, $2 × 0 = 0$, explaining the first case. For
+the second case, $2 × (1 + n) = 2 + (2 × n)$. To achieve the $2 +$
+part, we use ``suc`` twice, and to achieve the $2 × n$ part, we use a
 recursive call to the ``doubleℕ`` function we are currently defining!
 
-mvrnote: draw a diagram of the recursion, or do the unfolding all the way out
-
-Agda allows this kind of recursion so long as it is convinced that the
+We have defined the double of `suc n` in terms of the double of `n`,
+and this recursion will continue until `n` reaches ``zero``. Agda
+allows this kind of recursion so long as it is convinced that the
 argument that you provide to the recursive call is smaller than the
 argument that you started with. That is certainly the case here,
 because we go from `suc n` to just `n`.
+
+```
+tripleℕ : ℕ → ℕ
+-- Exercise:
+tripleℕ n = {!!}
+
+_ = test-identical (tripleℕ 0) 0
+_ = test-identical (tripleℕ 1) 3
+_ = test-identical (tripleℕ 19) 57
+
+```
 
 We can even do what is called "mutual" recursion, where two
 definitions depend on each other to make sense. Here is a definition
@@ -405,7 +450,7 @@ isOdd (suc n) = isEven n
 ```
 
 Using pattern matching, we can define the arithmetic operations on
-numbers:
+numbers.
 
 ```
 _+ℕ_ : ℕ → ℕ → ℕ
@@ -414,8 +459,6 @@ zero    +ℕ m = m
 
 _ = test-identical (2 +ℕ 3) 5
 ```
-
-mvrnote: draw a diagram of the recursion, or do the unfolding all the way out
 
 Remember that you can test any piece of code yourself by typing `C-c
 C-n` and then `2 +ℕ 3`, say.
@@ -479,18 +522,36 @@ _ = test-identical (3 ^ℕ 2) 9
 
 Remember that you can test these manually using `C-c C-n`!
 
-We can also define a "predecessor" operation, which partially undoes
-the successor `suc : ℕ → ℕ`. Of course, it can't fully undo it, since
-``zero`` has nowhere to go except ``zero`` again.
+There's one final trick for now. Agda will let us pattern match on
+more than one "layer" of an inductive type at a time.
 
 ```
-predℕ : ℕ → ℕ
--- Exercise:
-predℕ n = {!!}
+halveℕ : ℕ → ℕ
+halveℕ zero = zero
+halveℕ (suc zero) = zero
+halveℕ (suc (suc n)) = suc (halveℕ n)
 
-_ = test-identical (predℕ 0) 0
-_ = test-identical (predℕ 1) 0
-_ = test-identical (predℕ 19) 18
+_ = test-identical (halveℕ 0) 0
+_ = test-identical (halveℕ 1) 0
+_ = test-identical (halveℕ 4) 2
+_ = test-identical (halveℕ 10) 5
+```
+
+Here, in the ``suc`` case, we further divide into two cases: whether
+the interior natural number is itself ``zero`` or ``suc``. Notice that
+all possibilities are still covered, with no overlaps. Agda will
+complain if this is not the case!
+
+```
+lessThan3 : ℕ → Bool
+-- Exercise:
+lessThan3 n = {!!}
+
+_ = test-identical (lessThan3 0) true
+_ = test-identical (lessThan3 1) true
+_ = test-identical (lessThan3 2) true
+_ = test-identical (lessThan3 3) false
+_ = test-identical (lessThan3 4) false
 ```
 
 
@@ -541,7 +602,7 @@ The type that we want to use for the elements of the list is accepted
 as an implicit argument. As usual, `List A` doesn't make sense as a
 type unless we have defined what `A` is somewhere.
 
-Concatenation of lists is defined by pattern-matching. For example, the
+Concatenation of lists is defined by pattern matching. For example, the
 concatenation `[1, 2, 3] ++ [4, 5, 6]` is `[1, 2, 3, 4, 5, 6]`.
 
 ```
@@ -646,7 +707,12 @@ _ = test-identical -3 (negsuc (suc (suc (zero))))
 :::
 
 Next, the successor function which sends $z$ to $z + 1$, and similarly
-the predecessor function which sends $z$ to $z - 1$.
+the predecessor function which sends $z$ to $z - 1$. These functions
+are ones where you will have to do some nested pattern matching: it
+will not be enough to just pattern match on the outside layer of
+`pos n` and `negsuc n`. For example, `sucℤ n` will have to do
+something different depending on whether `n` is itself ``zero`` or
+``suc``.
 
 ```
 sucℤ : ℤ → ℤ
@@ -654,6 +720,9 @@ sucℤ : ℤ → ℤ
 sucℤ z = {!!}
 
 _ = test-identical (sucℤ 19) 20
+_ = test-identical (sucℤ -1) 0
+_ = test-identical (sucℤ 0) 1
+_ = test-identical (sucℤ 1) 2
 _ = test-identical (sucℤ -34) -33
 
 predℤ : ℤ → ℤ
@@ -661,6 +730,9 @@ predℤ : ℤ → ℤ
 predℤ z = {!!}
 
 _ = test-identical (predℤ 19) 18
+_ = test-identical (predℤ 0) -1
+_ = test-identical (predℤ 1) 0
+_ = test-identical (predℤ 2) 1
 _ = test-identical (predℤ -34) -35
 ```
 
@@ -684,13 +756,20 @@ _+ℤ_ : ℤ → ℤ → ℤ
 m +ℤ (pos n) = m +pos n
 m +ℤ (negsuc n) = m +negsuc n
 
+-- This ends up being important later, so we'll really make sure your
+-- definition works!
+_ = test-identical (-1 +ℤ -1) -2
+_ = test-identical (-1 +ℤ 0) -1
+_ = test-identical (-1 +ℤ 1) 0
+_ = test-identical (0 +ℤ -1) -1
 _ = test-identical (0 +ℤ 0) 0
 _ = test-identical (0 +ℤ 1) 1
+_ = test-identical (1 +ℤ -1) 0
 _ = test-identical (1 +ℤ 0) 1
+_ = test-identical (1 +ℤ 1) 2
 _ = test-identical (19 +ℤ 34) 53
 _ = test-identical (-19 +ℤ 34) 15
 ```
-mvrnote: need tests with negative on right
 
 We can negate an integer, and define the subtraction of integers in
 terms of addition and negation.
@@ -733,7 +812,7 @@ Make sure to test this one via `C-c C-n`, especially the
 As we mentioned above, these inductive data types are characterised by
 their "induction principles". In this lecture we focus on a simpler
 version of this principle, "recursion", and will return to induction
-in Lecture 1-X.
+in Lecture 1-3.
 
 The recursion principle for a type packs together the data that is
 necessary to produce a function out of it into some other type. In the
@@ -793,13 +872,18 @@ not-fromRec : Bool → Bool
 -- Exercise: (Don't pattern match on `x`!)
 not-fromRec x = Bool-rec {!!} {!!} {!!}
 
--- You will need to use `Bool-rec` twice!
+_ = test-identical (not-fromRec false) (not false)
+_ = test-identical (not-fromRec true) (not true)
+
 or-fromRec : Bool → Bool → Bool
 -- Exercise: (Don't pattern match at all!)
 or-fromRec x y = Bool-rec {!!} {!!} {!!}
-```
 
-mvrnote: add some tests for these two
+_ = test-identical (or-fromRec false false) (_or_ false false)
+_ = test-identical (or-fromRec false true) (_or_ false true)
+_ = test-identical (or-fromRec true false) (_or_ true false)
+_ = test-identical (or-fromRec true true) (_or_ true true)
+```
 
 The recursion principle for the unit type is even simpler. To define a
 function `⊤ → A`, it suffices to give an element of `A` (which is to
@@ -830,7 +914,7 @@ enough to give a value to every element of ``ℕ``.
 
 ```
 ℕ-rec : {A : Type}
-  → A                 -- The base casea
+  → A                 -- The base case
   → (A → A)           -- The recursion law
   → (ℕ → A)
 ℕ-rec a r zero = a
@@ -895,9 +979,19 @@ infixr 5 _++_
 
 ## References and Further Reading
 
-coverage checker
-Elaboration:
-https://jesper.sikanda.be/files/elaborating-dependent-copattern-matching.pdf
-https://pl.ewi.tudelft.nl/master-projects/master/2022/10/25/kayleigh-lieverse/
-https://jesper.sikanda.be/files/thesis-final-digital.pdf
-https://link.springer.com/chapter/10.1007/11780274_27
+* The original *[Homotopy Type Theory]* book:
+  * Booleans: Chapter 1.8
+  * Natural Numbers: Chapter 1.9
+  * Pattern Matching: Chapter 1.10
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Natural Numbers: Chapter 3
+  * Integers: Chapter 4.5
+  * Pattern Matching: Chapter 3.3
+* Martin Escardo's [Lecture Notes]:
+  * [Natural Numbers]
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
+[Natural Numbers]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#naturalnumbers

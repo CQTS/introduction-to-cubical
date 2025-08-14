@@ -34,7 +34,7 @@ mvrnote: inferring universe levels is still dodgy, causing unpleasantly slow typ
 mvrnote: credit sources up top
 mvrnote: simplify universe levels, just do everything at one level?
 
-In Lecture 2-X we saw how univalence can be used to show that paths
+In Lecture 2-6 we saw how univalence can be used to show that paths
 between types the same as equivalences between those types. But what
 if our types have extra structure, like algebraic operations or
 axioms? In this Lecture, we extend univalence to the Structure
@@ -332,7 +332,7 @@ Bool-or≡Bool-and : Bool-or-Magma ≡ Bool-and-Magma
 Bool-or≡Bool-and = sip ≃[Magma]-univalent Bool-or-Magma Bool-and-Magma not-[Magma]≃
 ```
 
-Way back in Lecture 2-X, we showed that ``or`` is an associative
+Way back in Lecture 2-1, we showed that ``or`` is an associative
 operation. We can use this path that we just proved to transfer this
 proof over to ``and``.
 

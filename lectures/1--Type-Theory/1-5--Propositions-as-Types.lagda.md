@@ -39,7 +39,7 @@ of a demonstration that we can divide it evenly into two whole
 numbers, but this time we can't actually achieve that goal.
 
 In this lecture, we give a first pass at a type theoretic notion of
-proposition, something we will refine later in Lecture 2-X.
+proposition, something we will refine later in Lecture 2-7.
 
 
 ## Propositions as Types
@@ -111,14 +111,32 @@ filling in both sides of the logical equivalence. On the left of the
 ``iffP`` we use the ordinary operation on Booleans, and on the right
 we use the corresponding operation on propositions-as-types.
 
-mvrnote: explain splitting goal
+The complicated goal below gives us an opportunity to introduce
+another handy Agda trick: splitting on the *goal*, rather than an
+argument. This works when the current goal is a negative type, such as
+`→` or ``×``, which it is in this case. Type `C-c C-c`, the same
+keybinding as case splitting, but this time don't provide the name of
+variable to split on. Because Agda knows that the goal has type `×`,
+this will result in two copattern matching lines, one for the first
+component and one for the second component. Splitting the goal again
+in each of these will give you an `x` argument, because the goal in
+both cases is a `→` type. Doing this can help keep things organised,
+rather than piling everything onto the right-hand side of the `=`
+sign. (At some point you will also have to pattern match on the
+Boolean arguments.)
 
 ```
 and→Type : (a b : Bool) → (IsTrue (a and b)) iffP ((IsTrue a) andP (IsTrue b))
+-- aka:
+-- and→Type : (a b : Bool) → ((IsTrue (a and b)) → (IsTrue a × IsTrue b))
+--                         × ((IsTrue a × IsTrue b) → IsTrue (a and b))
 -- Exercise:
 and→Type a b = {!!}
 
 implies→Type : (a b : Bool) → (IsTrue (a implies b)) iffP ((IsTrue a) impliesP (IsTrue b))
+-- aka:
+-- implies→Type : (a b : Bool) → ((IsTrue (a implies b)) → (IsTrue a → IsTrue b))
+--                             × ((IsTrue a → IsTrue b) → (IsTrue (a implies b)))
 -- Exercise:
 implies→Type a b = {!!}
 ```
@@ -139,7 +157,7 @@ We had better also make sure this means what we think it does!
 ```
 not→Type : (a : Bool) → (IsTrue (not a)) iffP (¬ IsTrue a)
 -- Exercise:
-not→Type a = ?
+not→Type a = {!!}
 ```
 
 A basic principle of negation is contraposition: if `P` implies `Q`
@@ -149,12 +167,15 @@ This gives us an opportunity to introduce another useful Agda hotkey.
 If you place your cursor in the below hole and press `C-c C-,` (that
 is, control-c, control-comma), Agda will tell you that the goal has
 type `¬ Q → ¬ P`. This is true, but the path forwards is a little
-obscured. It helps if we *unfold* the definition of ``¬`` in the goal,
-which we can ask Agda to do by pressing `C-u C-u C-c C-,`. (mvrnote: explain C-u and C-u C-u)
+obscured. It helps if we *unfold* the definition of ``¬`` in the goal.
+We can ask Agda to do this by prefixing the command with `C-u C-u`,
+which asks Agda to simplify the expression more aggressively. (Yes,
+these key-bindings are a bit silly.)
 
-It is revealed that the goal has type `(Q → ∅) → P → ∅`. This makes it
-clear that ``¬-contra`` should take two arguments, one with type
-`Q → ∅`, and the other with type `P`.
+So, in the goal below, `C-u C-u C-c C-,` reveals that the goal has
+type `(Q → ∅) → P → ∅`. This makes it clear that ``¬-contra`` should
+take two arguments, one with type `Q → ∅`, and the other with type
+`P`.
 
 ```
 ¬-contra : {ℓ ℓ' : Level} → {P : Type ℓ} → {Q : Type ℓ'}
@@ -166,15 +187,15 @@ clear that ``¬-contra`` should take two arguments, one with type
 
 The logic of propositions-as-types is not exactly the same as the
 logic of Booleans, however. The reason has to do with double negation:
-recall that for the Booleans, `not not b` is always equal to `b` which
-you can check by just trying both possibilities. Working with
+recall that for the Booleans, `not (not b)` is always equal to `b`,
+which you can check by just trying both possibilities. Working with
 propositions-as-types, we can show one direction of that equivalence:
 
 ```
 implies¬¬ : {ℓ : Level} → {P : Type ℓ} 
   → (P → (¬ ¬ P))
 -- Exercise:
-implies¬¬ p = ?
+implies¬¬ p = {!!}
 ```
 
 But, we cannot show that `¬ ¬ A → A` in general!
@@ -188,12 +209,15 @@ But, we cannot show that `¬ ¬ A → A` in general!
 One way to understand the difference between `¬ ¬ P` and `P` is that
 we think of `p : P` as giving *evidence* that the proposition `P`
 holds. What `¬ ¬ P` says is that to assume `P` were false would lead
-to a contradiction, but this does not on its own conjure any direct
-evidence for `P`. This quirk of logic in type theory makes it a
-*constructive* logic --- there is a difference between providing (or
-"constructing") evidence for a proposition and proving that its
-falsehood would be absurd --- as opposed to the "classical" logic of
-the Booleans.
+to a contradiction. Certainly, if we already have evidence for `P`,
+then the claim that `P` is also false leads to a contradiction, this
+is the ``implies¬¬`` fact we just proved above.
+
+But `¬ ¬ P` does not on its own conjure any direct evidence for `P`.
+This quirk of logic in type theory makes it a *constructive* logic ---
+there is a difference between providing (or "constructing") evidence
+for a proposition and proving that its falsehood would be absurd ---
+as opposed to the "classical" logic of the Booleans.
 
 It seems that we're at risk of `¬`s piling up endlessly if the above
 implication only works in one direction. But in fact, as soon as we
@@ -203,7 +227,7 @@ have three `¬`s, we can cancel two of them.
 ¬¬¬implies¬ : {ℓ : Level} → {P : Type ℓ} 
   → (¬ ¬ ¬ P) → (¬ P)
 -- Exercise:
-¬¬¬implies¬ nnnp = ?
+¬¬¬implies¬ nnnp = {!!}
 ```
 
 As a challenge, prove that it's impossible for `P` and `¬ P` to be
@@ -214,7 +238,7 @@ you unfold the definitions.
 ¬-not-same : {ℓ : Level} → {P : Type ℓ} 
   → ¬ (P iffP (¬ P))
 -- Exercise: 
-¬-not-same (l , r) = ?
+¬-not-same (l , r) = {!!}
 ```
 
 
@@ -262,7 +286,7 @@ noticing with ``or`` is that the disjoint union of two propositions
 can contain a non-trivial amount of information. We actually saw this
 earlier, when we proved that ``Bool`` is bijective with `⊤ ⊎ ⊤`.
 
-This is the refinement that we will eventually make in Lecture 2-X, to
+This is the refinement that we will eventually make in Lecture 2-7, to
 pick out which types are the ones we should think of as propositions:
 types that have at most one element. This unique element, if it exists
 at all, is thought of as "the fact that the proposition is true". At
@@ -311,7 +335,7 @@ false ≡Bool false = ⊤
 
 That is, there is a unique proof that `true ≡Bool true`, no proofs
 that `true ≡Bool false`, and so on. This kind of equality defined by
-pattern-matching is often called "observational" equality.
+pattern matching is often called "observational" equality.
 
 Now how do we prove an equality of ``Bool``s? We just inhabit the
 relevant type:
@@ -402,13 +426,13 @@ too.
 ```
 ≡ℕ-refl : (n : ℕ) → n ≡ℕ n
 -- Exercise:
-≡ℕ-refl n = ?
+≡ℕ-refl n = {!!}
 
 ≡ℕ-sym : (n m : ℕ)
   → n ≡ℕ m
   → m ≡ℕ n
 -- Exercise:
-≡ℕ-sym n m p = ?
+≡ℕ-sym n m p = {!!}
 
 ≡ℕ-trans : (n m k : ℕ)
   → n ≡ℕ m
@@ -472,7 +496,7 @@ be interesting pieces of data in their own right.
 
 ## Induction Principles
 
-In the above we proofs we were secretly using an upgraded form of the
+In the above proofs we were secretly using an upgraded form of the
 recursion principles for ``Bool`` and ``ℕ`` known as "induction
 principles". The difference is that where recursion principles allowed
 us to define ordinary functions out of ``Bool``, ``ℕ``, etc.,
@@ -495,9 +519,9 @@ Bool-ind c₁ c₂ x = {!!}
 ```
 
 Try writing out the (even simpler) induction principle for the unit
-type. The result should be a function from ``⊤`` into the type family
-`A`, and the argument should be the data necessary to define that
-function. mvrnote: more hints
+type, using ``Bool-ind`` as a model. The result should be a function
+from ``⊤`` into the type family `A`, and the argument should be the
+data necessary to define that function.
 
 ```
 -- Exercise:
@@ -510,11 +534,12 @@ function. mvrnote: more hints
 ```
 
 The recursion principle for `A ⊎ B` is upgraded to an induction
-principle in a similar way. Back in ``⊎-rec``, the inputs
-were maps `A → C` and `B → C`. If `C` is now a type family dependent
-on `A ⊎ B`, these maps have to land in `C x`, where `x` is some element of `A ⊎ B`.
-Luckily, there are candidates for what `x` should be in both cases: take the
-``inl`` or ``inr`` of the input `a : A` or `b : B` respectively.
+principle in a similar way. Back in ``⊎-rec``, the inputs were maps
+`A → C` and `B → C`. If `C` is now a type family dependent on `A ⊎ B`,
+these maps have to land in `C x`, where `x` is some element of
+`A ⊎ B`. Luckily, there are candidates for what `x` should be in both
+cases: take the ``inl`` or ``inr`` of the input `a : A` or `b : B`
+respectively.
 
 ```
 ⊎-ind : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {B : Type ℓ'} {C : A ⊎ B → Type ℓ''}
@@ -542,11 +567,11 @@ If we can provide both of those things, then we get a function from
   → (r : (n : ℕ) → C n → C (suc n))
   → ((n : ℕ) → C n)
 -- Exercise:
-ℕ-ind z r n = ?
+ℕ-ind z r n = {!!}
 ```
 
 We don't often need to use ``Bool-ind``, ``⊎-ind`` or ``ℕ-ind``; we
-can instead use the pattern-matching features of Agda directly.
+can instead use the pattern matching features of Agda directly.
 
 
 ## Quantifiers
@@ -621,7 +646,7 @@ This interpretation of `∃` is not quite right for similar reasons that
 numbers that we can use to inhabit the above type, and so the type
 represents more information than the mere proposition that there
 exists an even number: it comes with a specific choice of one. Again
-we will fix this in Lecture 2-X.
+we will fix this in Lecture 2-7.
 
 For the following exercises, you should recall that ``¬`` is simply
 functions into ``∅``. Once you unfold that definition, the below
@@ -631,12 +656,12 @@ exercises are *exactly* two functions that we have seen before.
 ¬Σ→forall¬ : {A : Type} {B : A → Type}
   → ¬ (Σ[ a ∈ A ] B a) → (a : A) → ¬ B a
 -- Exercise:
-¬Σ→forall¬ = ?
+¬Σ→forall¬ = {!!}
 
 forall¬→¬Σ : {A : Type} {B : A → Type}
   → ((a : A) → ¬ B a) → ¬ (Σ[ a ∈ A ] B a)
 -- Exercise:
-forall¬→¬Σ = ?
+forall¬→¬Σ = {!!}
 ```
 
 
@@ -680,15 +705,19 @@ LEM→¬¬implies p = {!!}
 ¬¬implies→LEM f = {!!}
 ```
 
-So if we have a general proposition `P`, we cannot split into
-cases for whether `P` holds or not this: would be saying that we
-always have an element of `P ⊎ ¬ P` telling us whether a proposition
-is true.
+So if we have a general proposition `P`, we cannot split into cases
+for whether `P` holds or not this: would be saying that we always have
+an element of `P ⊎ ¬ P` telling us whether a proposition is true.
+Remember, in constructive logic, we can't assume that every
+proposition is either true or false.
 
-For some specific types, we can show that `P ⊎ ¬ P` holds: we call
-such types "decidable". The following type is essentially identical to
-the type `P ⊎ ¬ P` but we define a new type so we can give it more
-meaningful constructor names.
+For some specific types however, we *can* show that `P ⊎ ¬ P` holds:
+we call such types "decidable". So, a proposition `P` is decidable if
+we can prove that either `P` or `¬ P`.
+
+The following type is essentially identical to the type `P ⊎ ¬ P`, but
+we define a new type so we can give it more meaningful constructor
+names.
 
 ```
 data Dec {ℓ : Level} (P : Type ℓ) : Type ℓ where
@@ -731,9 +760,22 @@ Dec-≡ℕ : (a b : ℕ) → Dec (a ≡ℕ b)
 Dec-≡ℕ a b = {!!}
 ```
 
-We further discuss constructive mathematics and its limits in the
-Lecture 3-X.
+We further discuss constructive mathematics and its limits in Lecture
+3-3.
 
 
 ## References and Further Reading
-mvrnote:
+
+* The original *[Homotopy Type Theory]* book:
+  * Propositions as Types: Chapters 1.11 and 3.2
+* Egbert Rijke's *[Introduction to Homotopy Type Theory]*:
+  * Obsercational Equality: Chapter 6.3
+  * Propositions as Types: Chapter 7.1
+  * Decidable Types: Chapter 8.1
+* Martin Escardo's [Lecture Notes]:
+  * [Negation]
+
+[Homotopy Type Theory]: https://homotopytypetheory.org/book/
+[Introduction to Homotopy Type Theory]: https://arxiv.org/abs/2212.11082
+[Lecture Notes]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/index.htmlure-Notes/HoTT-UF-Agda.html
+[Negation]: https://martinescardo.github.io/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html#negation
